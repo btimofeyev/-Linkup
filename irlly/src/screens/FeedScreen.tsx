@@ -169,18 +169,19 @@ export const FeedScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FAF9F6', // Soft Cream background
+    backgroundColor: '#F8FAFC', // Modern light background
   },
   header: {
-    padding: 20,
-    paddingBottom: 16,
+    padding: 16,
+    paddingTop: 8,
+    paddingBottom: 12,
     borderBottomWidth: 0,
   },
   headerTitle: {
-    fontSize: 28,
-    fontWeight: '600', // SemiBold
-    color: '#2E2F45', // Charcoal Gray
-    fontFamily: 'System', // Will be updated to Manrope/DM Sans
+    fontSize: 32,
+    fontWeight: '700', // Bold
+    color: '#0F172A', // Modern dark slate
+    fontFamily: 'System',
   },
   list: {
     flex: 1,
@@ -188,17 +189,18 @@ const styles = StyleSheet.create({
   listContent: {
     flexGrow: 1,
     paddingHorizontal: 16,
+    paddingTop: 8,
   },
   feedItem: {
     padding: 20,
-    marginVertical: 8,
+    marginVertical: 6,
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 3,
+    borderRadius: 20,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 20,
+    elevation: 8,
   },
   itemHeader: {
     flexDirection: 'row',
@@ -208,33 +210,34 @@ const styles = StyleSheet.create({
   },
   itemTitle: {
     fontSize: 20,
-    fontWeight: '600', // SemiBold
-    color: '#2E2F45', // Charcoal Gray
+    fontWeight: '600',
+    color: '#0F172A',
     flex: 1,
     marginRight: 12,
     lineHeight: 26,
   },
   itemTime: {
-    fontSize: 14,
-    color: '#FF6B5A', // Warm Coral for time indicators
-    fontWeight: '500', // Medium
-    backgroundColor: '#FFF4A3', // Golden Yellow background
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
+    fontSize: 13,
+    color: '#FFFFFF',
+    fontWeight: '600',
+    backgroundColor: '#8B5CF6', // Modern purple
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    overflow: 'hidden',
   },
   itemNote: {
     fontSize: 16,
-    color: '#2E2F45',
+    color: '#475569',
     marginBottom: 12,
     lineHeight: 22,
-    fontWeight: '400', // Regular
+    fontWeight: '400',
   },
   itemLocation: {
-    fontSize: 16,
-    color: '#6B7280',
+    fontSize: 15,
+    color: '#64748B',
     marginBottom: 16,
-    fontWeight: '400',
+    fontWeight: '500',
   },
   itemFooter: {
     flexDirection: 'row',
@@ -244,30 +247,30 @@ const styles = StyleSheet.create({
   },
   itemCreator: {
     fontSize: 14,
-    color: '#6B7280',
-    fontWeight: '400',
+    color: '#64748B',
+    fontWeight: '500',
   },
   itemAttendees: {
     fontSize: 14,
-    color: '#FF6B5A', // Warm Coral
-    fontWeight: '500',
+    color: '#8B5CF6',
+    fontWeight: '600',
   },
   emptyState: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 40,
+    padding: 32,
   },
   emptyTitle: {
     fontSize: 24,
-    fontWeight: '600',
-    color: '#2E2F45',
-    marginBottom: 12,
+    fontWeight: '700',
+    color: '#0F172A',
+    marginBottom: 8,
     textAlign: 'center',
   },
   emptySubtitle: {
     fontSize: 16,
-    color: '#6B7280',
+    color: '#64748B',
     textAlign: 'center',
     lineHeight: 24,
     fontWeight: '400',
@@ -278,46 +281,48 @@ const styles = StyleSheet.create({
   },
   rsvpButton: {
     flex: 1,
-    minHeight: 48, // Minimum hit area
+    minHeight: 48,
     paddingVertical: 14,
     paddingHorizontal: 20,
-    borderRadius: 12,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000000',
+    shadowColor: '#0F172A',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    elevation: 4,
   },
   rsvpButtonGoing: {
-    backgroundColor: '#A4F1C5', // Mint Green
+    backgroundColor: '#10B981', // Modern green
   },
   rsvpButtonNotGoing: {
-    backgroundColor: '#F3F4F6',
-    borderWidth: 1,
-    borderColor: '#D1D5DB',
+    backgroundColor: '#F1F5F9',
+    borderWidth: 1.5,
+    borderColor: '#CBD5E1',
   },
   rsvpButtonTextGoing: {
-    color: '#065F46',
+    color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   rsvpButtonTextNotGoing: {
-    color: '#6B7280',
+    color: '#475569',
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   rsvpStatus: {
     paddingVertical: 12,
     paddingHorizontal: 16,
-    backgroundColor: '#A4F1C5',
-    borderRadius: 12,
+    backgroundColor: '#DCFCE7',
+    borderRadius: 16,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#BBF7D0',
   },
   rsvpStatusText: {
     fontSize: 16,
-    color: '#065F46',
-    fontWeight: '500',
+    color: '#166534',
+    fontWeight: '600',
   },
 });
