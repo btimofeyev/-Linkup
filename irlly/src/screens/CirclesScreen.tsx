@@ -104,6 +104,12 @@ export const CirclesScreen: React.FC = () => {
         contentContainerStyle={styles.listContent}
         ListEmptyComponent={
           <View style={styles.emptyState}>
+            <TouchableOpacity
+              style={styles.emptyAddButton}
+              onPress={() => setIsCreateModalVisible(true)}
+            >
+              <Text style={styles.emptyAddButtonText}>+</Text>
+            </TouchableOpacity>
             <Text style={styles.emptyTitle}>No circles yet</Text>
             <Text style={styles.emptySubtitle}>
               Create your first circle to organize your contacts
@@ -169,6 +175,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+    paddingTop: 20,
   },
   header: {
     flexDirection: 'row',
@@ -262,6 +269,20 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 32,
+  },
+  emptyAddButton: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: '#007AFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 24,
+  },
+  emptyAddButtonText: {
+    color: '#fff',
+    fontSize: 32,
+    fontWeight: 'bold',
   },
   emptyTitle: {
     fontSize: 20,
