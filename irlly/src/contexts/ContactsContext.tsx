@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import * as Contacts from 'expo-contacts';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Contact } from '../types';
+import { apiService } from '../services/apiService';
 
 interface ContactsContextType {
   contacts: Contact[];
@@ -34,6 +35,7 @@ export const ContactsProvider: React.FC<ContactsProviderProps> = ({ children }) 
   useEffect(() => {
     checkPermission();
     loadContactsFromStorage();
+    loadContactsFromBackend();
   }, []);
 
   const checkPermission = async () => {
@@ -49,6 +51,30 @@ export const ContactsProvider: React.FC<ContactsProviderProps> = ({ children }) 
       }
     } catch (error) {
       console.error('Error loading contacts from storage:', error);
+    }
+  };
+
+  const loadContactsFromBackend = async () => {
+    try {
+      const response = await apiService.getContacts();
+      if (response.success && response.data) {
+        const backendContacts: Contact[] = response.data.contacts.map((contact: any) => ({
+          id: contact.id,
+          userId: contact.user_id,
+          contactId: contact.contact_user_id || contact.id,
+          name: contact.name,
+          phoneNumber: contact.phone_number,
+          isRegistered: contact.is_registered,
+          createdAt: new Date(contact.created_at),
+        }));
+        
+        // Update local storage with backend data
+        setContacts(backendContacts);
+        await AsyncStorage.setItem('contacts', JSON.stringify(backendContacts));
+      }
+    } catch (error) {
+      console.error('Error loading contacts from backend:', error);
+      // Don't fail silently - this is likely because user isn't authenticated yet
     }
   };
 
@@ -97,8 +123,40 @@ export const ContactsProvider: React.FC<ContactsProviderProps> = ({ children }) 
           createdAt: new Date(),
         }));
 
-      setContacts(processedContacts);
-      await AsyncStorage.setItem('contacts', JSON.stringify(processedContacts));
+      // Sync contacts with backend
+      try {
+        const contactsForBackend = processedContacts.map(contact => ({
+          name: contact.name,
+          phoneNumber: contact.phoneNumber
+        }));
+        
+        const syncResponse = await apiService.syncContacts(contactsForBackend);
+        if (syncResponse.success && syncResponse.data) {
+          // Update local contacts with backend response (registered status, etc.)
+          const backendContacts = syncResponse.data.contacts || [];
+          const updatedContacts = processedContacts.map(localContact => {
+            const backendContact = backendContacts.find(
+              (bc: any) => bc.phone_number === localContact.phoneNumber
+            );
+            return {
+              ...localContact,
+              isRegistered: !!backendContact?.is_registered,
+              contactId: backendContact?.id || localContact.contactId
+            };
+          });
+          setContacts(updatedContacts);
+          await AsyncStorage.setItem('contacts', JSON.stringify(updatedContacts));
+        } else {
+          // Fallback to local contacts if backend sync fails
+          setContacts(processedContacts);
+          await AsyncStorage.setItem('contacts', JSON.stringify(processedContacts));
+        }
+      } catch (error) {
+        console.error('Error syncing contacts with backend:', error);
+        // Fallback to local contacts if backend sync fails
+        setContacts(processedContacts);
+        await AsyncStorage.setItem('contacts', JSON.stringify(processedContacts));
+      }
     } catch (error) {
       console.error('Error syncing contacts:', error);
     } finally {
@@ -107,7 +165,11 @@ export const ContactsProvider: React.FC<ContactsProviderProps> = ({ children }) 
   };
 
   const refreshContacts = async () => {
-    await syncContacts();
+    if (hasPermission) {
+      await syncContacts();
+    } else {
+      await loadContactsFromBackend();
+    }
   };
 
   const value: ContactsContextType = {
