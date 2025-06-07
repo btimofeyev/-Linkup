@@ -8,8 +8,12 @@ import {
   Alert,
   SafeAreaView,
   ImageBackground,
+  Image,
 } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
+
+const BackgroundImage = require('../../assets/background.png');
+const LogoImage = require('../../assets/linkuplogo.png');
 
 export const PhoneVerificationScreen: React.FC = () => {
   const [step, setStep] = useState<'phone' | 'code'>('phone');
@@ -63,15 +67,16 @@ export const PhoneVerificationScreen: React.FC = () => {
       <SafeAreaView style={styles.container}>
         <ImageBackground
           style={styles.backgroundImage}
-          // source={{ uri: 'your-background-image-url' }} // Add background image here
+          source={BackgroundImage}
         >
           <View style={styles.overlay} />
           <View style={styles.content}>
-            {/* Logo placeholder */}
             <View style={styles.logoContainer}>
-              <View style={styles.logoPlaceholder}>
-                <Text style={styles.logoText}>🔗</Text>
-              </View>
+              <Image
+                source={LogoImage}
+                style={styles.logoImage}
+                resizeMode="contain"
+              />
             </View>
 
             <Text style={styles.title}>Almost There!</Text>
@@ -90,7 +95,7 @@ export const PhoneVerificationScreen: React.FC = () => {
                 keyboardType="number-pad"
                 maxLength={6}
                 autoFocus
-                placeholderTextColor="#94A3B8"
+                placeholderTextColor="#A0AEC0"
               />
             </View>
 
@@ -125,15 +130,16 @@ export const PhoneVerificationScreen: React.FC = () => {
     <SafeAreaView style={styles.container}>
       <ImageBackground
         style={styles.backgroundImage}
-        // source={{ uri: 'your-background-image-url' }} // Add background image here
+        source={BackgroundImage}
       >
         <View style={styles.overlay} />
         <View style={styles.content}>
-          {/* Logo placeholder */}
           <View style={styles.logoContainer}>
-            <View style={styles.logoPlaceholder}>
-              <Text style={styles.logoText}>🔗</Text>
-            </View>
+            <Image
+              source={LogoImage}
+              style={styles.logoImage}
+              resizeMode="contain"
+            />
           </View>
 
           <Text style={styles.title}>Welcome to Linkup</Text>
@@ -151,7 +157,7 @@ export const PhoneVerificationScreen: React.FC = () => {
               placeholder="+1 (555) 123-4567"
               keyboardType="phone-pad"
               autoFocus
-              placeholderTextColor="#94A3B8"
+              placeholderTextColor="#A0AEC0"
             />
           </View>
 
@@ -177,7 +183,7 @@ export const PhoneVerificationScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#FFFBF0', // Soft cream background
   },
   backgroundImage: {
     flex: 1,
@@ -189,7 +195,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(248, 250, 252, 0.85)', // Semi-transparent overlay
+    backgroundColor: 'rgba(255, 251, 235, 0.9)', // Soft warm overlay
   },
   content: {
     flex: 1,
@@ -201,41 +207,33 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 40,
   },
-  logoPlaceholder: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#8B5CF6',
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#8B5CF6',
+  logoImage: {
+    width: 120,
+    height: 120,
+    shadowColor: '#E0B4D6', // Soft lavender shadow
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.2,
     shadowRadius: 20,
     elevation: 12,
-  },
-  logoText: {
-    fontSize: 40,
-    color: '#FFFFFF',
   },
   title: {
     fontSize: 36,
     fontWeight: '700',
     textAlign: 'center',
     marginBottom: 8,
-    color: '#0F172A',
+    color: '#4A5568', // Soft charcoal
   },
   tagline: {
     fontSize: 20,
     fontWeight: '600',
     textAlign: 'center',
-    color: '#8B5CF6',
+    color: '#D6A2E8', // Soft lavender
     marginBottom: 12,
   },
   subtitle: {
     fontSize: 18,
     textAlign: 'center',
-    color: '#64748B',
+    color: '#718096', // Muted blue-gray
     marginBottom: 48,
     lineHeight: 26,
     fontWeight: '400',
@@ -247,20 +245,20 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     marginBottom: 12,
-    color: '#0F172A',
+    color: '#4A5568', // Soft charcoal
   },
   input: {
     borderWidth: 0,
     borderRadius: 20,
     padding: 20,
     fontSize: 18,
-    backgroundColor: '#FFFFFF',
-    shadowColor: '#0F172A',
+    backgroundColor: '#FEFCF7', // Soft cream white
+    shadowColor: '#E2D1C3', // Soft beige shadow
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
+    shadowOpacity: 0.15,
     shadowRadius: 20,
     elevation: 8,
-    color: '#0F172A',
+    color: '#4A5568', // Soft charcoal text
     minHeight: 64,
   },
   codeInput: {
@@ -270,15 +268,15 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   button: {
-    backgroundColor: '#8B5CF6',
+    backgroundColor: '#E6C7D8', // Soft dusty rose
     borderRadius: 20,
     padding: 20,
     alignItems: 'center',
     marginBottom: 32,
     minHeight: 64,
-    shadowColor: '#8B5CF6',
+    shadowColor: '#D6A2E8', // Soft lavender shadow
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.2,
     shadowRadius: 20,
     elevation: 12,
   },
@@ -286,7 +284,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   buttonText: {
-    color: '#FFFFFF',
+    color: '#4A5568', // Soft charcoal for better contrast
     fontSize: 18,
     fontWeight: '700',
   },
@@ -296,7 +294,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   backButtonText: {
-    color: '#64748B',
+    color: '#718096', // Muted blue-gray
     fontSize: 16,
     fontWeight: '500',
   },
@@ -305,14 +303,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   resendButtonText: {
-    color: '#8B5CF6',
+    color: '#D6A2E8', // Soft lavender
     fontSize: 16,
     fontWeight: '600',
   },
   disclaimer: {
     fontSize: 14,
     textAlign: 'center',
-    color: '#64748B',
+    color: '#718096', // Muted blue-gray
     lineHeight: 20,
     fontWeight: '400',
   },
