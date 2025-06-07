@@ -55,7 +55,7 @@ export const CirclesScreen: React.FC = () => {
   };
 
   const getContactCount = (circle: Circle) => {
-    return circle.contactIds.length;
+    return circle.contactIds?.length || 0; 
   };
 
   const renderCircle = ({ item }: { item: Circle }) => (
