@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:3000/api';
+const API_BASE_URL = 'http://192.168.100.96:3000/api';
 
 class ApiService {
   private accessToken: string | null = null;
@@ -13,9 +13,9 @@ class ApiService {
   ): Promise<{ success: boolean; data?: T; error?: string }> {
     const url = `${API_BASE_URL}${endpoint}`;
     
-    const headers = {
+    const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      ...options.headers,
+      ...(options.headers as Record<string, string>),
     };
 
     if (this.accessToken) {
