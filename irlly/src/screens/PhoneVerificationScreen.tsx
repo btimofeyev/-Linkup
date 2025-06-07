@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
 
-const BackgroundImage = require('../../assets/background.png');
+const BackgroundImage = require('../../assets/nybackground.png');
 const LogoImage = require('../../assets/linkuplogo.png');
 
 export const PhoneVerificationScreen: React.FC = () => {
@@ -189,14 +189,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
   },
-  overlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(255, 251, 235, 0.9)', // Soft warm overlay
-  },
+
   content: {
     flex: 1,
     padding: 32,
