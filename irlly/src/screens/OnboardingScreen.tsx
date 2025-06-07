@@ -13,8 +13,10 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 // Try different import methods for better Expo compatibility
 // Using static imports for better bundler resolution
-import BackgroundImage from '../../assets/background.png';
-import LogoImage from '../../assets/linkuplogo.png';
+// import BackgroundImage from '../../assets/background.png';
+// import LogoImage from '../../assets/linkuplogo.png';
+const BackgroundImage = require('../../assets/background.png');
+const LogoImage = require('../../assets/linkuplogo.png');
 
 // Debug the imports
 console.log('BackgroundImage source:', BackgroundImage);
