@@ -11,8 +11,14 @@ import {
   Image,
 } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
-const BackgroundImage = require('../../assets/background.png');
-const LogoImage = require('../../assets/linkuplogo.png');
+// Try different import methods for better Expo compatibility
+// Using static imports for better bundler resolution
+import BackgroundImage from '../../assets/background.png';
+import LogoImage from '../../assets/linkuplogo.png';
+
+// Debug the imports
+console.log('BackgroundImage source:', BackgroundImage);
+console.log('LogoImage source:', LogoImage);
 
 export const OnboardingScreen: React.FC = () => {
   const [step, setStep] = useState<'phone' | 'code'>('phone');
