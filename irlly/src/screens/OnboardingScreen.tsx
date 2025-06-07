@@ -8,8 +8,11 @@ import {
   Alert,
   SafeAreaView,
   ImageBackground,
+  Image,
 } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
+const BackgroundImage = require('../../assets/background.png');
+const LogoImage = require('../../assets/linkuplogo.png');
 
 export const OnboardingScreen: React.FC = () => {
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -36,15 +39,17 @@ export const OnboardingScreen: React.FC = () => {
     <SafeAreaView style={styles.container}>
       <ImageBackground
         style={styles.backgroundImage}
-        // source={{ uri: 'your-background-image-url' }} // Add background image here
+        source={BackgroundImage}
       >
         <View style={styles.overlay} />
         <View style={styles.content}>
           {/* Logo placeholder */}
           <View style={styles.logoContainer}>
-            <View style={styles.logoPlaceholder}>
-              <Text style={styles.logoText}>🔗</Text>
-            </View>
+            <Image
+              source={LogoImage}
+              style={styles.logoImage}
+              resizeMode="contain"
+            />
           </View>
 
           <Text style={styles.title}>Welcome to Linkup</Text>
@@ -112,7 +117,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 40,
   },
-  logoPlaceholder: {
+  logoImage: {
     width: 80,
     height: 80,
     borderRadius: 40,
@@ -124,10 +129,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 20,
     elevation: 12,
-  },
-  logoText: {
-    fontSize: 40,
-    color: '#FFFFFF',
   },
   title: {
     fontSize: 36,
