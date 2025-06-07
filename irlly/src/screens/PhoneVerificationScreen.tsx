@@ -9,11 +9,14 @@ import {
   SafeAreaView,
   ImageBackground,
   Image,
+  KeyboardAvoidingView,
+  ScrollView,
+  Platform,
 } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
 
 const BackgroundImage = require('../../assets/nybackground.png');
-const LogoImage = require('../../assets/linkuplogo.png');
+const LogoImage = require('../../assets/link_logo.png');
 
 export const PhoneVerificationScreen: React.FC = () => {
   const [step, setStep] = useState<'phone' | 'code'>('phone');
@@ -70,57 +73,69 @@ export const PhoneVerificationScreen: React.FC = () => {
           source={BackgroundImage}
         >
           <View style={styles.overlay} />
-          <View style={styles.content}>
-            <View style={styles.logoContainer}>
-              <Image
-                source={LogoImage}
-                style={styles.logoImage}
-                resizeMode="contain"
-              />
-            </View>
-
-            <Text style={styles.title}>Almost There!</Text>
-            <Text style={styles.tagline}>Real connections await</Text>
-            <Text style={styles.subtitle}>
-              Enter the 6-digit code we sent to {phoneNumber}
-            </Text>
-
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Verification Code</Text>
-              <TextInput
-                style={[styles.input, styles.codeInput]}
-                value={verificationCode}
-                onChangeText={setVerificationCode}
-                placeholder="123456"
-                keyboardType="number-pad"
-                maxLength={6}
-                autoFocus
-                placeholderTextColor="#A0AEC0"
-              />
-            </View>
-
-            <TouchableOpacity
-              style={[styles.button, isLoading && styles.buttonDisabled]}
-              onPress={handleVerifyCode}
-              disabled={isLoading}
+          <KeyboardAvoidingView
+            style={styles.keyboardAvoidingView}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+          >
+            <ScrollView
+              contentContainerStyle={styles.scrollContent}
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
             >
-              <Text style={styles.buttonText}>
-                {isLoading ? 'Verifying...' : 'Join the Movement'}
-              </Text>
-            </TouchableOpacity>
+              <View style={styles.content}>
+                <View style={styles.logoContainer}>
+                  <Image
+                    source={LogoImage}
+                    style={styles.logoImage}
+                    resizeMode="contain"
+                  />
+                </View>
 
-            <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-              <Text style={styles.backButtonText}>Change Phone Number</Text>
-            </TouchableOpacity>
+                <Text style={styles.title}>Almost There!</Text>
+                <Text style={styles.tagline}>Real connections await</Text>
+                <Text style={styles.subtitle}>
+                  Enter the 6-digit code we sent to {phoneNumber}
+                </Text>
 
-            <TouchableOpacity
-              style={styles.resendButton}
-              onPress={handleSendCode}
-              disabled={isLoading}
-            >
-              <Text style={styles.resendButtonText}>Resend Code</Text>
-            </TouchableOpacity>
-          </View>
+                <View style={styles.inputContainer}>
+                  <Text style={styles.label}>Verification Code</Text>
+                  <TextInput
+                    style={[styles.input, styles.codeInput]}
+                    value={verificationCode}
+                    onChangeText={setVerificationCode}
+                    placeholder="123456"
+                    keyboardType="number-pad"
+                    maxLength={6}
+                    autoFocus
+                    placeholderTextColor="#A0AEC0"
+                  />
+                </View>
+
+                <TouchableOpacity
+                  style={[styles.button, isLoading && styles.buttonDisabled]}
+                  onPress={handleVerifyCode}
+                  disabled={isLoading}
+                >
+                  <Text style={styles.buttonText}>
+                    {isLoading ? 'Verifying...' : 'Join the Movement'}
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.backButton} onPress={handleBack}>
+                  <Text style={styles.backButtonText}>Change Phone Number</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.resendButton}
+                  onPress={handleSendCode}
+                  disabled={isLoading}
+                >
+                  <Text style={styles.resendButtonText}>Resend Code</Text>
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
+          </KeyboardAvoidingView>
         </ImageBackground>
       </SafeAreaView>
     );
@@ -133,48 +148,60 @@ export const PhoneVerificationScreen: React.FC = () => {
         source={BackgroundImage}
       >
         <View style={styles.overlay} />
-        <View style={styles.content}>
-          <View style={styles.logoContainer}>
-            <Image
-              source={LogoImage}
-              style={styles.logoImage}
-              resizeMode="contain"
-            />
-          </View>
-
-          <Text style={styles.title}>Welcome to Linkup</Text>
-          <Text style={styles.tagline}>Break free from endless scrolling</Text>
-          <Text style={styles.subtitle}>
-            Skip the DMs. Make real plans with real friends in real time.
-          </Text>
-
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Phone Number</Text>
-            <TextInput
-              style={styles.input}
-              value={phoneNumber}
-              onChangeText={setPhoneNumber}
-              placeholder="+1 (555) 123-4567"
-              keyboardType="phone-pad"
-              autoFocus
-              placeholderTextColor="#A0AEC0"
-            />
-          </View>
-
-          <TouchableOpacity
-            style={[styles.button, isLoading && styles.buttonDisabled]}
-            onPress={handleSendCode}
-            disabled={isLoading}
+        <KeyboardAvoidingView
+          style={styles.keyboardAvoidingView}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+        >
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
           >
-            <Text style={styles.buttonText}>
-              {isLoading ? 'Sending...' : 'Start Connecting IRL'}
-            </Text>
-          </TouchableOpacity>
+            <View style={styles.content}>
+              <View style={styles.logoContainer}>
+                <Image
+                  source={LogoImage}
+                  style={styles.logoImage}
+                  resizeMode="contain"
+                />
+              </View>
 
-          <Text style={styles.disclaimer}>
-            By continuing, you agree to our Terms of Service and Privacy Policy
-          </Text>
-        </View>
+              <Text style={styles.title}>Welcome to Linkup</Text>
+              <Text style={styles.tagline}>Break free from endless scrolling</Text>
+              <Text style={styles.subtitle}>
+                Skip the DMs. Make real plans with real friends in real time.
+              </Text>
+
+              <View style={styles.inputContainer}>
+                <Text style={styles.label}>Phone Number</Text>
+                <TextInput
+                  style={styles.input}
+                  value={phoneNumber}
+                  onChangeText={setPhoneNumber}
+                  placeholder="+1 (555) 123-4567"
+                  keyboardType="phone-pad"
+                  autoFocus
+                  placeholderTextColor="#A0AEC0"
+                />
+              </View>
+
+              <TouchableOpacity
+                style={[styles.button, isLoading && styles.buttonDisabled]}
+                onPress={handleSendCode}
+                disabled={isLoading}
+              >
+                <Text style={styles.buttonText}>
+                  {isLoading ? 'Sending...' : 'Start Connecting IRL'}
+                </Text>
+              </TouchableOpacity>
+
+              <Text style={styles.disclaimer}>
+                By continuing, you agree to our Terms of Service and Privacy Policy
+              </Text>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
       </ImageBackground>
     </SafeAreaView>
   );
@@ -183,7 +210,7 @@ export const PhoneVerificationScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF8F0', // Soft cream background
+    backgroundColor: '#FFF8F0',
   },
   backgroundImage: {
     flex: 1,
@@ -195,7 +222,15 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(255, 248, 240, 0.85)', // Semi-transparent cream overlay for better text visibility
+    backgroundColor: 'transparent',
+  },
+  keyboardAvoidingView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    minHeight: '100%',
   },
   content: {
     flex: 1,
@@ -205,73 +240,73 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     alignItems: 'center',
-    marginBottom: 40,
   },
   logoImage: {
-    width: 120,
-    height: 120,
-    shadowColor: '#FFB366', // Pastel orange shadow
+    width: 150,
+    height: 150,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.2,
-    shadowRadius: 20,
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
     elevation: 12,
   },
   title: {
-    fontSize: 36,
+    fontSize: 32,
     fontWeight: '700',
     textAlign: 'center',
-    marginBottom: 8,
-    color: '#2D3748', // Dark charcoal for better contrast
-    textShadowColor: 'rgba(255, 248, 240, 0.8)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 2,
+    marginBottom: 12,
+    color: '#FFFFFF',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
   },
   tagline: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '600',
     textAlign: 'center',
-    color: '#ED8936', // Warm orange
-    marginBottom: 12,
-    textShadowColor: 'rgba(255, 248, 240, 0.8)',
-    textShadowOffset: { width: 1, height: 1 },
+    color: '#FDB366',
+    marginBottom: 16,
+    textShadowColor: 'rgba(0, 0, 0, 0.2)',
+    textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
   },
   subtitle: {
-    fontSize: 18,
+    fontSize: 16,
     textAlign: 'center',
-    color: '#4A5568', // Darker gray for better visibility
+    color: '#FFFFFF',
     marginBottom: 48,
-    lineHeight: 26,
+    lineHeight: 24,
     fontWeight: '500',
-    textShadowColor: 'rgba(255, 248, 240, 0.8)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 2,
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
+    paddingHorizontal: 8,
   },
   inputContainer: {
     marginBottom: 32,
   },
   label: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600',
     marginBottom: 12,
-    color: '#2D3748', // Dark charcoal
-    textShadowColor: 'rgba(255, 248, 240, 0.8)',
-    textShadowOffset: { width: 1, height: 1 },
+    color: '#FFFFFF',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
   },
   input: {
     borderWidth: 0,
-    borderRadius: 20,
+    borderRadius: 25,
     padding: 20,
-    fontSize: 18,
-    backgroundColor: '#FFFAF5', // Light cream white
-    shadowColor: '#FFB366', // Pastel orange shadow
+    fontSize: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    color: '#2D3748',
+    minHeight: 60,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 20,
-    elevation: 8,
-    color: '#2D3748', // Dark charcoal text
-    minHeight: 64,
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
   },
   codeInput: {
     textAlign: 'center',
@@ -280,23 +315,23 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   button: {
-    backgroundColor: '#FDB366', // Pastel orange
-    borderRadius: 20,
-    padding: 20,
+    backgroundColor: '#FDB366',
+    borderRadius: 25,
+    padding: 18,
     alignItems: 'center',
     marginBottom: 32,
-    minHeight: 64,
-    shadowColor: '#ED8936', // Warm orange shadow
-    shadowOffset: { width: 0, height: 8 },
+    minHeight: 56,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.2,
-    shadowRadius: 20,
-    elevation: 12,
+    shadowRadius: 12,
+    elevation: 8,
   },
   buttonDisabled: {
     opacity: 0.6,
   },
   buttonText: {
-    color: '#FFFFFF', // White text for better contrast on orange
+    color: '#FFFFFF',
     fontSize: 18,
     fontWeight: '700',
   },
@@ -306,11 +341,11 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   backButtonText: {
-    color: '#4A5568', // Darker gray for better visibility
+    color: 'rgba(255, 255, 255, 0.9)',
     fontSize: 16,
-    fontWeight: '500',
-    textShadowColor: 'rgba(255, 248, 240, 0.8)',
-    textShadowOffset: { width: 1, height: 1 },
+    fontWeight: '600',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
   },
   resendButton: {
@@ -318,21 +353,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   resendButtonText: {
-    color: '#ED8936', // Warm orange
+    color: '#FDB366',
     fontSize: 16,
-    fontWeight: '600',
-    textShadowColor: 'rgba(255, 248, 240, 0.8)',
-    textShadowOffset: { width: 1, height: 1 },
+    fontWeight: '700',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
   },
   disclaimer: {
-    fontSize: 14,
+    fontSize: 13,
     textAlign: 'center',
-    color: '#4A5568', // Darker gray for better visibility
-    lineHeight: 20,
-    fontWeight: '400',
-    textShadowColor: 'rgba(255, 248, 240, 0.8)',
-    textShadowOffset: { width: 1, height: 1 },
+    color: 'rgba(255, 255, 255, 0.85)',
+    lineHeight: 18,
+    fontWeight: '500',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
+    paddingHorizontal: 16,
   },
 });
