@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Alert,
   SafeAreaView,
+  ImageBackground,
 } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -33,38 +34,53 @@ export const OnboardingScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
-        <Text style={styles.title}>Welcome to IRLly</Text>
-        <Text style={styles.subtitle}>
-          Connect with friends and make spontaneous plans
-        </Text>
+      <ImageBackground
+        style={styles.backgroundImage}
+        // source={{ uri: 'your-background-image-url' }} // Add background image here
+      >
+        <View style={styles.overlay} />
+        <View style={styles.content}>
+          {/* Logo placeholder */}
+          <View style={styles.logoContainer}>
+            <View style={styles.logoPlaceholder}>
+              <Text style={styles.logoText}>🔗</Text>
+            </View>
+          </View>
 
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Phone Number</Text>
-          <TextInput
-            style={styles.input}
-            value={phoneNumber}
-            onChangeText={setPhoneNumber}
-            placeholder="+1 (555) 123-4567"
-            keyboardType="phone-pad"
-            autoFocus
-          />
-        </View>
-
-        <TouchableOpacity
-          style={[styles.button, isLoading && styles.buttonDisabled]}
-          onPress={handleLogin}
-          disabled={isLoading}
-        >
-          <Text style={styles.buttonText}>
-            {isLoading ? 'Signing In...' : 'Get Started'}
+          <Text style={styles.title}>Welcome to Linkup</Text>
+          <Text style={styles.tagline}>Break free from endless scrolling</Text>
+          <Text style={styles.subtitle}>
+            Skip the DMs. Make real plans with real friends in real time.
           </Text>
-        </TouchableOpacity>
 
-        <Text style={styles.disclaimer}>
-          By continuing, you agree to our Terms of Service and Privacy Policy
-        </Text>
-      </View>
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Phone Number</Text>
+            <TextInput
+              style={styles.input}
+              value={phoneNumber}
+              onChangeText={setPhoneNumber}
+              placeholder="+1 (555) 123-4567"
+              keyboardType="phone-pad"
+              autoFocus
+              placeholderTextColor="#94A3B8"
+            />
+          </View>
+
+          <TouchableOpacity
+            style={[styles.button, isLoading && styles.buttonDisabled]}
+            onPress={handleLogin}
+            disabled={isLoading}
+          >
+            <Text style={styles.buttonText}>
+              {isLoading ? 'Signing In...' : 'Start Connecting IRL'}
+            </Text>
+          </TouchableOpacity>
+
+          <Text style={styles.disclaimer}>
+            By continuing, you agree to our Terms of Service and Privacy Policy
+          </Text>
+        </View>
+      </ImageBackground>
     </SafeAreaView>
   );
 };
@@ -72,61 +88,118 @@ export const OnboardingScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#F8FAFC',
+  },
+  backgroundImage: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  overlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(248, 250, 252, 0.85)', // Semi-transparent overlay
   },
   content: {
     flex: 1,
-    padding: 24,
+    padding: 32,
     justifyContent: 'center',
+    zIndex: 1,
+  },
+  logoContainer: {
+    alignItems: 'center',
+    marginBottom: 40,
+  },
+  logoPlaceholder: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#8B5CF6',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#8B5CF6',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 12,
+  },
+  logoText: {
+    fontSize: 40,
+    color: '#FFFFFF',
   },
   title: {
-    fontSize: 32,
-    fontWeight: 'bold',
+    fontSize: 36,
+    fontWeight: '700',
     textAlign: 'center',
     marginBottom: 8,
-    color: '#1a1a1a',
+    color: '#0F172A',
+  },
+  tagline: {
+    fontSize: 20,
+    fontWeight: '600',
+    textAlign: 'center',
+    color: '#8B5CF6',
+    marginBottom: 12,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 18,
     textAlign: 'center',
-    color: '#666',
+    color: '#64748B',
     marginBottom: 48,
+    lineHeight: 26,
+    fontWeight: '400',
   },
   inputContainer: {
     marginBottom: 32,
   },
   label: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
-    marginBottom: 8,
-    color: '#1a1a1a',
+    marginBottom: 12,
+    color: '#0F172A',
   },
   input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 12,
-    padding: 16,
-    fontSize: 16,
+    borderWidth: 0,
+    borderRadius: 20,
+    padding: 20,
+    fontSize: 18,
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 20,
+    elevation: 8,
+    color: '#0F172A',
+    minHeight: 64,
   },
   button: {
-    backgroundColor: '#007AFF',
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: '#8B5CF6',
+    borderRadius: 20,
+    padding: 20,
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 32,
+    minHeight: 64,
+    shadowColor: '#8B5CF6',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 12,
   },
   buttonDisabled: {
     opacity: 0.6,
   },
   buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '700',
   },
   disclaimer: {
-    fontSize: 12,
+    fontSize: 14,
     textAlign: 'center',
-    color: '#666',
-    lineHeight: 18,
+    color: '#64748B',
+    lineHeight: 20,
+    fontWeight: '400',
   },
 });
