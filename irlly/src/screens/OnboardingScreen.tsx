@@ -65,6 +65,8 @@ export const OnboardingScreen: React.FC = () => {
         <ImageBackground
           style={styles.backgroundImage}
           source={BackgroundImage}
+          onError={(error) => console.log('Background image load error:', error)}
+          onLoad={() => console.log('Background image loaded successfully')}
         >
           <View style={styles.overlay} />
           <View style={styles.content}>
@@ -73,6 +75,8 @@ export const OnboardingScreen: React.FC = () => {
                 source={LogoImage}
                 style={styles.logoImage}
                 resizeMode="contain"
+                onError={(error) => console.log('Logo load error:', error)}
+                onLoad={() => console.log('Logo loaded successfully')}
               />
             </View>
             <Text style={styles.title}>Almost There!</Text>
@@ -123,6 +127,8 @@ export const OnboardingScreen: React.FC = () => {
       <ImageBackground
         style={styles.backgroundImage}
         source={BackgroundImage}
+        onError={(error) => console.log('Background image load error:', error)}
+        onLoad={() => console.log('Background image loaded successfully')}
       >
         <View style={styles.overlay} />
         <View style={styles.content}>
@@ -131,6 +137,8 @@ export const OnboardingScreen: React.FC = () => {
               source={LogoImage}
               style={styles.logoImage}
               resizeMode="contain"
+              onError={(error) => console.log('Logo load error:', error)}
+              onLoad={() => console.log('Logo loaded successfully')}
             />
           </View>
           <Text style={styles.title}>Welcome to Linkup</Text>
@@ -183,7 +191,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(248, 250, 252, 0.85)', // Semi-transparent overlay
+    backgroundColor: 'rgba(255, 255, 255, 0.7)', // Light overlay to improve text readability
   },
   content: {
     flex: 1,
