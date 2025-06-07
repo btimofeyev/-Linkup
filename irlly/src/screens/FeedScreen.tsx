@@ -7,6 +7,7 @@ import {
   StyleSheet,
   SafeAreaView,
   RefreshControl,
+  Alert,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { FeedItem, ScheduledMeetup } from '../types';
@@ -16,7 +17,7 @@ import { apiService } from '../services/apiService';
 export const FeedScreen: React.FC = () => {
   const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
 
   useFocusEffect(
     React.useCallback(() => {
@@ -85,6 +86,23 @@ export const FeedScreen: React.FC = () => {
     }
   };
 
+  const handleLogout = () => {
+    Alert.alert(
+      'Sign Out',
+      'Are you sure you want to sign out?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Sign Out', 
+          style: 'destructive',
+          onPress: async () => {
+            await logout();
+          }
+        },
+      ]
+    );
+  };
+
   const renderFeedItem = ({ item }: { item: FeedItem }) => (
     <View style={styles.feedItem}>
       <View style={styles.itemHeader}>
@@ -143,6 +161,12 @@ export const FeedScreen: React.FC = () => {
       <View style={styles.content}>
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Linkup</Text>
+          <TouchableOpacity
+            style={styles.logoutButton}
+            onPress={handleLogout}
+          >
+            <Text style={styles.logoutButtonText}>Sign Out</Text>
+          </TouchableOpacity>
         </View>
         
         <FlatList
@@ -178,6 +202,9 @@ const styles = StyleSheet.create({
     paddingTop: 24, // More space below SafeAreaView
   },
   header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     padding: 16,
     paddingTop: 24,
     paddingBottom: 12,
@@ -188,6 +215,22 @@ const styles = StyleSheet.create({
     fontWeight: '700', // Bold
     color: '#0F172A', // Modern dark slate
     fontFamily: 'System',
+  },
+  logoutButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 12,
+    backgroundColor: '#EF4444',
+    shadowColor: '#EF4444',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  logoutButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
   },
   list: {
     flex: 1,

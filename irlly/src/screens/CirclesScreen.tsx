@@ -9,15 +9,18 @@ import {
   Alert,
   Modal,
   TextInput,
+  ScrollView,
 } from 'react-native';
 import { useCircles } from '../contexts/CirclesContext';
 import { useContacts } from '../contexts/ContactsContext';
-import { Circle } from '../types';
+import { Circle, Contact } from '../types';
 
 export const CirclesScreen: React.FC = () => {
-  const { circles, createCircle, deleteCircle } = useCircles();
+  const { circles, createCircle, deleteCircle, addContactsToCircle, removeContactFromCircle } = useCircles();
   const { contacts } = useContacts();
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
+  const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
+  const [selectedCircle, setSelectedCircle] = useState<Circle | null>(null);
   const [newCircleName, setNewCircleName] = useState('');
   const [selectedEmoji, setSelectedEmoji] = useState('👥');
 
@@ -54,12 +57,42 @@ export const CirclesScreen: React.FC = () => {
     );
   };
 
+  const handleCirclePress = (circle: Circle) => {
+    setSelectedCircle(circle);
+    setIsDetailModalVisible(true);
+  };
+
+  const handleAddContact = (contactId: string) => {
+    if (selectedCircle) {
+      addContactsToCircle(selectedCircle.id, [contactId]);
+      // Update local state to reflect the change
+      setSelectedCircle({
+        ...selectedCircle,
+        contactIds: [...selectedCircle.contactIds, contactId]
+      });
+    }
+  };
+
+  const handleRemoveContact = (contactId: string) => {
+    if (selectedCircle) {
+      removeContactFromCircle(selectedCircle.id, contactId);
+      // Update local state to reflect the change
+      setSelectedCircle({
+        ...selectedCircle,
+        contactIds: selectedCircle.contactIds.filter(id => id !== contactId)
+      });
+    }
+  };
+
   const getContactCount = (circle: Circle) => {
     return circle.contactIds?.length || 0; 
   };
 
   const renderCircle = ({ item }: { item: Circle }) => (
-    <TouchableOpacity style={styles.circleItem}>
+    <TouchableOpacity 
+      style={styles.circleItem}
+      onPress={() => handleCirclePress(item)}
+    >
       <View style={styles.circleContent}>
         <View style={styles.circleHeader}>
           <Text style={styles.circleEmoji}>{item.emoji}</Text>
@@ -167,6 +200,57 @@ export const CirclesScreen: React.FC = () => {
               </View>
             </View>
           </View>
+        </SafeAreaView>
+      </Modal>
+
+      <Modal
+        visible={isDetailModalVisible}
+        animationType="slide"
+        presentationStyle="pageSheet"
+      >
+        <SafeAreaView style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <TouchableOpacity onPress={() => setIsDetailModalVisible(false)}>
+              <Text style={styles.modalCancelText}>Done</Text>
+            </TouchableOpacity>
+            <Text style={styles.modalTitle}>
+              {selectedCircle?.emoji} {selectedCircle?.name}
+            </Text>
+            <View style={{ width: 50 }} />
+          </View>
+
+          <ScrollView style={styles.modalContent}>
+            <Text style={styles.sectionTitle}>Members ({selectedCircle?.contactIds?.length || 0})</Text>
+            
+            {selectedCircle?.contactIds?.map(contactId => {
+              const contact = contacts.find(c => c.id === contactId);
+              return contact ? (
+                <View key={contactId} style={styles.memberItem}>
+                  <Text style={styles.memberName}>{contact.name}</Text>
+                  <TouchableOpacity
+                    style={styles.removeButton}
+                    onPress={() => handleRemoveContact(contactId)}
+                  >
+                    <Text style={styles.removeButtonText}>Remove</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : null;
+            })}
+
+            <Text style={styles.sectionTitle}>Add Contacts</Text>
+            {contacts
+              .filter(contact => !selectedCircle?.contactIds?.includes(contact.id))
+              .map(contact => (
+                <TouchableOpacity
+                  key={contact.id}
+                  style={styles.contactItem}
+                  onPress={() => handleAddContact(contact.id)}
+                >
+                  <Text style={styles.contactName}>{contact.name}</Text>
+                  <Text style={styles.addButtonText}>+</Text>
+                </TouchableOpacity>
+              ))}
+          </ScrollView>
         </SafeAreaView>
       </Modal>
     </SafeAreaView>
@@ -410,5 +494,63 @@ const styles = StyleSheet.create({
   },
   emojiText: {
     fontSize: 26,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#0F172A',
+    marginTop: 20,
+    marginBottom: 12,
+  },
+  memberItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    marginBottom: 8,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  memberName: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#0F172A',
+  },
+  removeButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: '#EF4444',
+    borderRadius: 8,
+  },
+  removeButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  contactItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    marginBottom: 8,
+    backgroundColor: '#F1F5F9',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  contactName: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#0F172A',
+  },
+  addButtonText: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#8B5CF6',
   },
 });
