@@ -70,7 +70,7 @@ export const ContactsPermissionScreen: React.FC<ContactsPermissionScreenProps> =
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#FFF8F0',
   },
   content: {
     flex: 1,
@@ -87,12 +87,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 16,
-    color: '#1a1a1a',
+    color: '#2D3748',
   },
   subtitle: {
     fontSize: 16,
     textAlign: 'center',
-    color: '#666',
+    color: '#4A5568',
     lineHeight: 24,
     marginBottom: 48,
   },
@@ -111,21 +111,27 @@ const styles = StyleSheet.create({
   },
   benefitText: {
     fontSize: 16,
-    color: '#1a1a1a',
+    color: '#2D3748',
     flex: 1,
   },
   allowButton: {
-    backgroundColor: '#007AFF',
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: '#FDB366',
+    borderRadius: 20,
+    padding: 20,
     alignItems: 'center',
     width: '100%',
     marginBottom: 16,
+    shadowColor: '#ED8936',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
+    elevation: 8,
+    minHeight: 64,
   },
   allowButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '700',
   },
   skipButton: {
     padding: 16,
@@ -134,13 +140,13 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   skipButtonText: {
-    color: '#666',
+    color: '#4A5568',
     fontSize: 16,
   },
   disclaimer: {
     fontSize: 12,
     textAlign: 'center',
-    color: '#999',
+    color: '#4A5568',
     lineHeight: 18,
   },
 });

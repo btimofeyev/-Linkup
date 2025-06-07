@@ -183,13 +183,20 @@ export const PhoneVerificationScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFBF0', // Soft cream background
+    backgroundColor: '#FFF8F0', // Soft cream background
   },
   backgroundImage: {
     flex: 1,
     justifyContent: 'center',
   },
-
+  overlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(255, 248, 240, 0.85)', // Semi-transparent cream overlay for better text visibility
+  },
   content: {
     flex: 1,
     padding: 32,
@@ -203,7 +210,7 @@ const styles = StyleSheet.create({
   logoImage: {
     width: 120,
     height: 120,
-    shadowColor: '#E0B4D6', // Soft lavender shadow
+    shadowColor: '#FFB366', // Pastel orange shadow
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.2,
     shadowRadius: 20,
@@ -214,22 +221,31 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     textAlign: 'center',
     marginBottom: 8,
-    color: '#4A5568', // Soft charcoal
+    color: '#2D3748', // Dark charcoal for better contrast
+    textShadowColor: 'rgba(255, 248, 240, 0.8)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
   },
   tagline: {
     fontSize: 20,
     fontWeight: '600',
     textAlign: 'center',
-    color: '#D6A2E8', // Soft lavender
+    color: '#ED8936', // Warm orange
     marginBottom: 12,
+    textShadowColor: 'rgba(255, 248, 240, 0.8)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
   },
   subtitle: {
     fontSize: 18,
     textAlign: 'center',
-    color: '#718096', // Muted blue-gray
+    color: '#4A5568', // Darker gray for better visibility
     marginBottom: 48,
     lineHeight: 26,
-    fontWeight: '400',
+    fontWeight: '500',
+    textShadowColor: 'rgba(255, 248, 240, 0.8)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
   },
   inputContainer: {
     marginBottom: 32,
@@ -238,20 +254,23 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     marginBottom: 12,
-    color: '#4A5568', // Soft charcoal
+    color: '#2D3748', // Dark charcoal
+    textShadowColor: 'rgba(255, 248, 240, 0.8)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
   },
   input: {
     borderWidth: 0,
     borderRadius: 20,
     padding: 20,
     fontSize: 18,
-    backgroundColor: '#FEFCF7', // Soft cream white
-    shadowColor: '#E2D1C3', // Soft beige shadow
+    backgroundColor: '#FFFAF5', // Light cream white
+    shadowColor: '#FFB366', // Pastel orange shadow
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 20,
     elevation: 8,
-    color: '#4A5568', // Soft charcoal text
+    color: '#2D3748', // Dark charcoal text
     minHeight: 64,
   },
   codeInput: {
@@ -261,13 +280,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   button: {
-    backgroundColor: '#E6C7D8', // Soft dusty rose
+    backgroundColor: '#FDB366', // Pastel orange
     borderRadius: 20,
     padding: 20,
     alignItems: 'center',
     marginBottom: 32,
     minHeight: 64,
-    shadowColor: '#D6A2E8', // Soft lavender shadow
+    shadowColor: '#ED8936', // Warm orange shadow
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.2,
     shadowRadius: 20,
@@ -277,7 +296,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   buttonText: {
-    color: '#4A5568', // Soft charcoal for better contrast
+    color: '#FFFFFF', // White text for better contrast on orange
     fontSize: 18,
     fontWeight: '700',
   },
@@ -287,24 +306,33 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   backButtonText: {
-    color: '#718096', // Muted blue-gray
+    color: '#4A5568', // Darker gray for better visibility
     fontSize: 16,
     fontWeight: '500',
+    textShadowColor: 'rgba(255, 248, 240, 0.8)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
   },
   resendButton: {
     padding: 12,
     alignItems: 'center',
   },
   resendButtonText: {
-    color: '#D6A2E8', // Soft lavender
+    color: '#ED8936', // Warm orange
     fontSize: 16,
     fontWeight: '600',
+    textShadowColor: 'rgba(255, 248, 240, 0.8)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
   },
   disclaimer: {
     fontSize: 14,
     textAlign: 'center',
-    color: '#718096', // Muted blue-gray
+    color: '#4A5568', // Darker gray for better visibility
     lineHeight: 20,
     fontWeight: '400',
+    textShadowColor: 'rgba(255, 248, 240, 0.8)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
   },
 });

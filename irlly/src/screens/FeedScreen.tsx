@@ -195,7 +195,7 @@ export const FeedScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC', // Modern light background
+    backgroundColor: '#FFF8F0', // Soft cream background
   },
   content: {
     flex: 1,
@@ -213,7 +213,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 32,
     fontWeight: '700', // Bold
-    color: '#0F172A', // Modern dark slate
+    color: '#2D3748', // Dark charcoal
     fontFamily: 'System',
   },
   logoutButton: {
@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
   itemTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#0F172A',
+    color: '#2D3748',
     flex: 1,
     marginRight: 12,
     lineHeight: 26,
@@ -269,7 +269,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#FFFFFF',
     fontWeight: '600',
-    backgroundColor: '#8B5CF6', // Modern purple
+    backgroundColor: '#ED8936', // Warm orange
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
@@ -301,7 +301,7 @@ const styles = StyleSheet.create({
   },
   itemAttendees: {
     fontSize: 14,
-    color: '#8B5CF6',
+    color: '#ED8936',
     fontWeight: '600',
   },
   emptyState: {
@@ -313,7 +313,7 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#0F172A',
+    color: '#2D3748',
     marginBottom: 8,
     textAlign: 'center',
   },

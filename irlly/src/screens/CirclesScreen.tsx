@@ -260,7 +260,7 @@ export const CirclesScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#FFF8F0',
   },
   wrapper: {
     flex: 1,
@@ -277,16 +277,16 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 32,
     fontWeight: '700',
-    color: '#0F172A',
+    color: '#2D3748',
   },
   addButton: {
     width: 42,
     height: 42,
     borderRadius: 21,
-    backgroundColor: '#8B5CF6',
+    backgroundColor: '#FDB366',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#8B5CF6',
+    shadowColor: '#ED8936',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 16,
@@ -345,7 +345,7 @@ const styles = StyleSheet.create({
   circleName: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#0F172A',
+    color: '#2D3748',
     marginBottom: 4,
   },
   circleCount: {
@@ -381,11 +381,11 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#8B5CF6',
+    backgroundColor: '#FDB366',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 24,
-    shadowColor: '#8B5CF6',
+    shadowColor: '#ED8936',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,
     shadowRadius: 20,
@@ -399,7 +399,7 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#0F172A',
+    color: '#2D3748',
     marginBottom: 8,
     textAlign: 'center',
   },
@@ -412,7 +412,7 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#FFF8F0',
   },
   modalHeader: {
     flexDirection: 'row',
@@ -436,11 +436,11 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#0F172A',
+    color: '#2D3748',
   },
   modalCreateText: {
     fontSize: 17,
-    color: '#8B5CF6',
+    color: '#ED8936',
     fontWeight: '600',
   },
   modalContent: {
@@ -453,7 +453,7 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: 17,
     fontWeight: '600',
-    color: '#0F172A',
+    color: '#2D3748',
     marginBottom: 10,
   },
   input: {
@@ -467,7 +467,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.06,
     shadowRadius: 20,
     elevation: 6,
-    color: '#0F172A',
+    color: '#2D3748',
     minHeight: 56,
   },
   emojiContainer: {
@@ -489,7 +489,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   emojiButtonSelected: {
-    backgroundColor: '#8B5CF6',
+    backgroundColor: '#FDB366',
     shadowOpacity: 0.12,
   },
   emojiText: {
@@ -498,7 +498,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#0F172A',
+    color: '#2D3748',
     marginTop: 20,
     marginBottom: 12,
   },
@@ -519,7 +519,7 @@ const styles = StyleSheet.create({
   memberName: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#0F172A',
+    color: '#2D3748',
   },
   removeButton: {
     paddingHorizontal: 12,
@@ -546,7 +546,7 @@ const styles = StyleSheet.create({
   contactName: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#0F172A',
+    color: '#2D3748',
   },
 
 });

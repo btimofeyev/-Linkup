@@ -280,7 +280,7 @@ export const ScheduleMeetupScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#FFF8F0',
   },
   wrapper: {
     flex: 1,
@@ -294,7 +294,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: '700',
-    color: '#0F172A',
+    color: '#2D3748',
     marginBottom: 6,
   },
   subtitle: {
@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 17,
     fontWeight: '600',
-    color: '#0F172A',
+    color: '#2D3748',
     marginBottom: 10,
   },
   sublabel: {
@@ -325,12 +325,12 @@ const styles = StyleSheet.create({
     padding: 18,
     fontSize: 16,
     backgroundColor: '#FFFFFF',
-    shadowColor: '#0F172A',
+    shadowColor: '#2D3748',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.06,
     shadowRadius: 20,
     elevation: 6,
-    color: '#0F172A',
+    color: '#2D3748',
     minHeight: 56,
   },
   textArea: {
@@ -346,7 +346,7 @@ const styles = StyleSheet.create({
     padding: 18,
     borderRadius: 20,
     backgroundColor: '#FFFFFF',
-    shadowColor: '#0F172A',
+    shadowColor: '#2D3748',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.06,
     shadowRadius: 20,
@@ -356,7 +356,7 @@ const styles = StyleSheet.create({
   },
   dateTimeText: {
     fontSize: 16,
-    color: '#0F172A',
+    color: '#2D3748',
     textAlign: 'center',
     fontWeight: '600',
   },
@@ -387,7 +387,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     borderRadius: 20,
     backgroundColor: '#FFFFFF',
-    shadowColor: '#0F172A',
+    shadowColor: '#2D3748',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
     shadowRadius: 20,
@@ -395,9 +395,9 @@ const styles = StyleSheet.create({
     minHeight: 68,
   },
   circleOptionSelected: {
-    backgroundColor: '#EDE9FE',
+    backgroundColor: '#FFF2E8',
     borderWidth: 2,
-    borderColor: '#8B5CF6',
+    borderColor: '#ED8936',
     shadowOpacity: 0.08,
   },
   circleOptionContent: {
@@ -411,7 +411,7 @@ const styles = StyleSheet.create({
   },
   circleName: {
     fontSize: 17,
-    color: '#0F172A',
+    color: '#2D3748',
     fontWeight: '600',
   },
   checkbox: {
@@ -425,8 +425,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   checkboxSelected: {
-    borderColor: '#8B5CF6',
-    backgroundColor: '#8B5CF6',
+    borderColor: '#ED8936',
+    backgroundColor: '#FDB366',
   },
   checkmark: {
     color: '#FFFFFF',
@@ -434,14 +434,14 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   scheduleButton: {
-    backgroundColor: '#8B5CF6',
+    backgroundColor: '#FDB366',
     borderRadius: 20,
     padding: 18,
     alignItems: 'center',
     marginTop: 16,
     marginBottom: 32,
     minHeight: 56,
-    shadowColor: '#8B5CF6',
+    shadowColor: '#ED8936',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.25,
     shadowRadius: 20,
