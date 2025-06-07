@@ -1,0 +1,179 @@
+import { Request, Response } from 'express';
+import { supabase } from '../config/database';
+import { AuthRequest } from '../middleware/auth';
+import { FeedItem } from '../types';
+
+export const getFeed = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const userId = req.user!.id;
+
+    // Get user's circles to determine what they can see
+    const { data: userCircles } = await supabase
+      .from('circles')
+      .select('id')
+      .eq('user_id', userId);
+
+    const userCircleIds = userCircles?.map(c => c.id) || [];
+
+    // Get active pins
+    const { data: pins, error: pinsError } = await supabase
+      .from('pins')
+      .select(`
+        *,
+        pin_circles (
+          circle_id
+        ),
+        creator:user_id (
+          id,
+          name,
+          phone_number,
+          avatar_url
+        )
+      `)
+      .eq('is_active', true)
+      .gt('expires_at', new Date().toISOString())
+      .order('created_at', { ascending: false });
+
+    if (pinsError) {
+      console.error('Error fetching pins:', pinsError);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to fetch feed'
+      });
+      return;
+    }
+
+    // Get scheduled meetups
+    const { data: meetups, error: meetupsError } = await supabase
+      .from('scheduled_meetups')
+      .select(`
+        *,
+        meetup_circles (
+          circle_id
+        ),
+        creator:user_id (
+          id,
+          name,
+          phone_number,
+          avatar_url
+        )
+      `)
+      .gte('scheduled_for', new Date().toISOString())
+      .order('scheduled_for', { ascending: true });
+
+    if (meetupsError) {
+      console.error('Error fetching meetups:', meetupsError);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to fetch feed'
+      });
+      return;
+    }
+
+    // Get user's RSVPs
+    const { data: userRSVPs } = await supabase
+      .from('rsvps')
+      .select('*')
+      .eq('user_id', userId);
+
+    const rsvpMap = new Map();
+    userRSVPs?.forEach(rsvp => {
+      rsvpMap.set(`${rsvp.meetup_id}-${rsvp.meetup_type}`, rsvp.response);
+    });
+
+    // Filter and transform pins
+    const feedItems: FeedItem[] = [];
+
+    // Process pins
+    const accessiblePins = pins?.filter(pin => {
+      // User can see their own pins
+      if (pin.user_id === userId) return true;
+
+      // User can see pins shared with their circles
+      return pin.pin_circles?.some((pc: any) => userCircleIds.includes(pc.circle_id));
+    });
+
+    for (const pin of accessiblePins || []) {
+      // Get RSVP count for this pin
+      const { data: pinRSVPs } = await supabase
+        .from('rsvps')
+        .select('response')
+        .eq('meetup_id', pin.id)
+        .eq('meetup_type', 'pin');
+
+      const attendeeCount = pinRSVPs?.filter(rsvp => rsvp.response === 'attending').length || 0;
+      const userRSVPStatus = rsvpMap.get(`${pin.id}-pin`);
+
+      feedItems.push({
+        id: `pin-${pin.id}`,
+        type: 'pin',
+        data: {
+          ...pin,
+          circles: pin.pin_circles?.map((pc: any) => pc.circle_id) || []
+        },
+        creator: pin.creator,
+        rsvp_status: userRSVPStatus,
+        attendee_count: attendeeCount
+      });
+    }
+
+    // Process scheduled meetups
+    const accessibleMeetups = meetups?.filter(meetup => {
+      // User can see their own meetups
+      if (meetup.user_id === userId) return true;
+
+      // User can see meetups shared with their circles
+      return meetup.meetup_circles?.some((mc: any) => userCircleIds.includes(mc.circle_id));
+    });
+
+    for (const meetup of accessibleMeetups || []) {
+      // Get RSVP count for this meetup
+      const { data: meetupRSVPs } = await supabase
+        .from('rsvps')
+        .select('response')
+        .eq('meetup_id', meetup.id)
+        .eq('meetup_type', 'scheduled');
+
+      const attendeeCount = meetupRSVPs?.filter(rsvp => rsvp.response === 'attending').length || 0;
+      const userRSVPStatus = rsvpMap.get(`${meetup.id}-scheduled`);
+
+      feedItems.push({
+        id: `meetup-${meetup.id}`,
+        type: 'scheduled',
+        data: {
+          ...meetup,
+          circles: meetup.meetup_circles?.map((mc: any) => mc.circle_id) || []
+        },
+        creator: meetup.creator,
+        rsvp_status: userRSVPStatus,
+        attendee_count: attendeeCount
+      });
+    }
+
+    // Sort feed items: pins first (happening now), then by scheduled time
+    feedItems.sort((a, b) => {
+      if (a.type === 'pin' && b.type === 'scheduled') return -1;
+      if (a.type === 'scheduled' && b.type === 'pin') return 1;
+
+      if (a.type === 'scheduled' && b.type === 'scheduled') {
+        const aTime = new Date((a.data as any).scheduled_for).getTime();
+        const bTime = new Date((b.data as any).scheduled_for).getTime();
+        return aTime - bTime;
+      }
+
+      // Both are pins, sort by creation time (newest first)
+      return new Date(b.data.created_at).getTime() - new Date(a.data.created_at).getTime();
+    });
+
+    res.json({
+      success: true,
+      data: { feed: feedItems }
+    });
+  } catch (error) {
+    console.error('Get feed error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error'
+    });
+  }
+};

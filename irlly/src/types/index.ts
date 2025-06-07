@@ -1,0 +1,72 @@
+export interface User {
+  id: string;
+  phoneNumber: string;
+  name?: string;
+  avatar?: string;
+  createdAt: Date;
+}
+
+export interface Contact {
+  id: string;
+  userId: string;
+  contactId: string;
+  name: string;
+  phoneNumber: string;
+  isRegistered: boolean;
+  createdAt: Date;
+}
+
+export interface Circle {
+  id: string;
+  userId: string;
+  name: string;
+  emoji?: string;
+  contactIds: string[];
+  createdAt: Date;
+}
+
+export interface Pin {
+  id: string;
+  userId: string;
+  title: string;
+  note?: string;
+  emoji?: string;
+  latitude: number;
+  longitude: number;
+  address?: string;
+  circleIds: string[];
+  isActive: boolean;
+  expiresAt: Date;
+  createdAt: Date;
+}
+
+export interface ScheduledMeetup {
+  id: string;
+  userId: string;
+  title: string;
+  description?: string;
+  latitude: number;
+  longitude: number;
+  address?: string;
+  scheduledFor: Date;
+  circleIds: string[];
+  createdAt: Date;
+}
+
+export interface RSVP {
+  id: string;
+  userId: string;
+  meetupId: string;
+  meetupType: 'pin' | 'scheduled';
+  response: 'attending' | 'not_attending';
+  createdAt: Date;
+}
+
+export interface FeedItem {
+  id: string;
+  type: 'pin' | 'scheduled';
+  data: Pin | ScheduledMeetup;
+  creator: User;
+  rsvpStatus?: 'attending' | 'not_attending';
+  attendeeCount: number;
+}
