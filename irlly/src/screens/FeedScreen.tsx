@@ -140,28 +140,30 @@ export const FeedScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>IRLly</Text>
+      <View style={styles.content}>
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>IRLly</Text>
+        </View>
+        
+        <FlatList
+          data={feedItems}
+          renderItem={renderFeedItem}
+          keyExtractor={(item) => item.id}
+          style={styles.list}
+          contentContainerStyle={styles.listContent}
+          refreshControl={
+            <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />
+          }
+          ListEmptyComponent={
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyTitle}>No plans yet</Text>
+              <Text style={styles.emptySubtitle}>
+                Drop a pin or schedule something to get started!
+              </Text>
+            </View>
+          }
+        />
       </View>
-      
-      <FlatList
-        data={feedItems}
-        renderItem={renderFeedItem}
-        keyExtractor={(item) => item.id}
-        style={styles.list}
-        contentContainerStyle={styles.listContent}
-        refreshControl={
-          <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />
-        }
-        ListEmptyComponent={
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyTitle}>No plans yet</Text>
-            <Text style={styles.emptySubtitle}>
-              Drop a pin or schedule something to get started!
-            </Text>
-          </View>
-        }
-      />
     </SafeAreaView>
   );
 };
@@ -171,9 +173,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F8FAFC', // Modern light background
   },
+  content: {
+    flex: 1,
+    paddingTop: 8, // Additional space below SafeAreaView
+  },
   header: {
     padding: 16,
-    paddingTop: 8,
+    paddingTop: 16,
     paddingBottom: 12,
     borderBottomWidth: 0,
   },

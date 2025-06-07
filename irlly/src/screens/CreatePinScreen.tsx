@@ -120,7 +120,8 @@ export const CreatePinScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <View style={styles.wrapper}>
+        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <Text style={styles.title}>Drop a Pin</Text>
         <Text style={styles.subtitle}>
           Let your friends know what you're up to right now
@@ -217,7 +218,8 @@ export const CreatePinScreen: React.FC = () => {
             {isLoading ? 'Dropping Pin...' : 'Drop Pin'}
           </Text>
         </TouchableOpacity>
-      </ScrollView>
+        </ScrollView>
+      </View>
     </SafeAreaView>
   );
 };
@@ -227,10 +229,14 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F8FAFC',
   },
+  wrapper: {
+    flex: 1,
+    paddingTop: 8, // Additional space below SafeAreaView
+  },
   content: {
     flex: 1,
     padding: 16,
-    paddingTop: 8,
+    paddingTop: 16,
   },
   title: {
     fontSize: 32,

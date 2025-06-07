@@ -152,7 +152,8 @@ export const ScheduleMeetupScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <View style={styles.wrapper}>
+        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <Text style={styles.title}>Plan Something</Text>
         <Text style={styles.subtitle}>
           Schedule a meetup for later and invite your circles
@@ -251,7 +252,8 @@ export const ScheduleMeetupScreen: React.FC = () => {
             {isLoading ? 'Scheduling...' : 'Schedule Meetup'}
           </Text>
         </TouchableOpacity>
-      </ScrollView>
+        </ScrollView>
+      </View>
 
       {showDatePicker && (
         <DateTimePicker
@@ -280,10 +282,14 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F8FAFC',
   },
+  wrapper: {
+    flex: 1,
+    paddingTop: 8, // Additional space below SafeAreaView
+  },
   content: {
     flex: 1,
     padding: 16,
-    paddingTop: 8,
+    paddingTop: 16,
   },
   title: {
     fontSize: 32,

@@ -82,15 +82,16 @@ export const CirclesScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Circles</Text>
-        <TouchableOpacity
-          style={styles.addButton}
-          onPress={() => setIsCreateModalVisible(true)}
-        >
-          <Text style={styles.addButtonText}>+</Text>
-        </TouchableOpacity>
-      </View>
+      <View style={styles.wrapper}>
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Circles</Text>
+          <TouchableOpacity
+            style={styles.addButton}
+            onPress={() => setIsCreateModalVisible(true)}
+          >
+            <Text style={styles.addButtonText}>+</Text>
+          </TouchableOpacity>
+        </View>
 
       <Text style={styles.subtitle}>
         Organize your contacts into circles to control who sees your plans
@@ -117,6 +118,7 @@ export const CirclesScreen: React.FC = () => {
           </View>
         }
       />
+      </View>
 
       <Modal
         visible={isCreateModalVisible}
@@ -175,14 +177,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F8FAFC',
-    paddingTop: 16,
+  },
+  wrapper: {
+    flex: 1,
+    paddingTop: 8, // Additional space below SafeAreaView
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 16,
-    paddingTop: 8,
+    paddingTop: 16,
     paddingBottom: 12,
   },
   headerTitle: {
