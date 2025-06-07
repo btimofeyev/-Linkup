@@ -231,12 +231,12 @@ const styles = StyleSheet.create({
   },
   wrapper: {
     flex: 1,
-    paddingTop: 8, // Additional space below SafeAreaView
+    paddingTop: 24, // More space below SafeAreaView
   },
   content: {
     flex: 1,
     padding: 16,
-    paddingTop: 16,
+    paddingTop: 24,
   },
   title: {
     fontSize: 32,

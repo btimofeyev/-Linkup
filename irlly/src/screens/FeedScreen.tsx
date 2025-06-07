@@ -142,7 +142,7 @@ export const FeedScreen: React.FC = () => {
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>IRLly</Text>
+          <Text style={styles.headerTitle}>Linkup</Text>
         </View>
         
         <FlatList
@@ -175,11 +175,11 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingTop: 8, // Additional space below SafeAreaView
+    paddingTop: 24, // More space below SafeAreaView
   },
   header: {
     padding: 16,
-    paddingTop: 16,
+    paddingTop: 24,
     paddingBottom: 12,
     borderBottomWidth: 0,
   },

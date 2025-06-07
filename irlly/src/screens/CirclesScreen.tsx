@@ -180,14 +180,14 @@ const styles = StyleSheet.create({
   },
   wrapper: {
     flex: 1,
-    paddingTop: 8, // Additional space below SafeAreaView
+    paddingTop: 24, // More space below SafeAreaView
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 16,
-    paddingTop: 16,
+    paddingTop: 24,
     paddingBottom: 12,
   },
   headerTitle: {
