@@ -14,6 +14,10 @@ export const createMeetup = [
     .optional()
     .isLength({ max: 500 })
     .withMessage('Description must be less than 500 characters'),
+  body('emoji')
+    .optional()
+    .isLength({ max: 10 })
+    .withMessage('Emoji must be less than 10 characters'),
   body('latitude')
     .isFloat({ min: -90, max: 90 })
     .withMessage('Invalid latitude'),
@@ -44,7 +48,7 @@ export const createMeetup = [
       }
 
       const userId = req.user!.id;
-      const { title, description, latitude, longitude, address, scheduledFor, circleIds } = req.body;
+      const { title, description, emoji, latitude, longitude, address, scheduledFor, circleIds } = req.body;
 
       // Validate that scheduled time is in the future
       const scheduledDate = new Date(scheduledFor);
@@ -63,6 +67,7 @@ export const createMeetup = [
           user_id: userId,
           title,
           description,
+          emoji,
           latitude,
           longitude,
           address,

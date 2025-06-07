@@ -78,6 +78,7 @@ CREATE TABLE scheduled_meetups (
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     title VARCHAR(100) NOT NULL,
     description TEXT,
+    emoji VARCHAR(10),
     latitude DECIMAL(10, 8) NOT NULL,
     longitude DECIMAL(11, 8) NOT NULL,
     address TEXT,

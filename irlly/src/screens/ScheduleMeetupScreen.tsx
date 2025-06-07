@@ -22,6 +22,7 @@ export const ScheduleMeetupScreen: React.FC = () => {
   const { circles } = useCircles();
   const { user } = useAuth();
   const [title, setTitle] = useState('');
+  const [emoji, setEmoji] = useState('📅');
   const [description, setDescription] = useState('');
   const [date, setDate] = useState(new Date(Date.now() + 60 * 60 * 1000)); // 1 hour from now
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -29,6 +30,8 @@ export const ScheduleMeetupScreen: React.FC = () => {
   const [location, setLocation] = useState<string>('');
   const [selectedCircles, setSelectedCircles] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+
+  const emojiOptions = ['📅', '☕', '🍕', '🍻', '🎬', '🏃', '🎵', '🛍️'];
 
   const toggleCircleSelection = (circleId: string) => {
     setSelectedCircles(prev => 
@@ -111,6 +114,7 @@ export const ScheduleMeetupScreen: React.FC = () => {
       const response = await apiService.createMeetup({
         title,
         description,
+        emoji,
         latitude: 0, // TODO: Get actual coordinates from location string
         longitude: 0,
         address: location,
@@ -168,6 +172,24 @@ export const ScheduleMeetupScreen: React.FC = () => {
             placeholder="e.g., Dinner at Chez Laurent"
             maxLength={100}
           />
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.label}>Choose an emoji</Text>
+          <View style={styles.emojiContainer}>
+            {emojiOptions.map((option) => (
+              <TouchableOpacity
+                key={option}
+                style={[
+                  styles.emojiButton,
+                  emoji === option && styles.emojiButtonSelected,
+                ]}
+                onPress={() => setEmoji(option)}
+              >
+                <Text style={styles.emojiText}>{option}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
 
         <View style={styles.section}>
@@ -454,5 +476,31 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 18,
     fontWeight: '700',
+  },
+  emojiContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+    marginTop: 4,
+  },
+  emojiButton: {
+    width: 52,
+    height: 52,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#2D3748',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 20,
+    elevation: 4,
+  },
+  emojiButtonSelected: {
+    backgroundColor: '#FDB366',
+    shadowOpacity: 0.12,
+  },
+  emojiText: {
+    fontSize: 26,
   },
 });

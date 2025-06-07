@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://192.168.100.96:3000/api';
+const API_BASE_URL = 'http://192.168.100.245:3000/api';
 
 class ApiService {
   private accessToken: string | null = null;
@@ -126,6 +126,7 @@ class ApiService {
   async createMeetup(data: {
     title: string;
     description?: string;
+    emoji?: string;
     latitude: number;
     longitude: number;
     address?: string;

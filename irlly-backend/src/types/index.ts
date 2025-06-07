@@ -50,6 +50,7 @@ export interface ScheduledMeetup {
   user_id: string;
   title: string;
   description?: string;
+  emoji?: string;
   latitude: number;
   longitude: number;
   address?: string;
