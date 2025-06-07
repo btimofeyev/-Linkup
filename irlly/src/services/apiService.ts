@@ -1,4 +1,7 @@
-const API_BASE_URL = 'http://192.168.100.96:3000/api';
+// API URLs for different environments
+// const API_BASE_URL = 'http://192.168.100.96:3000/api';  // Home PC
+// const API_BASE_URL = 'http://192.168.1.32:3000/api';    // Laptop local
+const API_BASE_URL = 'https://vast-rooms-decide.loca.lt/api'; // Laptop tunneled
 
 class ApiService {
   private accessToken: string | null = null;
