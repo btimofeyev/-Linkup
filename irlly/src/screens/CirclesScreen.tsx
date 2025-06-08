@@ -459,7 +459,6 @@ export const CirclesScreen: React.FC = () => {
                 
                 {showNonAppContacts && contacts
                   .filter(contact => !contact.isRegistered && !selectedCircle?.contactIds?.includes(contact.id))
-                  .slice(0, 15)
                   .map(contact => (
                     <TouchableOpacity
                       key={contact.id}
