@@ -49,13 +49,15 @@ export const CirclesProvider: React.FC<CirclesProviderProps> = ({ children }) =>
       setIsLoading(true);
       console.log('Loading circles from backend...');
       const response = await apiService.getCircles();
-      if (response.success && response.data) {
-        const backendCircles: Circle[] = response.data.circles.map((circle: any) => ({
+      if (response.success && response.data && (response.data as any).circles) {
+        const circlesData = (response.data as any).circles;
+        const backendCircles: Circle[] = circlesData.map((circle: any) => ({
           id: circle.id,
           userId: circle.user_id,
           name: circle.name,
           emoji: circle.emoji,
-          contactIds: circle.members?.map((member: any) => member.id) || [],
+          // Fix: Access the nested contact data correctly
+          contactIds: circle.circle_members?.map((member: any) => member.contact?.id) || [],
           createdAt: new Date(circle.created_at),
         }));
         
@@ -82,14 +84,15 @@ export const CirclesProvider: React.FC<CirclesProviderProps> = ({ children }) =>
       contactIds,
     });
 
-    if (response.success && response.data) {
+    if (response.success && response.data && (response.data as any).circle) {
+      const circleData = (response.data as any).circle;
       const newCircle: Circle = {
-        id: response.data.circle.id,
-        userId: response.data.circle.user_id,
-        name: response.data.circle.name,
-        emoji: response.data.circle.emoji,
+        id: circleData.id,
+        userId: circleData.user_id,
+        name: circleData.name,
+        emoji: circleData.emoji,
         contactIds: contactIds, // Use the passed contactIds
-        createdAt: new Date(response.data.circle.created_at),
+        createdAt: new Date(circleData.created_at),
       };
       
       const updatedCircles = [...circles, newCircle];
