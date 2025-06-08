@@ -193,16 +193,173 @@ export const verifyCodeAndLogin = [
   }
 ];
 
-export const registerWithUsername = [
+export const checkUsernameAvailability = [
   // Validation
   body('username')
     .isLength({ min: 3, max: 30 })
     .matches(/^[a-zA-Z0-9_]{3,30}$/)
     .withMessage('Username must be 3-30 characters, letters, numbers, and underscores only'),
+  body('phoneNumber')
+    .isMobilePhone('any')
+    .withMessage('Invalid phone number format'),
+
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        res.status(400).json({
+          success: false,
+          error: 'Validation failed',
+          data: errors.array()
+        });
+        return;
+      }
+
+      const { username, phoneNumber } = req.body;
+
+      // Check availability using our function
+      const { data: availability, error } = await supabase
+        .rpc('can_register_username_phone', {
+          username_input: username,
+          phone_input: phoneNumber
+        });
+
+      if (error) {
+        console.error('Error checking availability:', error);
+        res.status(500).json({
+          success: false,
+          error: 'Failed to check availability'
+        });
+        return;
+      }
+
+      const result = availability[0];
+      
+      res.json({
+        success: true,
+        data: {
+          available: result.can_register,
+          message: result.error_message,
+          existingUserId: result.existing_user_id
+        }
+      });
+    } catch (error) {
+      console.error('Check availability error:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Internal server error'
+      });
+    }
+  }
+];
+
+export const sendVerificationForRegistration = [
+  // Validation
+  body('username')
+    .isLength({ min: 3, max: 30 })
+    .matches(/^[a-zA-Z0-9_]{3,30}$/)
+    .withMessage('Username must be 3-30 characters, letters, numbers, and underscores only'),
+  body('phoneNumber')
+    .isMobilePhone('any')
+    .withMessage('Invalid phone number format'),
   body('name')
     .isLength({ min: 1, max: 100 })
     .trim()
     .withMessage('Name is required and must be between 1 and 100 characters'),
+
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        res.status(400).json({
+          success: false,
+          error: 'Validation failed',
+          data: errors.array()
+        });
+        return;
+      }
+
+      const { username, phoneNumber, name } = req.body;
+
+      // Check if username + phone combo is available
+      const { data: availability, error: availabilityError } = await supabase
+        .rpc('can_register_username_phone', {
+          username_input: username,
+          phone_input: phoneNumber
+        });
+
+      if (availabilityError || !availability[0]?.can_register) {
+        res.status(400).json({
+          success: false,
+          error: availability[0]?.error_message || 'Username or phone not available'
+        });
+        return;
+      }
+
+      const code = generateVerificationCode();
+      const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+      // Store in auth_sessions table
+      const { error: insertError } = await supabase
+        .from('auth_sessions')
+        .insert({
+          username,
+          phone_number: phoneNumber,
+          verification_code: code,
+          expires_at: expiresAt.toISOString()
+        });
+
+      if (insertError) {
+        console.error('Error storing auth session:', insertError);
+        res.status(500).json({
+          success: false,
+          error: 'Failed to send verification code'
+        });
+        return;
+      }
+
+      // Send SMS
+      const smsSent = await sendVerificationCode(phoneNumber, code);
+      
+      if (!smsSent) {
+        res.status(500).json({
+          success: false,
+          error: 'Failed to send SMS'
+        });
+        return;
+      }
+
+      res.json({
+        success: true,
+        message: 'Verification code sent successfully'
+      });
+    } catch (error) {
+      console.error('Send verification for registration error:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Internal server error'
+      });
+    }
+  }
+];
+
+export const verifyAndCreateUser = [
+  // Validation
+  body('username')
+    .isLength({ min: 3, max: 30 })
+    .matches(/^[a-zA-Z0-9_]{3,30}$/)
+    .withMessage('Invalid username format'),
+  body('phoneNumber')
+    .isMobilePhone('any')
+    .withMessage('Invalid phone number format'),
+  body('code')
+    .isLength({ min: 6, max: 6 })
+    .isNumeric()
+    .withMessage('Code must be 6 digits'),
+  body('name')
+    .isLength({ min: 1, max: 100 })
+    .trim()
+    .withMessage('Name is required'),
   body('email')
     .optional()
     .isEmail()
@@ -220,28 +377,41 @@ export const registerWithUsername = [
         return;
       }
 
-      const { username, name, email } = req.body;
+      const { username, phoneNumber, code, name, email } = req.body;
 
-      // Check if username is already taken
-      const { data: existingUser } = await supabase
-        .from('users')
-        .select('id')
+      // Verify code from auth_sessions
+      const { data: authSession, error: verifyError } = await supabase
+        .from('auth_sessions')
+        .select('*')
         .eq('username', username)
+        .eq('phone_number', phoneNumber)
+        .eq('verification_code', code)
+        .eq('is_used', false)
+        .gt('expires_at', new Date().toISOString())
+        .order('created_at', { ascending: false })
+        .limit(1)
         .single();
 
-      if (existingUser) {
+      if (verifyError || !authSession) {
         res.status(400).json({
           success: false,
-          error: 'Username is already taken'
+          error: 'Invalid or expired verification code'
         });
         return;
       }
+
+      // Mark auth session as used
+      await supabase
+        .from('auth_sessions')
+        .update({ is_used: true })
+        .eq('id', authSession.id);
 
       // Create user
       const { data: newUser, error: createError } = await supabase
         .from('users')
         .insert({
           username,
+          phone_number: phoneNumber,
           name,
           email,
           is_verified: true
@@ -258,6 +428,12 @@ export const registerWithUsername = [
         return;
       }
 
+      // Update auth session with user_id
+      await supabase
+        .from('auth_sessions')
+        .update({ user_id: newUser.id })
+        .eq('id', authSession.id);
+
       // Generate access token
       const accessToken = generateAccessToken(newUser.id);
 
@@ -270,7 +446,7 @@ export const registerWithUsername = [
         message: 'Account created successfully'
       });
     } catch (error) {
-      console.error('Register error:', error);
+      console.error('Verify and create user error:', error);
       res.status(500).json({
         success: false,
         error: 'Internal server error'
@@ -279,7 +455,7 @@ export const registerWithUsername = [
   }
 ];
 
-export const loginWithUsername = [
+export const sendVerificationForLogin = [
   // Validation
   body('username')
     .isLength({ min: 3, max: 30 })
@@ -303,7 +479,7 @@ export const loginWithUsername = [
       // Find user by username
       const { data: user, error: userError } = await supabase
         .from('users')
-        .select('*')
+        .select('id, username, phone_number')
         .eq('username', username)
         .single();
 
@@ -315,18 +491,120 @@ export const loginWithUsername = [
         return;
       }
 
+      const code = generateVerificationCode();
+      const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+      // Store in auth_sessions table
+      const { error: insertError } = await supabase
+        .from('auth_sessions')
+        .insert({
+          username: user.username,
+          phone_number: user.phone_number,
+          verification_code: code,
+          expires_at: expiresAt.toISOString(),
+          user_id: user.id
+        });
+
+      if (insertError) {
+        console.error('Error storing auth session:', insertError);
+        res.status(500).json({
+          success: false,
+          error: 'Failed to send verification code'
+        });
+        return;
+      }
+
+      // Send SMS
+      const smsSent = await sendVerificationCode(user.phone_number, code);
+      
+      if (!smsSent) {
+        res.status(500).json({
+          success: false,
+          error: 'Failed to send SMS'
+        });
+        return;
+      }
+
+      res.json({
+        success: true,
+        message: 'Verification code sent successfully',
+        data: {
+          phoneNumber: user.phone_number // Return masked phone for UI
+        }
+      });
+    } catch (error) {
+      console.error('Send verification for login error:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Internal server error'
+      });
+    }
+  }
+];
+
+export const verifyAndLogin = [
+  // Validation
+  body('username')
+    .isLength({ min: 3, max: 30 })
+    .matches(/^[a-zA-Z0-9_]{3,30}$/)
+    .withMessage('Invalid username format'),
+  body('code')
+    .isLength({ min: 6, max: 6 })
+    .isNumeric()
+    .withMessage('Code must be 6 digits'),
+
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        res.status(400).json({
+          success: false,
+          error: 'Validation failed',
+          data: errors.array()
+        });
+        return;
+      }
+
+      const { username, code } = req.body;
+
+      // Verify code from auth_sessions
+      const { data: authSession, error: verifyError } = await supabase
+        .from('auth_sessions')
+        .select('*, users(*)')
+        .eq('username', username)
+        .eq('verification_code', code)
+        .eq('is_used', false)
+        .gt('expires_at', new Date().toISOString())
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (verifyError || !authSession) {
+        res.status(400).json({
+          success: false,
+          error: 'Invalid or expired verification code'
+        });
+        return;
+      }
+
+      // Mark auth session as used
+      await supabase
+        .from('auth_sessions')
+        .update({ is_used: true })
+        .eq('id', authSession.id);
+
       // Generate access token
-      const accessToken = generateAccessToken(user.id);
+      const accessToken = generateAccessToken(authSession.user_id);
 
       res.json({
         success: true,
         data: {
-          user,
+          user: authSession.users,
           accessToken
         }
       });
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('Verify and login error:', error);
       res.status(500).json({
         success: false,
         error: 'Internal server error'

@@ -20,14 +20,23 @@ const LogoImage = require('../../assets/link_logo.png');
 
 export const PhoneVerificationScreen: React.FC = () => {
   const [authMode, setAuthMode] = useState<'phone' | 'username'>('username');
-  const [step, setStep] = useState<'phone' | 'code' | 'register' | 'login'>('login');
+  const [step, setStep] = useState<'phone' | 'code' | 'register' | 'login' | 'register-verify' | 'login-verify'>('login');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
   const [username, setUsername] = useState('');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { sendVerificationCode, verifyCodeAndLogin, registerWithUsername, loginWithUsername } = useAuth();
+  const [maskedPhone, setMaskedPhone] = useState('');
+  const { 
+    sendVerificationCode, 
+    verifyCodeAndLogin,
+    checkUsernameAvailability,
+    sendVerificationForRegistration,
+    verifyAndCreateUser,
+    sendVerificationForLogin,
+    verifyAndLogin
+  } = useAuth();
 
   const handleSendCode = async () => {
     if (!phoneNumber.trim()) {
@@ -64,28 +73,63 @@ export const PhoneVerificationScreen: React.FC = () => {
     }
   };
 
-  const handleRegister = async () => {
-    if (!username.trim() || !name.trim()) {
-      Alert.alert('Error', 'Please fill in username and name');
+  const handleStartRegistration = async () => {
+    if (!username.trim() || !name.trim() || !phoneNumber.trim()) {
+      Alert.alert('Error', 'Please fill in all required fields');
       return;
     }
 
     setIsLoading(true);
     try {
-      await registerWithUsername({
+      // Check availability first
+      const availability = await checkUsernameAvailability(username.trim(), phoneNumber.trim());
+      
+      if (!availability.available) {
+        Alert.alert('Error', availability.message);
+        return;
+      }
+
+      // Send verification code
+      await sendVerificationForRegistration({
         username: username.trim(),
+        phoneNumber: phoneNumber.trim(),
         name: name.trim(),
         email: email.trim() || undefined,
       });
-      // Navigation will happen automatically via AuthContext
+      
+      setStep('register-verify');
+      Alert.alert('Success', 'Verification code sent to your phone');
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to register');
+      Alert.alert('Error', error.message || 'Failed to start registration');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleLogin = async () => {
+  const handleCompleteRegistration = async () => {
+    if (!verificationCode.trim()) {
+      Alert.alert('Error', 'Please enter the verification code');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await verifyAndCreateUser({
+        username: username.trim(),
+        phoneNumber: phoneNumber.trim(),
+        code: verificationCode.trim(),
+        name: name.trim(),
+        email: email.trim() || undefined,
+      });
+      // Navigation will happen automatically via AuthContext
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to create account');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleStartLogin = async () => {
     if (!username.trim()) {
       Alert.alert('Error', 'Please enter a username');
       return;
@@ -93,7 +137,26 @@ export const PhoneVerificationScreen: React.FC = () => {
 
     setIsLoading(true);
     try {
-      await loginWithUsername(username.trim());
+      const result = await sendVerificationForLogin(username.trim());
+      setMaskedPhone(result.phoneNumber);
+      setStep('login-verify');
+      Alert.alert('Success', 'Verification code sent to your phone');
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'User not found');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCompleteLogin = async () => {
+    if (!verificationCode.trim()) {
+      Alert.alert('Error', 'Please enter the verification code');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await verifyAndLogin(username.trim(), verificationCode.trim());
       // Navigation will happen automatically via AuthContext
     } catch (error: any) {
       Alert.alert('Error', error.message || 'Failed to login');
@@ -163,13 +226,93 @@ export const PhoneVerificationScreen: React.FC = () => {
       );
     }
 
+    if (step === 'register-verify') {
+      return (
+        <>
+          <Text style={styles.title}>Verify Your Phone</Text>
+          <Text style={styles.tagline}>Almost done!</Text>
+          <Text style={styles.subtitle}>
+            Enter the 6-digit code we sent to {phoneNumber}
+          </Text>
+
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Verification Code</Text>
+            <TextInput
+              style={[styles.input, styles.codeInput]}
+              value={verificationCode}
+              onChangeText={setVerificationCode}
+              placeholder="123456"
+              keyboardType="number-pad"
+              maxLength={6}
+              autoFocus
+              placeholderTextColor="#A0AEC0"
+            />
+          </View>
+
+          <TouchableOpacity
+            style={[styles.button, isLoading && styles.buttonDisabled]}
+            onPress={handleCompleteRegistration}
+            disabled={isLoading}
+          >
+            <Text style={styles.buttonText}>
+              {isLoading ? 'Creating Account...' : 'Create Account'}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.backButton} onPress={() => setStep('register')}>
+            <Text style={styles.backButtonText}>Back to Registration</Text>
+          </TouchableOpacity>
+        </>
+      );
+    }
+
+    if (step === 'login-verify') {
+      return (
+        <>
+          <Text style={styles.title}>Verify Your Phone</Text>
+          <Text style={styles.tagline}>Welcome back!</Text>
+          <Text style={styles.subtitle}>
+            Enter the 6-digit code we sent to {maskedPhone}
+          </Text>
+
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Verification Code</Text>
+            <TextInput
+              style={[styles.input, styles.codeInput]}
+              value={verificationCode}
+              onChangeText={setVerificationCode}
+              placeholder="123456"
+              keyboardType="number-pad"
+              maxLength={6}
+              autoFocus
+              placeholderTextColor="#A0AEC0"
+            />
+          </View>
+
+          <TouchableOpacity
+            style={[styles.button, isLoading && styles.buttonDisabled]}
+            onPress={handleCompleteLogin}
+            disabled={isLoading}
+          >
+            <Text style={styles.buttonText}>
+              {isLoading ? 'Logging in...' : 'Login'}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.backButton} onPress={() => setStep('login')}>
+            <Text style={styles.backButtonText}>Back to Login</Text>
+          </TouchableOpacity>
+        </>
+      );
+    }
+
     if (step === 'register') {
       return (
         <>
           <Text style={styles.title}>Create Account</Text>
           <Text style={styles.tagline}>Join the movement</Text>
           <Text style={styles.subtitle}>
-            Create your username and start connecting with friends
+            Choose a username and link it to your phone
           </Text>
 
           <View style={styles.inputContainer}>
@@ -181,6 +324,18 @@ export const PhoneVerificationScreen: React.FC = () => {
               placeholder="your_username"
               autoCapitalize="none"
               autoFocus
+              placeholderTextColor="#A0AEC0"
+            />
+          </View>
+
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Phone Number</Text>
+            <TextInput
+              style={styles.input}
+              value={phoneNumber}
+              onChangeText={setPhoneNumber}
+              placeholder="+1 (555) 123-4567"
+              keyboardType="phone-pad"
               placeholderTextColor="#A0AEC0"
             />
           </View>
@@ -211,11 +366,11 @@ export const PhoneVerificationScreen: React.FC = () => {
 
           <TouchableOpacity
             style={[styles.button, isLoading && styles.buttonDisabled]}
-            onPress={handleRegister}
+            onPress={handleStartRegistration}
             disabled={isLoading}
           >
             <Text style={styles.buttonText}>
-              {isLoading ? 'Creating Account...' : 'Create Account'}
+              {isLoading ? 'Sending Code...' : 'Send Verification Code'}
             </Text>
           </TouchableOpacity>
 
@@ -271,7 +426,7 @@ export const PhoneVerificationScreen: React.FC = () => {
         <Text style={styles.title}>Welcome to Linkup</Text>
         <Text style={styles.tagline}>Break free from endless scrolling</Text>
         <Text style={styles.subtitle}>
-          Skip the DMs. Make real plans with real friends in real time.
+          Enter your username to login with phone verification
         </Text>
 
         <View style={styles.inputContainer}>
@@ -289,11 +444,11 @@ export const PhoneVerificationScreen: React.FC = () => {
 
         <TouchableOpacity
           style={[styles.button, isLoading && styles.buttonDisabled]}
-          onPress={handleLogin}
+          onPress={handleStartLogin}
           disabled={isLoading}
         >
           <Text style={styles.buttonText}>
-            {isLoading ? 'Logging in...' : 'Login'}
+            {isLoading ? 'Sending Code...' : 'Send Verification Code'}
           </Text>
         </TouchableOpacity>
 

@@ -1,9 +1,12 @@
 import { Router } from 'express';
 import { 
   sendVerificationCodeHandler, 
-  verifyCodeAndLogin, 
-  registerWithUsername,
-  loginWithUsername,
+  verifyCodeAndLogin,
+  checkUsernameAvailability,
+  sendVerificationForRegistration,
+  verifyAndCreateUser,
+  sendVerificationForLogin,
+  verifyAndLogin,
   updateProfile, 
   getProfile 
 } from '../controllers/authController';
@@ -31,11 +34,16 @@ const smsLimiter = rateLimit({
   }
 });
 
-// Public routes
+// Public routes - Original phone-based auth (kept for backward compatibility)
 router.post('/send-code', smsLimiter, sendVerificationCodeHandler);
 router.post('/verify', authLimiter, verifyCodeAndLogin);
-router.post('/register', authLimiter, registerWithUsername);
-router.post('/login', authLimiter, loginWithUsername);
+
+// Public routes - New username + phone hybrid auth
+router.post('/check-availability', authLimiter, checkUsernameAvailability);
+router.post('/register/send-code', smsLimiter, sendVerificationForRegistration);
+router.post('/register/verify', authLimiter, verifyAndCreateUser);
+router.post('/login/send-code', smsLimiter, sendVerificationForLogin);
+router.post('/login/verify', authLimiter, verifyAndLogin);
 
 // Protected routes
 router.get('/profile', authenticateToken, getProfile);

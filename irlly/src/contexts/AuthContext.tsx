@@ -8,8 +8,11 @@ interface AuthContextType {
   isLoading: boolean;
   sendVerificationCode: (phoneNumber: string) => Promise<void>;
   verifyCodeAndLogin: (phoneNumber: string, code: string) => Promise<void>;
-  registerWithUsername: (data: { username: string; name: string; email?: string }) => Promise<void>;
-  loginWithUsername: (username: string) => Promise<void>;
+  checkUsernameAvailability: (username: string, phoneNumber: string) => Promise<{ available: boolean; message: string }>;
+  sendVerificationForRegistration: (data: { username: string; phoneNumber: string; name: string; email?: string }) => Promise<void>;
+  verifyAndCreateUser: (data: { username: string; phoneNumber: string; code: string; name: string; email?: string }) => Promise<void>;
+  sendVerificationForLogin: (username: string) => Promise<{ phoneNumber: string }>;
+  verifyAndLogin: (username: string, code: string) => Promise<void>;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
 }
@@ -84,11 +87,40 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const registerWithUsername = async (data: { username: string; name: string; email?: string }) => {
+  const checkUsernameAvailability = async (username: string, phoneNumber: string): Promise<{ available: boolean; message: string }> => {
     try {
-      const response = await apiService.registerWithUsername(data);
+      const response = await apiService.checkUsernameAvailability(username, phoneNumber);
       if (!response.success || !response.data) {
-        throw new Error(response.error || 'Failed to register');
+        throw new Error(response.error || 'Failed to check availability');
+      }
+      
+      return {
+        available: response.data.available,
+        message: response.data.message
+      };
+    } catch (error) {
+      console.error('Error checking availability:', error);
+      throw error;
+    }
+  };
+
+  const sendVerificationForRegistration = async (data: { username: string; phoneNumber: string; name: string; email?: string }) => {
+    try {
+      const response = await apiService.sendVerificationForRegistration(data);
+      if (!response.success) {
+        throw new Error(response.error || 'Failed to send verification code');
+      }
+    } catch (error) {
+      console.error('Error sending verification for registration:', error);
+      throw error;
+    }
+  };
+
+  const verifyAndCreateUser = async (data: { username: string; phoneNumber: string; code: string; name: string; email?: string }) => {
+    try {
+      const response = await apiService.verifyAndCreateUser(data);
+      if (!response.success || !response.data) {
+        throw new Error(response.error || 'Failed to create account');
       }
 
       const { user, accessToken } = response.data;
@@ -99,14 +131,30 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       apiService.setAccessToken(accessToken);
       setUser(user);
     } catch (error) {
-      console.error('Error during registration:', error);
+      console.error('Error creating user:', error);
       throw error;
     }
   };
 
-  const loginWithUsername = async (username: string) => {
+  const sendVerificationForLogin = async (username: string): Promise<{ phoneNumber: string }> => {
     try {
-      const response = await apiService.loginWithUsername(username);
+      const response = await apiService.sendVerificationForLogin(username);
+      if (!response.success) {
+        throw new Error(response.error || 'Failed to send verification code');
+      }
+      
+      return {
+        phoneNumber: response.data?.phoneNumber || ''
+      };
+    } catch (error) {
+      console.error('Error sending verification for login:', error);
+      throw error;
+    }
+  };
+
+  const verifyAndLogin = async (username: string, code: string) => {
+    try {
+      const response = await apiService.verifyAndLogin(username, code);
       if (!response.success || !response.data) {
         throw new Error(response.error || 'Failed to login');
       }
@@ -143,8 +191,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     isLoading,
     sendVerificationCode,
     verifyCodeAndLogin,
-    registerWithUsername,
-    loginWithUsername,
+    checkUsernameAvailability,
+    sendVerificationForRegistration,
+    verifyAndCreateUser,
+    sendVerificationForLogin,
+    verifyAndLogin,
     logout,
     isAuthenticated: !!user,
   };

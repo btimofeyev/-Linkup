@@ -57,17 +57,38 @@ class ApiService {
     });
   }
 
-  async registerWithUsername(data: { username: string; name: string; email?: string }) {
-    return this.request<{ user: any; accessToken: string }>('/auth/register', {
+  async checkUsernameAvailability(username: string, phoneNumber: string) {
+    return this.request('/auth/check-availability', {
+      method: 'POST',
+      body: JSON.stringify({ username, phoneNumber }),
+    });
+  }
+
+  async sendVerificationForRegistration(data: { username: string; phoneNumber: string; name: string; email?: string }) {
+    return this.request('/auth/register/send-code', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
-  async loginWithUsername(username: string) {
-    return this.request<{ user: any; accessToken: string }>('/auth/login', {
+  async verifyAndCreateUser(data: { username: string; phoneNumber: string; code: string; name: string; email?: string }) {
+    return this.request<{ user: any; accessToken: string }>('/auth/register/verify', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async sendVerificationForLogin(username: string) {
+    return this.request('/auth/login/send-code', {
       method: 'POST',
       body: JSON.stringify({ username }),
+    });
+  }
+
+  async verifyAndLogin(username: string, code: string) {
+    return this.request<{ user: any; accessToken: string }>('/auth/login/verify', {
+      method: 'POST',
+      body: JSON.stringify({ username, code }),
     });
   }
 
