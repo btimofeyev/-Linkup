@@ -1,0 +1,29 @@
+{
+  "name": "linkup-monorepo",
+  "version": "1.0.0",
+  "description": "Linkup social meetup app - Backend deployment for Railway",
+  "main": "irlly-backend/dist/index.js",
+  "scripts": {
+    "build": "cd irlly-backend && npm install && npm run build",
+    "start": "cd irlly-backend && npm start",
+    "dev": "cd irlly-backend && npm run dev",
+    "install-backend": "cd irlly-backend && npm install",
+    "install-frontend": "cd irlly && npm install"
+  },
+  "keywords": [
+    "linkup",
+    "social",
+    "meetup",
+    "backend",
+    "api"
+  ],
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/linkup.git"
+  },
+  "license": "MIT"
+}

@@ -1,211 +1,185 @@
-# Linkup - Social Meetup App
+# Linkup Backend API
 
-Linkup is a social meetup app that makes it easy to connect with friends and organize spontaneous or planned gatherings. Drop a pin to share what you're doing right now, or schedule future meetups with your circles.
+A Node.js/Express backend for the Linkup social meetup app, built with Supabase for data persistence and real-time features.
 
-## 🚀 Features
+## Features
 
-- **📱 Phone Authentication** - Secure SMS-based login
-- **📍 Drop a Pin** - Share spontaneous activities with friends
-- **📅 Schedule Meetups** - Plan future gatherings
-- **👥 Circle Management** - Organize contacts into friend groups
-- **📱 Real-time Feed** - See what friends are up to
-- **✅ RSVP System** - Quick responses to invitations
-- **🔒 Privacy Controls** - Share with specific circles only
+- 📱 Phone number authentication with SMS verification
+- 👥 Contact sync and circle management
+- 📍 Location-based pin dropping (spontaneous meetups)
+- 📅 Scheduled meetup planning
+- ✅ RSVP system for all events
+- 📱 Real-time feed of relevant meetups
+- 🔒 Row-level security with Supabase
+- 🚀 RESTful API with comprehensive validation
 
-## 🏗️ Architecture
+## Setup
 
-### Frontend
-- **React Native** with Expo
-- **TypeScript** for type safety
-- **React Navigation** for routing
-- **AsyncStorage** for local data
-- **Expo Location** for GPS integration
+### 1. Install Dependencies
 
-### Backend
-- **Node.js** with Express
-- **TypeScript** for type safety
-- **Supabase** (PostgreSQL) for database
-- **JWT** for authentication
-- **Twilio** for SMS verification
-- **Row Level Security** for data privacy
-
-## 📁 Project Structure
-
-```
-linkup/
-├── linkup/                  # React Native frontend
-│   ├── src/
-│   │   ├── components/     # Reusable UI components
-│   │   ├── contexts/       # React contexts (Auth, Contacts, Circles)
-│   │   ├── navigation/     # Navigation configuration
-│   │   ├── screens/        # App screens
-│   │   ├── services/       # API service layer
-│   │   └── types/          # TypeScript type definitions
-│   └── package.json
-├── linkup-backend/          # Node.js backend
-│   ├── src/
-│   │   ├── config/         # Database and app configuration
-│   │   ├── controllers/    # Route handlers
-│   │   ├── middleware/     # Express middleware
-│   │   ├── routes/         # API route definitions
-│   │   ├── services/       # Business logic
-│   │   └── database/       # Database schema
-│   └── package.json
-├── CLAUDE.md              # Development execution plan
-├── SETUP.md               # Complete setup instructions
-└── README.md              # This file
-```
-
-## 🚀 Quick Start
-
-### Prerequisites
-- Node.js (v18+)
-- npm or yarn
-- Expo CLI
-- Supabase account
-
-### 1. Clone the Repository
 ```bash
-git clone https://github.com/yourusername/linkup.git
-cd linkup
-```
-
-### 2. Backend Setup
-```bash
-cd linkup-backend
 npm install
+```
+
+### 2. Environment Variables
+
+Copy `.env.example` to `.env` and fill in your values:
+
+```bash
 cp .env.example .env
-# Edit .env with your Supabase credentials
+```
+
+Required environment variables:
+- `SUPABASE_URL`: Your Supabase project URL
+- `SUPABASE_SERVICE_KEY`: Your Supabase service role key
+- `JWT_SECRET`: Secret for JWT token signing
+- `TWILIO_ACCOUNT_SID`: Twilio account SID (optional, for SMS)
+- `TWILIO_AUTH_TOKEN`: Twilio auth token (optional, for SMS)
+- `TWILIO_PHONE_NUMBER`: Twilio phone number (optional, for SMS)
+
+### 3. Database Setup
+
+1. Create a new Supabase project at [supabase.com](https://supabase.com)
+2. Run the SQL in `src/database/schema.sql` in your Supabase SQL editor
+3. Update your `.env` file with the Supabase credentials
+
+### 4. Start Development Server
+
+```bash
 npm run dev
 ```
 
-### 3. Frontend Setup
+The API will be available at `http://localhost:3000`
+
+## API Endpoints
+
+### Authentication
+- `POST /api/auth/send-code` - Send SMS verification code
+- `POST /api/auth/verify` - Verify code and login
+- `GET /api/auth/profile` - Get user profile
+- `PUT /api/auth/profile` - Update user profile
+
+### Contacts
+- `POST /api/contacts/sync` - Sync user contacts
+- `GET /api/contacts` - Get all contacts
+- `GET /api/contacts/registered` - Get registered contacts only
+
+### Circles
+- `POST /api/circles` - Create a new circle
+- `GET /api/circles` - Get user's circles
+- `PUT /api/circles/:id` - Update circle
+- `DELETE /api/circles/:id` - Delete circle
+- `POST /api/circles/:id/contacts` - Add contacts to circle
+- `DELETE /api/circles/:id/contacts/:contactId` - Remove contact from circle
+
+### Pins (Spontaneous Meetups)
+- `POST /api/pins` - Create a new pin
+- `GET /api/pins` - Get accessible pins
+- `PUT /api/pins/:id` - Update pin
+- `DELETE /api/pins/:id` - Delete pin
+
+### Scheduled Meetups
+- `POST /api/meetups` - Create a scheduled meetup
+- `GET /api/meetups` - Get accessible meetups
+- `PUT /api/meetups/:id` - Update meetup
+- `DELETE /api/meetups/:id` - Delete meetup
+
+### RSVPs
+- `POST /api/rsvp` - Create or update RSVP
+- `GET /api/rsvp?meetupId=X&meetupType=Y` - Get RSVPs for meetup
+- `GET /api/rsvp/:meetupId?meetupType=Y` - Get user's RSVP
+- `DELETE /api/rsvp/:meetupId?meetupType=Y` - Delete user's RSVP
+
+### Feed
+- `GET /api/feed` - Get personalized feed
+
+## Development
+
+### Scripts
+
 ```bash
-cd linkup
-npm install
-npm start
+npm run dev      # Start development server with hot reload
+npm run build    # Build TypeScript to JavaScript
+npm start        # Start production server
 ```
 
-### 4. Database Setup
-1. Create a Supabase project
-2. Run the SQL from `linkup-backend/src/database/schema.sql`
-3. Update `.env` with your Supabase credentials
+### Project Structure
 
-For detailed setup instructions, see [SETUP.md](SETUP.md).
-
-## 📱 App Flow
-
-1. **Onboarding** - Enter phone number and verify with SMS code
-2. **Contacts** - Optionally sync contacts and create circles
-3. **Drop Pin** - Share current activity with selected circles
-4. **Schedule** - Plan future meetups with date/time
-5. **Feed** - View and RSVP to friends' activities
-
-## 🔐 Security
-
-- **Row Level Security** - Database-level access controls
-- **JWT Authentication** - Secure token-based auth
-- **Input Validation** - All endpoints validate input
-- **Rate Limiting** - Protection against abuse
-- **CORS Configuration** - Secure cross-origin requests
-
-## 🛠️ Development
-
-### Backend Development
-```bash
-cd linkup-backend
-npm run dev          # Start development server
-npm run build        # Build TypeScript
-npm start           # Start production server
+```
+src/
+├── config/          # Database and app configuration
+├── controllers/     # Route handlers
+├── middleware/      # Express middleware
+├── routes/          # API route definitions
+├── services/        # Business logic and external services
+├── types/           # TypeScript type definitions
+├── database/        # Database schema and migrations
+└── index.ts         # Main application entry point
 ```
 
-### Frontend Development
-```bash
-cd linkup
-npm start           # Start Expo development server
-npm run android     # Open on Android
-npm run ios         # Open on iOS (macOS only)
-npm run web         # Open in web browser
+## Database Schema
+
+The app uses the following main tables:
+- `users` - User accounts and profiles
+- `contacts` - User's imported contacts
+- `circles` - Friend groups/circles
+- `circle_members` - Junction table for circle membership
+- `pins` - Spontaneous meetups
+- `scheduled_meetups` - Planned future meetups
+- `pin_circles` / `meetup_circles` - Visibility settings
+- `rsvps` - User responses to meetups
+- `verification_codes` - SMS verification codes
+
+## Security
+
+- All routes except auth are protected with JWT authentication
+- Row-level security enforced at the database level
+- Rate limiting on authentication endpoints
+- Input validation on all endpoints
+- CORS configured for frontend domains
+
+## SMS Integration
+
+The app supports SMS verification via Twilio. If Twilio credentials are not provided, verification codes will be logged to the console for development.
+
+## Error Handling
+
+All endpoints return consistent JSON responses:
+
+```json
+{
+  "success": true|false,
+  "data": {...},      // On success
+  "error": "...",     // On error
+  "message": "..."    // Optional message
+}
 ```
 
-### API Testing
-```bash
-# Health check
-curl http://localhost:3000/api/health
+## Deployment
 
+1. Build the application: `npm run build`
+2. Set production environment variables
+3. Deploy to your preferred platform (Heroku, Railway, Vercel, etc.)
+4. Ensure your Supabase database is accessible from production
+
+## Testing
+
+API endpoints can be tested using tools like:
+- Postman
+- cURL
+- HTTPie
+- Your favorite API testing tool
+
+Example curl request:
+
+```bash
 # Send verification code
 curl -X POST http://localhost:3000/api/auth/send-code \
   -H "Content-Type: application/json" \
   -d '{"phoneNumber": "+1234567890"}'
+
+# Verify and login
+curl -X POST http://localhost:3000/api/auth/verify \
+  -H "Content-Type: application/json" \
+  -d '{"phoneNumber": "+1234567890", "code": "123456"}'
 ```
-
-## 📊 API Endpoints
-
-- `POST /api/auth/send-code` - Send SMS verification
-- `POST /api/auth/verify` - Verify code and login
-- `GET /api/feed` - Get personalized feed
-- `POST /api/pins` - Create spontaneous meetup
-- `POST /api/meetups` - Create scheduled meetup
-- `POST /api/circles` - Create friend circle
-- `POST /api/rsvp` - RSVP to event
-
-See [Backend README](linkup-backend/README.md) for complete API documentation.
-
-## 🌍 Environment Variables
-
-### Backend (.env)
-```env
-SUPABASE_URL=your_supabase_url
-SUPABASE_SERVICE_KEY=your_service_key
-JWT_SECRET=your_jwt_secret
-TWILIO_ACCOUNT_SID=your_twilio_sid
-TWILIO_AUTH_TOKEN=your_twilio_token
-TWILIO_PHONE_NUMBER=your_twilio_number
-PORT=3000
-NODE_ENV=development
-```
-
-## 🚀 Deployment
-
-### Backend
-- Railway, Heroku, Vercel, AWS, GCP, Azure
-- Set production environment variables
-- Ensure Supabase database is accessible
-
-### Frontend
-- Expo EAS Build for app stores
-- Update API_BASE_URL for production
-- Configure app store metadata
-
-## 📝 License
-
-This project is licensed under the MIT License.
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
-
-## 📞 Support
-
-For setup help or questions, check:
-- [SETUP.md](SETUP.md) for detailed setup instructions
-- [Backend README](linkup-backend/README.md) for API documentation
-- Issues tab for known problems
-
-## 🔮 Roadmap
-
-- [ ] Push notifications with FCM
-- [ ] Group chat integration
-- [ ] Calendar sync
-- [ ] Maps integration for navigation
-- [ ] Photo sharing
-- [ ] Event analytics
-- [ ] Social features (followers, public events)
-
----
-
-Built with ❤️ using React Native, Node.js, and Supabase

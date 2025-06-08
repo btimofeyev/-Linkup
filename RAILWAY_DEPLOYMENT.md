@@ -12,12 +12,13 @@
 
 ### 2. Configure Build Settings
 
-Railway should auto-detect your Node.js project. If needed:
+Railway should auto-detect your Node.js project using the root package.json. The configuration is already set up in `railway.json`:
 
-1. Go to **Settings** → **Build**
-2. Set **Build Command**: `npm run build`
-3. Set **Start Command**: `npm run start`
-4. Set **Root Directory**: `irlly-backend`
+- **Build Command**: `cd irlly-backend && npm install && npm run build`
+- **Start Command**: `cd irlly-backend && npm start`
+- **Health Check**: `/api/health`
+
+No manual configuration needed!
 
 ### 3. Set Environment Variables
 
