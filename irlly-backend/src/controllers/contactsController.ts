@@ -356,7 +356,6 @@ export const addContactByUsername = [
             from_username: fromUser.username,
             from_name: fromUser.name || fromUser.username
           });
-          console.log(`📬 Notification sent to ${targetUser.username} about friend request from ${fromUser.username}`);
         }
       } catch (notificationError) {
         console.error('Error creating notification:', notificationError);

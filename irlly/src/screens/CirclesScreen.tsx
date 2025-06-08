@@ -32,7 +32,6 @@ export const CirclesScreen: React.FC = () => {
   const [showNonAppContacts, setShowNonAppContacts] = useState(false);
 
   useEffect(() => {
-    console.log('Contacts in CirclesScreen:', contacts);
     if (contacts.length === 0) {
       // Try to refresh contacts if none are loaded
       refreshContacts();

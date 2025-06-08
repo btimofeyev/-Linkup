@@ -47,7 +47,6 @@ export const CirclesProvider: React.FC<CirclesProviderProps> = ({ children }) =>
   const loadCirclesFromBackend = async () => {
     try {
       setIsLoading(true);
-      console.log('Loading circles from backend...');
       const response = await apiService.getCircles();
       if (response.success && response.data && (response.data as any).circles) {
         const circlesData = (response.data as any).circles;
@@ -61,7 +60,6 @@ export const CirclesProvider: React.FC<CirclesProviderProps> = ({ children }) =>
           createdAt: new Date(circle.created_at),
         }));
         
-        console.log('Loaded circles from backend:', backendCircles.length);
         setCircles(backendCircles);
       }
     } catch (error) {
@@ -76,7 +74,6 @@ export const CirclesProvider: React.FC<CirclesProviderProps> = ({ children }) =>
     emoji?: string,
     contactIds: string[] = []
   ): Promise<Circle> => {
-    console.log('Creating circle:', { name, emoji, contactIds });
     
     const response = await apiService.createCircle({
       name,
@@ -98,7 +95,6 @@ export const CirclesProvider: React.FC<CirclesProviderProps> = ({ children }) =>
       const updatedCircles = [...circles, newCircle];
       setCircles(updatedCircles);
       
-      console.log('Circle created successfully:', newCircle);
       return newCircle;
     }
 

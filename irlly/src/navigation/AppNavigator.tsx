@@ -96,11 +96,9 @@ const AuthenticatedStack = () => {
     return (
       <ContactsPermissionScreen
         onPermissionGranted={() => {
-          console.log('Contacts permission granted');
           handleContactsScreenCompleted();
         }}
         onSkip={() => {
-          console.log('Contacts permission skipped');
           handleContactsScreenCompleted();
         }}
       />

@@ -41,11 +41,9 @@ export const FeedProvider: React.FC<FeedProviderProps> = ({ children, isAuthenti
   const loadFeedFromBackend = async () => {
     try {
       setIsLoading(true);
-      console.log('Loading feed from backend...');
       const response = await apiService.getFeed();
       if (response.success && response.data) {
         const backendFeed = response.data.feed || [];
-        console.log('Loaded feed from backend:', backendFeed.length);
         setFeedItems(backendFeed);
       }
     } catch (error) {
