@@ -319,7 +319,9 @@ export const sendVerificationForRegistration = [
       }
 
       // Send SMS
+      console.log(`Attempting to send SMS to ${phoneNumber} with code ${code}`);
       const smsSent = await sendVerificationCode(phoneNumber, code);
+      console.log(`SMS send result: ${smsSent}`);
       
       if (!smsSent) {
         res.status(500).json({
@@ -464,8 +466,10 @@ export const sendVerificationForLogin = [
 
   async (req: Request, res: Response): Promise<void> => {
     try {
+      console.log('sendVerificationForLogin called with:', req.body);
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
+        console.log('Validation errors:', errors.array());
         res.status(400).json({
           success: false,
           error: 'Validation failed',
@@ -475,6 +479,7 @@ export const sendVerificationForLogin = [
       }
 
       const { username } = req.body;
+      console.log(`Looking up user with username: ${username}`);
 
       // Find user by username
       const { data: user, error: userError } = await supabase
@@ -483,7 +488,10 @@ export const sendVerificationForLogin = [
         .eq('username', username)
         .single();
 
+      console.log('User lookup result:', { user, userError });
+
       if (userError || !user) {
+        console.log('User not found:', userError);
         res.status(404).json({
           success: false,
           error: 'User not found'
@@ -515,7 +523,9 @@ export const sendVerificationForLogin = [
       }
 
       // Send SMS
+      console.log(`Attempting to send SMS for login to ${user.phone_number} with code ${code}`);
       const smsSent = await sendVerificationCode(user.phone_number, code);
+      console.log(`SMS send result for login: ${smsSent}`);
       
       if (!smsSent) {
         res.status(500).json({

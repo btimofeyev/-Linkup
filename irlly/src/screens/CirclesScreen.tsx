@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -13,16 +13,29 @@ import {
 } from 'react-native';
 import { useCircles } from '../contexts/CirclesContext';
 import { useContacts } from '../contexts/ContactsContext';
-import { Circle, Contact } from '../types';
+import { Circle, Contact, UserSearchResult } from '../types';
+import { apiService } from '../services/apiService';
 
 export const CirclesScreen: React.FC = () => {
   const { circles, createCircle, deleteCircle, addContactsToCircle, removeContactFromCircle } = useCircles();
-  const { contacts } = useContacts();
+  const { contacts, refreshContacts } = useContacts();
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
   const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
+  const [isAddContactModalVisible, setIsAddContactModalVisible] = useState(false);
   const [selectedCircle, setSelectedCircle] = useState<Circle | null>(null);
   const [newCircleName, setNewCircleName] = useState('');
   const [selectedEmoji, setSelectedEmoji] = useState('👥');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchResults, setSearchResults] = useState<UserSearchResult[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+
+  useEffect(() => {
+    console.log('Contacts in CirclesScreen:', contacts);
+    if (contacts.length === 0) {
+      // Try to refresh contacts if none are loaded
+      refreshContacts();
+    }
+  }, [contacts]);
 
   const emojiOptions = ['👥', '💼', '🎓', '🏋️', '🎵', '🍕', '☕', '🏠'];
 
@@ -81,6 +94,52 @@ export const CirclesScreen: React.FC = () => {
         ...selectedCircle,
         contactIds: selectedCircle.contactIds.filter(id => id !== contactId)
       });
+    }
+  };
+
+  const handleSearch = async () => {
+    if (!searchTerm.trim()) {
+      Alert.alert('Error', 'Please enter a username to search');
+      return;
+    }
+
+    setIsSearching(true);
+    try {
+      const result = await apiService.searchUsers(searchTerm.trim());
+
+      if (result.success && result.data) {
+        setSearchResults(result.data.users || []);
+      } else {
+        Alert.alert('Error', result.error || 'Search failed');
+        setSearchResults([]);
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Network error occurred');
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const handleAddNewContact = async (username: string) => {
+    setIsSearching(true);
+    try {
+      const result = await apiService.addContactByUsername(username);
+
+      if (result.success) {
+        Alert.alert('Success', `Added @${username} to your contacts!`);
+        // Refresh contacts to get the new contact
+        await refreshContacts();
+        // Remove the added user from search results
+        setSearchResults(prev => prev.filter(user => user.username !== username));
+        setSearchTerm('');
+      } else {
+        Alert.alert('Error', result.error || 'Failed to add contact');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Network error occurred');
+    } finally {
+      setIsSearching(false);
     }
   };
 
@@ -238,18 +297,82 @@ export const CirclesScreen: React.FC = () => {
             })}
 
             <Text style={styles.sectionTitle}>Add Contacts</Text>
-            {contacts
-              .filter(contact => !selectedCircle?.contactIds?.includes(contact.id))
-              .map(contact => (
-                <TouchableOpacity
-                  key={contact.id}
-                  style={styles.contactItem}
-                  onPress={() => handleAddContact(contact.id)}
-                >
-                  <Text style={styles.contactName}>{contact.name}</Text>
-                  <Text style={styles.addButtonText}>+</Text>
-                </TouchableOpacity>
-              ))}
+            
+            {/* Search for new contacts */}
+            <View style={styles.searchContainer}>
+              <TextInput
+                style={styles.searchInput}
+                value={searchTerm}
+                onChangeText={setSearchTerm}
+                placeholder="Search username..."
+                autoCapitalize="none"
+                placeholderTextColor="#A0AEC0"
+              />
+              <TouchableOpacity
+                style={[styles.searchButton, isSearching && styles.searchButtonDisabled]}
+                onPress={handleSearch}
+                disabled={isSearching}
+              >
+                <Text style={styles.searchButtonText}>
+                  {isSearching ? '...' : '🔍'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Search results */}
+            {searchResults.length > 0 && (
+              <View style={styles.searchResults}>
+                <Text style={styles.searchResultsTitle}>Search Results:</Text>
+                {searchResults.map((user) => (
+                  <View key={user.id} style={styles.searchResultItem}>
+                    <View style={styles.userInfo}>
+                      <Text style={styles.username}>@{user.username}</Text>
+                      <Text style={styles.displayName}>{user.name}</Text>
+                    </View>
+                    <TouchableOpacity
+                      style={[styles.addNewButton, isSearching && styles.addNewButtonDisabled]}
+                      onPress={() => handleAddNewContact(user.username)}
+                      disabled={isSearching}
+                    >
+                      <Text style={styles.addNewButtonText}>Add</Text>
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </View>
+            )}
+
+            {/* Existing contacts */}
+            {contacts.length > 0 && (
+              <>
+                <Text style={styles.subsectionTitle}>Your Contacts</Text>
+                {contacts
+                  .filter(contact => contact.isRegistered && !selectedCircle?.contactIds?.includes(contact.id))
+                  .map(contact => (
+                    <TouchableOpacity
+                      key={contact.id}
+                      style={styles.contactItem}
+                      onPress={() => handleAddContact(contact.id)}
+                    >
+                      <View>
+                        <Text style={styles.contactName}>{contact.name}</Text>
+                        {contact.username && (
+                          <Text style={styles.contactUsername}>@{contact.username}</Text>
+                        )}
+                      </View>
+                      <Text style={styles.addButtonText}>+</Text>
+                    </TouchableOpacity>
+                  ))}
+              </>
+            )}
+
+            {contacts.length === 0 && (
+              <View style={styles.noContactsContainer}>
+                <Text style={styles.noContactsText}>No contacts yet</Text>
+                <Text style={styles.noContactsSubtext}>
+                  Search for friends by username to add them to your circles
+                </Text>
+              </View>
+            )}
           </ScrollView>
         </SafeAreaView>
       </Modal>
@@ -548,5 +671,105 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#2D3748',
   },
-
+  contactUsername: {
+    fontSize: 14,
+    color: '#64748B',
+    marginTop: 2,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    marginBottom: 16,
+  },
+  searchInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 12,
+    padding: 12,
+    fontSize: 16,
+    backgroundColor: '#FFFFFF',
+    marginRight: 12,
+  },
+  searchButton: {
+    backgroundColor: '#FDB366',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  searchButtonDisabled: {
+    opacity: 0.6,
+  },
+  searchButtonText: {
+    fontSize: 18,
+  },
+  searchResults: {
+    marginBottom: 20,
+  },
+  searchResultsTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#2D3748',
+    marginBottom: 8,
+  },
+  searchResultItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 12,
+    backgroundColor: '#E6FFFA',
+    borderRadius: 12,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#81E6D9',
+  },
+  userInfo: {
+    flex: 1,
+  },
+  username: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#2D3748',
+  },
+  displayName: {
+    fontSize: 14,
+    color: '#4A5568',
+    marginTop: 2,
+  },
+  addNewButton: {
+    backgroundColor: '#48BB78',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  addNewButtonDisabled: {
+    opacity: 0.6,
+  },
+  addNewButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  subsectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#2D3748',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  noContactsContainer: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  noContactsText: {
+    fontSize: 16,
+    color: '#4A5568',
+    textAlign: 'center',
+    marginBottom: 4,
+  },
+  noContactsSubtext: {
+    fontSize: 14,
+    color: '#718096',
+    textAlign: 'center',
+  },
 });
