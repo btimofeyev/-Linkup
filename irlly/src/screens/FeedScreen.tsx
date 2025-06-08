@@ -54,17 +54,16 @@ export const FeedScreen: React.FC = () => {
     } finally {
       setIsLoadingNotifications(false);
     }
-  }, [isLoadingNotifications]);
+  }, []); // Empty dependencies to prevent re-creation
 
-  // TEMPORARILY DISABLED TO STOP INFINITE LOOP
-  // useFocusEffect(
-  //   React.useCallback(() => {
-  //     if (user) {
-  //       loadFeed();
-  //       loadNotifications();
-  //     }
-  //   }, [user, loadFeed, loadNotifications])
-  // );
+  useFocusEffect(
+    React.useCallback(() => {
+      if (user) {
+        loadFeed();
+        loadNotifications();
+      }
+    }, [user?.id]) // Only depend on user.id, not the functions
+  );
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -217,23 +216,12 @@ export const FeedScreen: React.FC = () => {
       <View style={styles.content}>
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Linkup</Text>
-          <View style={styles.headerButtons}>
-            <TouchableOpacity
-              style={styles.loadButton}
-              onPress={() => {
-                loadFeed();
-                loadNotifications();
-              }}
-            >
-              <Text style={styles.loadButtonText}>Load</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.logoutButton}
-              onPress={handleLogout}
-            >
-              <Text style={styles.logoutButtonText}>Sign Out</Text>
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity
+            style={styles.logoutButton}
+            onPress={handleLogout}
+          >
+            <Text style={styles.logoutButtonText}>Sign Out</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Notifications Section */}
@@ -347,26 +335,6 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   logoutButtonText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  headerButtons: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  loadButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 12,
-    backgroundColor: '#48BB78',
-    shadowColor: '#48BB78',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  loadButtonText: {
     color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '600',

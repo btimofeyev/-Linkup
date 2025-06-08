@@ -28,16 +28,16 @@ export const FeedProvider: React.FC<FeedProviderProps> = ({ children, isAuthenti
   const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // TEMPORARILY DISABLED TO STOP INFINITE LOOP
-  // useEffect(() => {
-  //   if (isAuthenticated) {
-  //     // Only load from backend - remove AsyncStorage dependency
-  //     loadFeedFromBackend();
-  //   } else {
-  //     // Clear feed when user logs out
-  //     setFeedItems([]);
-  //   }
-  // }, [isAuthenticated]);
+  useEffect(() => {
+    if (isAuthenticated) {
+      // Only load from backend - remove AsyncStorage dependency
+      loadFeedFromBackend();
+    } else {
+      // Clear feed when user logs out
+      setFeedItems([]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated]); // Simple dependency - only on isAuthenticated boolean
 
   const loadFeedFromBackend = useCallback(async () => {
     if (isLoading) return; // Prevent multiple simultaneous calls
@@ -54,7 +54,7 @@ export const FeedProvider: React.FC<FeedProviderProps> = ({ children, isAuthenti
     } finally {
       setIsLoading(false);
     }
-  }, [isLoading]);
+  }, []); // Empty dependencies to prevent re-creation
 
   const loadFeed = useCallback(async () => {
     await loadFeedFromBackend();
