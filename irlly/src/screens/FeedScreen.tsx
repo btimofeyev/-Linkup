@@ -84,9 +84,13 @@ export const FeedScreen: React.FC = () => {
       if (rsvpResponse.success) {
         // Refresh feed to show updated RSVP status
         await refreshFeed();
+      } else {
+        console.error('RSVP failed:', rsvpResponse.error);
+        Alert.alert('Error', rsvpResponse.error || 'Failed to update RSVP');
       }
     } catch (error) {
       console.error('Error updating RSVP:', error);
+      Alert.alert('Error', 'Network error occurred');
     }
   };
 

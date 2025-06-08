@@ -60,16 +60,46 @@ export const createOrUpdateRSVP = [
       let hasAccess = meetup.user_id === userId; // Creator always has access
 
       if (!hasAccess) {
-        // Check if user is in any of the circles this meetup is shared with
-        const { data: userCircles } = await supabase
+        // Check if user is a member of any circles this meetup is shared with
+        // First, find the user's contact records
+        const { data: userContacts } = await supabase
+          .from('contacts')
+          .select('id')
+          .eq('contact_user_id', userId);
+
+        const userContactIds = userContacts?.map(c => c.id) || [];
+
+        // Get circles where any of the user's contact records are members
+        let userMemberships: any[] = [];
+        if (userContactIds.length > 0) {
+          const { data: memberships } = await supabase
+            .from('circle_members')
+            .select('circle_id')
+            .in('contact_id', userContactIds);
+          userMemberships = memberships || [];
+        }
+
+        // Also get circles the user owns
+        const { data: ownedCircles } = await supabase
           .from('circles')
           .select('id')
           .eq('user_id', userId);
 
-        const userCircleIds = new Set(userCircles?.map(c => c.id) || []);
+        const memberCircleIds = userMemberships.map(m => m.circle_id);
+        const ownedCircleIds = ownedCircles?.map(c => c.id) || [];
+        const userCircleIds = new Set([...memberCircleIds, ...ownedCircleIds]);
+
         const meetupCircleIds = (meetup as any)[circleTableName]?.map((c: any) => c.circle_id) || [];
 
         hasAccess = meetupCircleIds.some((circleId: any) => userCircleIds.has(circleId));
+
+        console.log(`🎯 RSVP Access Check for user ${userId}:`, {
+          meetupId,
+          meetupType,
+          meetupCircleIds,
+          userCircleIds: Array.from(userCircleIds),
+          hasAccess
+        });
       }
 
       if (!hasAccess) {
