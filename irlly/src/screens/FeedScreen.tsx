@@ -14,12 +14,15 @@ import { FeedItem, ScheduledMeetup, Notification } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { useFeed } from '../contexts/FeedContext';
 import { apiService } from '../services/apiService';
+import { EventDetailModal } from '../components/EventDetailModal';
 
 export const FeedScreen: React.FC = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [isLoadingNotifications, setIsLoadingNotifications] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<FeedItem | null>(null);
+  const [showEventDetail, setShowEventDetail] = useState(false);
   const { user, logout } = useAuth();
   const { feedItems, loadFeed, refreshFeed } = useFeed();
 
@@ -162,8 +165,33 @@ export const FeedScreen: React.FC = () => {
     );
   };
 
+  const handleEventPress = (item: FeedItem) => {
+    setSelectedEvent(item);
+    setShowEventDetail(true);
+  };
+
+  const handleCloseEventDetail = () => {
+    setShowEventDetail(false);
+    setSelectedEvent(null);
+  };
+
+  const handleCancelEvent = async (eventId: string, eventType: 'pin' | 'scheduled') => {
+    try {
+      // TODO: Implement cancel event API endpoint
+      Alert.alert('Feature Coming Soon', 'Event cancellation will be available soon!');
+      // For now, just refresh the feed
+      await refreshFeed();
+    } catch (error) {
+      Alert.alert('Error', 'Failed to cancel event');
+    }
+  };
+
   const renderFeedItem = ({ item }: { item: FeedItem }) => (
-    <View style={styles.feedItem}>
+    <TouchableOpacity 
+      style={styles.feedItem}
+      onPress={() => handleEventPress(item)}
+      activeOpacity={0.9}
+    >
       <View style={styles.itemHeader}>
         <Text style={styles.itemTitle}>
           {item.data.emoji} {item.data.title}
@@ -215,7 +243,7 @@ export const FeedScreen: React.FC = () => {
           </TouchableOpacity>
         </View>
       )}
-    </View>
+    </TouchableOpacity>
   );
 
   return (
@@ -302,6 +330,13 @@ export const FeedScreen: React.FC = () => {
           }
         />
       </View>
+
+      <EventDetailModal
+        visible={showEventDetail}
+        onClose={handleCloseEventDetail}
+        item={selectedEvent}
+        onCancelEvent={handleCancelEvent}
+      />
     </SafeAreaView>
   );
 };
