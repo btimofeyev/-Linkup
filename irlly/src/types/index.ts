@@ -74,6 +74,24 @@ export interface RSVP {
   createdAt: Date;
 }
 
+export interface Notification {
+  id: string;
+  userId: string;
+  fromUserId?: string;
+  type: 'friend_request' | 'friend_accepted' | 'meetup_invite' | 'rsvp_update';
+  title: string;
+  message: string;
+  data?: any;
+  isRead: boolean;
+  createdAt: Date;
+  fromUser?: {
+    id: string;
+    username: string;
+    name: string;
+    avatarUrl?: string;
+  };
+}
+
 export interface FeedItem {
   id: string;
   type: 'pin' | 'scheduled';

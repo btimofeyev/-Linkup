@@ -221,6 +221,27 @@ class ApiService {
   async getFeed() {
     return this.request('/feed');
   }
+
+  // Notifications
+  async getNotifications() {
+    return this.request('/notifications');
+  }
+
+  async getUnreadNotificationCount() {
+    return this.request('/notifications/unread-count');
+  }
+
+  async markNotificationAsRead(notificationId: string) {
+    return this.request(`/notifications/${notificationId}/read`, {
+      method: 'PUT',
+    });
+  }
+
+  async markAllNotificationsAsRead() {
+    return this.request('/notifications/mark-all-read', {
+      method: 'PUT',
+    });
+  }
 }
 
 export const apiService = new ApiService();

@@ -366,12 +366,12 @@ export const CirclesScreen: React.FC = () => {
                 
                 {/* Show registered contacts first */}
                 {contacts
-                  .filter(contact => contact.isRegistered && !selectedCircle?.contactIds?.includes(contact.id))
+                  .filter(contact => contact.isRegistered && !selectedCircle?.contactIds?.includes(contact.contactId || contact.id))
                   .map(contact => (
                     <TouchableOpacity
                       key={contact.id}
                       style={styles.contactItem}
-                      onPress={() => handleAddContact(contact.id)}
+                      onPress={() => handleAddContact(contact.contactId || contact.id)}
                     >
                       <View>
                         <Text style={styles.contactName}>{contact.name}</Text>
@@ -382,7 +382,7 @@ export const CirclesScreen: React.FC = () => {
                       </View>
                       <TouchableOpacity
                         style={styles.addToCircleButton}
-                        onPress={() => handleAddContact(contact.id)}
+                        onPress={() => handleAddContact(contact.contactId || contact.id)}
                       >
                         <Text style={styles.addToCircleButtonText}>Add to Circle</Text>
                       </TouchableOpacity>
@@ -391,13 +391,13 @@ export const CirclesScreen: React.FC = () => {
 
                 {/* Show unregistered contacts */}
                 {contacts
-                  .filter(contact => !contact.isRegistered && !selectedCircle?.contactIds?.includes(contact.id))
+                  .filter(contact => !contact.isRegistered && !selectedCircle?.contactIds?.includes(contact.contactId || contact.id))
                   .slice(0, 10) // Limit to first 10 to avoid overwhelming UI
                   .map(contact => (
                     <TouchableOpacity
                       key={contact.id}
                       style={[styles.contactItem, styles.unregisteredContactItem]}
-                      onPress={() => handleAddContact(contact.id)}
+                      onPress={() => handleAddContact(contact.contactId || contact.id)}
                     >
                       <View>
                         <Text style={styles.contactName}>{contact.name}</Text>
@@ -406,14 +406,14 @@ export const CirclesScreen: React.FC = () => {
                       </View>
                       <TouchableOpacity
                         style={styles.addToCircleButton}
-                        onPress={() => handleAddContact(contact.id)}
+                        onPress={() => handleAddContact(contact.contactId || contact.id)}
                       >
                         <Text style={styles.addToCircleButtonText}>Add to Circle</Text>
                       </TouchableOpacity>
                     </TouchableOpacity>
                   ))}
                 
-                {contacts.filter(contact => !selectedCircle?.contactIds?.includes(contact.id)).length === 0 && (
+                {contacts.filter(contact => !selectedCircle?.contactIds?.includes(contact.contactId || contact.id)).length === 0 && (
                   <View style={styles.allAddedContainer}>
                     <Text style={styles.allAddedText}>✅ All your contacts are already in this circle!</Text>
                   </View>
