@@ -361,8 +361,10 @@ export const CirclesScreen: React.FC = () => {
             {contacts.length > 0 && (
               <>
                 <Text style={styles.subsectionTitle}>
-                  Your Contacts ({contacts.filter(contact => contact.isRegistered).length})
+                  Your Contacts ({contacts.length})
                 </Text>
+                
+                {/* Show registered contacts first */}
                 {contacts
                   .filter(contact => contact.isRegistered && !selectedCircle?.contactIds?.includes(contact.id))
                   .map(contact => (
@@ -376,6 +378,31 @@ export const CirclesScreen: React.FC = () => {
                         {contact.username && (
                           <Text style={styles.contactUsername}>@{contact.username}</Text>
                         )}
+                        <Text style={styles.contactStatus}>✅ On Linkup</Text>
+                      </View>
+                      <TouchableOpacity
+                        style={styles.addToCircleButton}
+                        onPress={() => handleAddContact(contact.id)}
+                      >
+                        <Text style={styles.addToCircleButtonText}>Add to Circle</Text>
+                      </TouchableOpacity>
+                    </TouchableOpacity>
+                  ))}
+
+                {/* Show unregistered contacts */}
+                {contacts
+                  .filter(contact => !contact.isRegistered && !selectedCircle?.contactIds?.includes(contact.id))
+                  .slice(0, 10) // Limit to first 10 to avoid overwhelming UI
+                  .map(contact => (
+                    <TouchableOpacity
+                      key={contact.id}
+                      style={[styles.contactItem, styles.unregisteredContactItem]}
+                      onPress={() => handleAddContact(contact.id)}
+                    >
+                      <View>
+                        <Text style={styles.contactName}>{contact.name}</Text>
+                        <Text style={styles.contactPhone}>{contact.phoneNumber}</Text>
+                        <Text style={styles.contactStatus}>📱 Not on Linkup yet</Text>
                       </View>
                       <TouchableOpacity
                         style={styles.addToCircleButton}
@@ -386,7 +413,7 @@ export const CirclesScreen: React.FC = () => {
                     </TouchableOpacity>
                   ))}
                 
-                {contacts.filter(contact => contact.isRegistered && !selectedCircle?.contactIds?.includes(contact.id)).length === 0 && (
+                {contacts.filter(contact => !selectedCircle?.contactIds?.includes(contact.id)).length === 0 && (
                   <View style={styles.allAddedContainer}>
                     <Text style={styles.allAddedText}>✅ All your contacts are already in this circle!</Text>
                   </View>
@@ -824,5 +851,22 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#15803D',
     fontWeight: '500',
+  },
+  unregisteredContactItem: {
+    opacity: 0.7,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderStyle: 'dashed',
+  },
+  contactPhone: {
+    fontSize: 12,
+    color: '#718096',
+    marginTop: 2,
+  },
+  contactStatus: {
+    fontSize: 11,
+    color: '#48BB78',
+    fontWeight: '500',
+    marginTop: 4,
   },
 });
