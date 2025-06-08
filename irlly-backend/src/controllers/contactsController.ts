@@ -298,6 +298,28 @@ export const addContactByUsername = [
         return;
       }
 
+      // Create notification for the target user
+      try {
+        const { data: fromUser } = await supabase
+          .from('users')
+          .select('username, name')
+          .eq('id', userId)
+          .single();
+
+        if (fromUser) {
+          await supabase.rpc('create_friend_request_notification', {
+            target_user_id: targetUser.id,
+            from_user_id: userId,
+            from_username: fromUser.username,
+            from_name: fromUser.name || fromUser.username
+          });
+          console.log(`📬 Notification sent to ${targetUser.username} about friend request from ${fromUser.username}`);
+        }
+      } catch (notificationError) {
+        console.error('Error creating notification:', notificationError);
+        // Don't fail the main operation if notification fails
+      }
+      
       res.json({
         success: true,
         data: { contact: newContact },

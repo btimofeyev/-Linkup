@@ -133,6 +133,22 @@ export const CirclesScreen: React.FC = () => {
         // Remove the added user from search results
         setSearchResults(prev => prev.filter(user => user.username !== username));
         setSearchTerm('');
+        
+        // Auto-add to current circle if we're in circle detail view
+        if (selectedCircle && result.data?.contact) {
+          setTimeout(async () => {
+            try {
+              await addContactsToCircle(selectedCircle.id, [result.data.contact.id]);
+              setSelectedCircle({
+                ...selectedCircle,
+                contactIds: [...selectedCircle.contactIds, result.data.contact.id]
+              });
+              Alert.alert('Added to Circle', `@${username} has been added to "${selectedCircle.name}"`);
+            } catch (error) {
+              console.error('Error adding to circle:', error);
+            }
+          }, 500); // Small delay to ensure contact is loaded
+        }
       } else {
         Alert.alert('Error', result.error || 'Failed to add contact');
       }
@@ -344,7 +360,9 @@ export const CirclesScreen: React.FC = () => {
             {/* Existing contacts */}
             {contacts.length > 0 && (
               <>
-                <Text style={styles.subsectionTitle}>Your Contacts</Text>
+                <Text style={styles.subsectionTitle}>
+                  Your Contacts ({contacts.filter(contact => contact.isRegistered).length})
+                </Text>
                 {contacts
                   .filter(contact => contact.isRegistered && !selectedCircle?.contactIds?.includes(contact.id))
                   .map(contact => (
@@ -359,9 +377,20 @@ export const CirclesScreen: React.FC = () => {
                           <Text style={styles.contactUsername}>@{contact.username}</Text>
                         )}
                       </View>
-                      <Text style={styles.addButtonText}>+</Text>
+                      <TouchableOpacity
+                        style={styles.addToCircleButton}
+                        onPress={() => handleAddContact(contact.id)}
+                      >
+                        <Text style={styles.addToCircleButtonText}>Add to Circle</Text>
+                      </TouchableOpacity>
                     </TouchableOpacity>
                   ))}
+                
+                {contacts.filter(contact => contact.isRegistered && !selectedCircle?.contactIds?.includes(contact.id)).length === 0 && (
+                  <View style={styles.allAddedContainer}>
+                    <Text style={styles.allAddedText}>✅ All your contacts are already in this circle!</Text>
+                  </View>
+                )}
               </>
             )}
 
@@ -771,5 +800,29 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#718096',
     textAlign: 'center',
+  },
+  addToCircleButton: {
+    backgroundColor: '#FDB366',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  addToCircleButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  allAddedContainer: {
+    padding: 16,
+    backgroundColor: '#F0FDF4',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#BBF7D0',
+    alignItems: 'center',
+  },
+  allAddedText: {
+    fontSize: 14,
+    color: '#15803D',
+    fontWeight: '500',
   },
 });

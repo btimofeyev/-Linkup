@@ -6,6 +6,7 @@ import pinsRoutes from './pins';
 import meetupsRoutes from './meetups';
 import rsvpRoutes from './rsvp';
 import feedRoutes from './feed';
+import notificationsRoutes from './notifications';
 
 const router = Router();
 
@@ -26,5 +27,6 @@ router.use('/pins', pinsRoutes);
 router.use('/meetups', meetupsRoutes);
 router.use('/rsvp', rsvpRoutes);
 router.use('/feed', feedRoutes);
+router.use('/notifications', notificationsRoutes);
 
 export default router;
