@@ -14,7 +14,10 @@
     },
     "ios": {
       "bundleIdentifier": "com.linkup.irlly",
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSContactsUsageDescription": "This app needs access to your contacts to help you find friends who are also using the app and create friend circles."
+      }
     },
     "android": {
       "package": "com.linkup.irlly",
@@ -22,10 +25,22 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "permissions": [
+        "READ_CONTACTS",
+        "WRITE_CONTACTS"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      [
+        "expo-contacts",
+        {
+          "contactsPermission": "Allow $(PRODUCT_NAME) to access your contacts to help you find friends and create circles."
+        }
+      ]
+    ]
   }
 }

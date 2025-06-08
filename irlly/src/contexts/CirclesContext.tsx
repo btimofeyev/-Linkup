@@ -34,16 +34,45 @@ export const CirclesProvider: React.FC<CirclesProviderProps> = ({ children }) =>
 
   useEffect(() => {
     loadCirclesFromStorage();
+    // Load from backend after component mounts
+    setTimeout(() => {
+      loadCirclesFromBackend();
+    }, 1000);
   }, []);
 
   const loadCirclesFromStorage = async () => {
     try {
-      const response = await apiService.getCircles();
-      if (response.success && response.data) {
-        setCircles(response.data.circles || []);
+      const storedCircles = await AsyncStorage.getItem('circles');
+      if (storedCircles) {
+        const parsedCircles = JSON.parse(storedCircles);
+        console.log('Loaded circles from storage:', parsedCircles.length);
+        setCircles(parsedCircles);
       }
     } catch (error) {
-      console.error('Error loading circles:', error);
+      console.error('Error loading circles from storage:', error);
+    }
+  };
+
+  const loadCirclesFromBackend = async () => {
+    try {
+      console.log('Loading circles from backend...');
+      const response = await apiService.getCircles();
+      if (response.success && response.data) {
+        const backendCircles: Circle[] = response.data.circles.map((circle: any) => ({
+          id: circle.id,
+          userId: circle.user_id,
+          name: circle.name,
+          emoji: circle.emoji,
+          contactIds: circle.members?.map((member: any) => member.id) || [],
+          createdAt: new Date(circle.created_at),
+        }));
+        
+        console.log('Loaded circles from backend:', backendCircles.length);
+        setCircles(backendCircles);
+        await AsyncStorage.setItem('circles', JSON.stringify(backendCircles));
+      }
+    } catch (error) {
+      console.error('Error loading circles from backend:', error);
     }
   };
 
@@ -60,6 +89,8 @@ export const CirclesProvider: React.FC<CirclesProviderProps> = ({ children }) =>
     emoji?: string,
     contactIds: string[] = []
   ): Promise<Circle> => {
+    console.log('Creating circle:', { name, emoji, contactIds });
+    
     const response = await apiService.createCircle({
       name,
       emoji,
@@ -67,9 +98,20 @@ export const CirclesProvider: React.FC<CirclesProviderProps> = ({ children }) =>
     });
 
     if (response.success && response.data) {
-      const newCircle = response.data.circle;
+      const newCircle: Circle = {
+        id: response.data.circle.id,
+        userId: response.data.circle.user_id,
+        name: response.data.circle.name,
+        emoji: response.data.circle.emoji,
+        contactIds: contactIds, // Use the passed contactIds
+        createdAt: new Date(response.data.circle.created_at),
+      };
+      
       const updatedCircles = [...circles, newCircle];
       setCircles(updatedCircles);
+      await saveCirclesToStorage(updatedCircles);
+      
+      console.log('Circle created successfully:', newCircle);
       return newCircle;
     }
 
@@ -87,6 +129,7 @@ export const CirclesProvider: React.FC<CirclesProviderProps> = ({ children }) =>
         circle.id === id ? { ...circle, ...updates } : circle
       );
       setCircles(updatedCircles);
+      await saveCirclesToStorage(updatedCircles);
     } else {
       throw new Error(response.error || 'Failed to update circle');
     }
@@ -98,39 +141,86 @@ export const CirclesProvider: React.FC<CirclesProviderProps> = ({ children }) =>
     if (response.success) {
       const updatedCircles = circles.filter(circle => circle.id !== id);
       setCircles(updatedCircles);
+      await saveCirclesToStorage(updatedCircles);
     } else {
       throw new Error(response.error || 'Failed to delete circle');
     }
   };
 
   const addContactsToCircle = async (circleId: string, contactIds: string[]) => {
-    const updatedCircles = circles.map(circle => {
-      if (circle.id === circleId) {
-        const newContactIds = [...new Set([...circle.contactIds, ...contactIds])];
-        return { ...circle, contactIds: newContactIds };
+    try {
+      // Call backend API
+      const response = await apiService.addContactsToCircle(circleId, contactIds);
+      
+      if (response.success) {
+        // Update local state
+        const updatedCircles = circles.map(circle => {
+          if (circle.id === circleId) {
+            const newContactIds = [...new Set([...circle.contactIds, ...contactIds])];
+            return { ...circle, contactIds: newContactIds };
+          }
+          return circle;
+        });
+        setCircles(updatedCircles);
+        await saveCirclesToStorage(updatedCircles);
+      } else {
+        throw new Error(response.error || 'Failed to add contacts to circle');
       }
-      return circle;
-    });
-    setCircles(updatedCircles);
-    await saveCirclesToStorage(updatedCircles);
+    } catch (error) {
+      console.error('Error adding contacts to circle:', error);
+      // Fallback to local update if backend fails
+      const updatedCircles = circles.map(circle => {
+        if (circle.id === circleId) {
+          const newContactIds = [...new Set([...circle.contactIds, ...contactIds])];
+          return { ...circle, contactIds: newContactIds };
+        }
+        return circle;
+      });
+      setCircles(updatedCircles);
+      await saveCirclesToStorage(updatedCircles);
+    }
   };
 
   const removeContactFromCircle = async (circleId: string, contactId: string) => {
-    const updatedCircles = circles.map(circle => {
-      if (circle.id === circleId) {
-        return {
-          ...circle,
-          contactIds: circle.contactIds.filter(id => id !== contactId),
-        };
+    try {
+      // Call backend API
+      const response = await apiService.removeContactFromCircle(circleId, contactId);
+      
+      if (response.success) {
+        // Update local state
+        const updatedCircles = circles.map(circle => {
+          if (circle.id === circleId) {
+            return {
+              ...circle,
+              contactIds: circle.contactIds.filter(id => id !== contactId),
+            };
+          }
+          return circle;
+        });
+        setCircles(updatedCircles);
+        await saveCirclesToStorage(updatedCircles);
+      } else {
+        throw new Error(response.error || 'Failed to remove contact from circle');
       }
-      return circle;
-    });
-    setCircles(updatedCircles);
-    await saveCirclesToStorage(updatedCircles);
+    } catch (error) {
+      console.error('Error removing contact from circle:', error);
+      // Fallback to local update if backend fails
+      const updatedCircles = circles.map(circle => {
+        if (circle.id === circleId) {
+          return {
+            ...circle,
+            contactIds: circle.contactIds.filter(id => id !== contactId),
+          };
+        }
+        return circle;
+      });
+      setCircles(updatedCircles);
+      await saveCirclesToStorage(updatedCircles);
+    }
   };
 
   const refreshCircles = async () => {
-    await loadCirclesFromStorage();
+    await loadCirclesFromBackend();
   };
 
   const value: CirclesContextType = {

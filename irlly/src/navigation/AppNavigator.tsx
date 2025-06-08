@@ -52,33 +52,36 @@ const MainTabs = () => (
   </Tab.Navigator>
 );
 
-const AuthStack = () => {
+const AuthenticatedStack = () => {
   const { hasPermission } = useContacts();
-  const [showContactsPermission, setShowContactsPermission] = useState(false);
+  const [hasShownContactsScreen, setHasShownContactsScreen] = useState(false);
 
-  useEffect(() => {
-    if (!hasPermission) {
-      setShowContactsPermission(true);
-    }
-  }, [hasPermission]);
+  // Check if we should show contacts permission screen
+  const shouldShowContactsPermission = !hasPermission && !hasShownContactsScreen;
 
-  return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="PhoneVerification" component={PhoneVerificationScreen} />
-      {showContactsPermission && (
-        <Stack.Screen 
-          name="ContactsPermission" 
-          component={() => (
-            <ContactsPermissionScreen
-              onPermissionGranted={() => setShowContactsPermission(false)}
-              onSkip={() => setShowContactsPermission(false)}
-            />
-          )}
-        />
-      )}
-    </Stack.Navigator>
-  );
+  if (shouldShowContactsPermission) {
+    return (
+      <ContactsPermissionScreen
+        onPermissionGranted={() => {
+          console.log('Contacts permission granted');
+          setHasShownContactsScreen(true);
+        }}
+        onSkip={() => {
+          console.log('Contacts permission skipped');
+          setHasShownContactsScreen(true);
+        }}
+      />
+    );
+  }
+
+  return <MainTabs />;
 };
+
+const AuthStack = () => (
+  <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Screen name="PhoneVerification" component={PhoneVerificationScreen} />
+  </Stack.Navigator>
+);
 
 export const AppNavigator: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -89,7 +92,7 @@ export const AppNavigator: React.FC = () => {
 
   return (
     <NavigationContainer>
-      {isAuthenticated ? <MainTabs /> : <AuthStack />}
+      {isAuthenticated ? <AuthenticatedStack /> : <AuthStack />}
     </NavigationContainer>
   );
 };

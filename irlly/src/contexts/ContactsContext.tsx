@@ -35,19 +35,33 @@ export const ContactsProvider: React.FC<ContactsProviderProps> = ({ children }) 
   useEffect(() => {
     checkPermission();
     loadContactsFromStorage();
-    loadContactsFromBackend();
+    // Don't load from backend immediately - let the auth flow complete first
   }, []);
 
   const checkPermission = async () => {
-    const { status } = await Contacts.getPermissionsAsync();
-    setHasPermission(status === 'granted');
+    try {
+      const { status } = await Contacts.getPermissionsAsync();
+      const granted = status === 'granted';
+      console.log('Contacts permission status:', status, 'granted:', granted);
+      setHasPermission(granted);
+      
+      // If we have permission, auto-sync contacts
+      if (granted) {
+        loadContactsFromBackend();
+      }
+    } catch (error) {
+      console.error('Error checking contacts permission:', error);
+      setHasPermission(false);
+    }
   };
 
   const loadContactsFromStorage = async () => {
     try {
       const storedContacts = await AsyncStorage.getItem('contacts');
       if (storedContacts) {
-        setContacts(JSON.parse(storedContacts));
+        const parsedContacts = JSON.parse(storedContacts);
+        console.log('Loaded contacts from storage:', parsedContacts.length);
+        setContacts(parsedContacts);
       }
     } catch (error) {
       console.error('Error loading contacts from storage:', error);
@@ -56,6 +70,7 @@ export const ContactsProvider: React.FC<ContactsProviderProps> = ({ children }) 
 
   const loadContactsFromBackend = async () => {
     try {
+      console.log('Loading contacts from backend...');
       const response = await apiService.getContacts();
       if (response.success && response.data) {
         const backendContacts: Contact[] = response.data.contacts.map((contact: any) => ({
@@ -68,6 +83,7 @@ export const ContactsProvider: React.FC<ContactsProviderProps> = ({ children }) 
           createdAt: new Date(contact.created_at),
         }));
         
+        console.log('Loaded contacts from backend:', backendContacts.length);
         // Update local storage with backend data
         setContacts(backendContacts);
         await AsyncStorage.setItem('contacts', JSON.stringify(backendContacts));
@@ -80,8 +96,10 @@ export const ContactsProvider: React.FC<ContactsProviderProps> = ({ children }) 
 
   const requestPermission = async (): Promise<boolean> => {
     try {
+      console.log('Requesting contacts permission...');
       const { status } = await Contacts.requestPermissionsAsync();
       const granted = status === 'granted';
+      console.log('Contacts permission result:', status, 'granted:', granted);
       setHasPermission(granted);
       
       if (granted) {
@@ -103,9 +121,12 @@ export const ContactsProvider: React.FC<ContactsProviderProps> = ({ children }) 
 
     setIsLoading(true);
     try {
+      console.log('Syncing contacts from device...');
       const { data } = await Contacts.getContactsAsync({
         fields: [Contacts.Fields.Name, Contacts.Fields.PhoneNumbers],
       });
+
+      console.log('Got contacts from device:', data.length);
 
       const processedContacts: Contact[] = data
         .filter(contact => 
@@ -123,6 +144,8 @@ export const ContactsProvider: React.FC<ContactsProviderProps> = ({ children }) 
           createdAt: new Date(),
         }));
 
+      console.log('Processed contacts:', processedContacts.length);
+
       // Sync contacts with backend
       try {
         const contactsForBackend = processedContacts.map(contact => ({
@@ -130,10 +153,13 @@ export const ContactsProvider: React.FC<ContactsProviderProps> = ({ children }) 
           phoneNumber: contact.phoneNumber
         }));
         
+        console.log('Syncing with backend...');
         const syncResponse = await apiService.syncContacts(contactsForBackend);
         if (syncResponse.success && syncResponse.data) {
           // Update local contacts with backend response (registered status, etc.)
           const backendContacts = syncResponse.data.contacts || [];
+          console.log('Backend sync successful, got:', backendContacts.length, 'contacts');
+          
           const updatedContacts = processedContacts.map(localContact => {
             const backendContact = backendContacts.find(
               (bc: any) => bc.phone_number === localContact.phoneNumber
@@ -144,9 +170,11 @@ export const ContactsProvider: React.FC<ContactsProviderProps> = ({ children }) 
               contactId: backendContact?.id || localContact.contactId
             };
           });
+          
           setContacts(updatedContacts);
           await AsyncStorage.setItem('contacts', JSON.stringify(updatedContacts));
         } else {
+          console.error('Backend sync failed:', syncResponse.error);
           // Fallback to local contacts if backend sync fails
           setContacts(processedContacts);
           await AsyncStorage.setItem('contacts', JSON.stringify(processedContacts));

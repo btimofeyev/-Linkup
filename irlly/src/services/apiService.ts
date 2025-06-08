@@ -1,7 +1,7 @@
 // API URLs for different environments
-// const API_BASE_URL = 'http://192.168.100.96:3000/api';  // Home PC
+ const API_BASE_URL = 'http://192.168.100.96:3000/api';  // Home PC
 // const API_BASE_URL = 'http://192.168.1.32:3000/api';    // Laptop local
-const API_BASE_URL = 'https://vast-rooms-decide.loca.lt/api'; // Laptop tunneled
+//const API_BASE_URL = 'https://vast-rooms-decide.loca.lt/api'; // Laptop tunneled
 
 class ApiService {
   private accessToken: string | null = null;
@@ -101,6 +101,19 @@ class ApiService {
 
   async deleteCircle(circleId: string) {
     return this.request(`/circles/${circleId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async addContactsToCircle(circleId: string, contactIds: string[]) {
+    return this.request(`/circles/${circleId}/contacts`, {
+      method: 'POST',
+      body: JSON.stringify({ contactIds }),
+    });
+  }
+
+  async removeContactFromCircle(circleId: string, contactId: string) {
+    return this.request(`/circles/${circleId}/contacts/${contactId}`, {
       method: 'DELETE',
     });
   }
