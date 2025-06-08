@@ -8,6 +8,8 @@ interface AuthContextType {
   isLoading: boolean;
   sendVerificationCode: (phoneNumber: string) => Promise<void>;
   verifyCodeAndLogin: (phoneNumber: string, code: string) => Promise<void>;
+  registerWithUsername: (data: { username: string; name: string; email?: string }) => Promise<void>;
+  loginWithUsername: (username: string) => Promise<void>;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
 }
@@ -82,6 +84,46 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const registerWithUsername = async (data: { username: string; name: string; email?: string }) => {
+    try {
+      const response = await apiService.registerWithUsername(data);
+      if (!response.success || !response.data) {
+        throw new Error(response.error || 'Failed to register');
+      }
+
+      const { user, accessToken } = response.data;
+      
+      await AsyncStorage.setItem('user', JSON.stringify(user));
+      await AsyncStorage.setItem('accessToken', accessToken);
+      
+      apiService.setAccessToken(accessToken);
+      setUser(user);
+    } catch (error) {
+      console.error('Error during registration:', error);
+      throw error;
+    }
+  };
+
+  const loginWithUsername = async (username: string) => {
+    try {
+      const response = await apiService.loginWithUsername(username);
+      if (!response.success || !response.data) {
+        throw new Error(response.error || 'Failed to login');
+      }
+
+      const { user, accessToken } = response.data;
+      
+      await AsyncStorage.setItem('user', JSON.stringify(user));
+      await AsyncStorage.setItem('accessToken', accessToken);
+      
+      apiService.setAccessToken(accessToken);
+      setUser(user);
+    } catch (error) {
+      console.error('Error during login:', error);
+      throw error;
+    }
+  };
+
   const logout = async () => {
     try {
       // Clear essential auth data from AsyncStorage
@@ -101,6 +143,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     isLoading,
     sendVerificationCode,
     verifyCodeAndLogin,
+    registerWithUsername,
+    loginWithUsername,
     logout,
     isAuthenticated: !!user,
   };

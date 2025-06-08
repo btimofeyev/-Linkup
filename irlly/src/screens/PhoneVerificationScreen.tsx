@@ -19,11 +19,15 @@ const BackgroundImage = require('../../assets/nybackground.png');
 const LogoImage = require('../../assets/link_logo.png');
 
 export const PhoneVerificationScreen: React.FC = () => {
-  const [step, setStep] = useState<'phone' | 'code'>('phone');
+  const [authMode, setAuthMode] = useState<'phone' | 'username'>('username');
+  const [step, setStep] = useState<'phone' | 'code' | 'register' | 'login'>('login');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
+  const [username, setUsername] = useState('');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { sendVerificationCode, verifyCodeAndLogin } = useAuth();
+  const { sendVerificationCode, verifyCodeAndLogin, registerWithUsername, loginWithUsername } = useAuth();
 
   const handleSendCode = async () => {
     if (!phoneNumber.trim()) {
@@ -60,86 +64,253 @@ export const PhoneVerificationScreen: React.FC = () => {
     }
   };
 
-  const handleBack = () => {
-    setStep('phone');
-    setVerificationCode('');
+  const handleRegister = async () => {
+    if (!username.trim() || !name.trim()) {
+      Alert.alert('Error', 'Please fill in username and name');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await registerWithUsername({
+        username: username.trim(),
+        name: name.trim(),
+        email: email.trim() || undefined,
+      });
+      // Navigation will happen automatically via AuthContext
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to register');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  if (step === 'code') {
-    return (
-      <SafeAreaView style={styles.container}>
-        <ImageBackground
-          style={styles.backgroundImage}
-          source={BackgroundImage}
-        >
-          <View style={styles.overlay} />
-          <KeyboardAvoidingView
-            style={styles.keyboardAvoidingView}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+  const handleLogin = async () => {
+    if (!username.trim()) {
+      Alert.alert('Error', 'Please enter a username');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await loginWithUsername(username.trim());
+      // Navigation will happen automatically via AuthContext
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to login');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleBack = () => {
+    if (authMode === 'phone') {
+      setStep('phone');
+      setVerificationCode('');
+    } else {
+      setStep('login');
+      setUsername('');
+      setName('');
+      setEmail('');
+    }
+  };
+
+  const renderContent = () => {
+    if (step === 'code') {
+      return (
+        <>
+          <Text style={styles.title}>Almost There!</Text>
+          <Text style={styles.tagline}>Real connections await</Text>
+          <Text style={styles.subtitle}>
+            Enter the 6-digit code we sent to {phoneNumber}
+          </Text>
+
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Verification Code</Text>
+            <TextInput
+              style={[styles.input, styles.codeInput]}
+              value={verificationCode}
+              onChangeText={setVerificationCode}
+              placeholder="123456"
+              keyboardType="number-pad"
+              maxLength={6}
+              autoFocus
+              placeholderTextColor="#A0AEC0"
+            />
+          </View>
+
+          <TouchableOpacity
+            style={[styles.button, isLoading && styles.buttonDisabled]}
+            onPress={handleVerifyCode}
+            disabled={isLoading}
           >
-            <ScrollView
-              contentContainerStyle={styles.scrollContent}
-              showsVerticalScrollIndicator={false}
-              keyboardShouldPersistTaps="handled"
-            >
-              <View style={styles.content}>
-                <View style={styles.logoContainer}>
-                  <Image
-                    source={LogoImage}
-                    style={styles.logoImage}
-                    resizeMode="contain"
-                  />
-                </View>
+            <Text style={styles.buttonText}>
+              {isLoading ? 'Verifying...' : 'Join the Movement'}
+            </Text>
+          </TouchableOpacity>
 
-                <Text style={styles.title}>Almost There!</Text>
-                <Text style={styles.tagline}>Real connections await</Text>
-                <Text style={styles.subtitle}>
-                  Enter the 6-digit code we sent to {phoneNumber}
-                </Text>
+          <TouchableOpacity style={styles.backButton} onPress={handleBack}>
+            <Text style={styles.backButtonText}>Change Phone Number</Text>
+          </TouchableOpacity>
 
-                <View style={styles.inputContainer}>
-                  <Text style={styles.label}>Verification Code</Text>
-                  <TextInput
-                    style={[styles.input, styles.codeInput]}
-                    value={verificationCode}
-                    onChangeText={setVerificationCode}
-                    placeholder="123456"
-                    keyboardType="number-pad"
-                    maxLength={6}
-                    autoFocus
-                    placeholderTextColor="#A0AEC0"
-                  />
-                </View>
+          <TouchableOpacity
+            style={styles.resendButton}
+            onPress={handleSendCode}
+            disabled={isLoading}
+          >
+            <Text style={styles.resendButtonText}>Resend Code</Text>
+          </TouchableOpacity>
+        </>
+      );
+    }
 
-                <TouchableOpacity
-                  style={[styles.button, isLoading && styles.buttonDisabled]}
-                  onPress={handleVerifyCode}
-                  disabled={isLoading}
-                >
-                  <Text style={styles.buttonText}>
-                    {isLoading ? 'Verifying...' : 'Join the Movement'}
-                  </Text>
-                </TouchableOpacity>
+    if (step === 'register') {
+      return (
+        <>
+          <Text style={styles.title}>Create Account</Text>
+          <Text style={styles.tagline}>Join the movement</Text>
+          <Text style={styles.subtitle}>
+            Create your username and start connecting with friends
+          </Text>
 
-                <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-                  <Text style={styles.backButtonText}>Change Phone Number</Text>
-                </TouchableOpacity>
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Username</Text>
+            <TextInput
+              style={styles.input}
+              value={username}
+              onChangeText={setUsername}
+              placeholder="your_username"
+              autoCapitalize="none"
+              autoFocus
+              placeholderTextColor="#A0AEC0"
+            />
+          </View>
 
-                <TouchableOpacity
-                  style={styles.resendButton}
-                  onPress={handleSendCode}
-                  disabled={isLoading}
-                >
-                  <Text style={styles.resendButtonText}>Resend Code</Text>
-                </TouchableOpacity>
-              </View>
-            </ScrollView>
-          </KeyboardAvoidingView>
-        </ImageBackground>
-      </SafeAreaView>
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Name</Text>
+            <TextInput
+              style={styles.input}
+              value={name}
+              onChangeText={setName}
+              placeholder="Your full name"
+              placeholderTextColor="#A0AEC0"
+            />
+          </View>
+
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Email (Optional)</Text>
+            <TextInput
+              style={styles.input}
+              value={email}
+              onChangeText={setEmail}
+              placeholder="your@email.com"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              placeholderTextColor="#A0AEC0"
+            />
+          </View>
+
+          <TouchableOpacity
+            style={[styles.button, isLoading && styles.buttonDisabled]}
+            onPress={handleRegister}
+            disabled={isLoading}
+          >
+            <Text style={styles.buttonText}>
+              {isLoading ? 'Creating Account...' : 'Create Account'}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.backButton} onPress={() => setStep('login')}>
+            <Text style={styles.backButtonText}>Already have an account? Login</Text>
+          </TouchableOpacity>
+        </>
+      );
+    }
+
+    if (step === 'phone') {
+      return (
+        <>
+          <Text style={styles.title}>Welcome to Linkup</Text>
+          <Text style={styles.tagline}>Break free from endless scrolling</Text>
+          <Text style={styles.subtitle}>
+            Skip the DMs. Make real plans with real friends in real time.
+          </Text>
+
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Phone Number</Text>
+            <TextInput
+              style={styles.input}
+              value={phoneNumber}
+              onChangeText={setPhoneNumber}
+              placeholder="+1 (555) 123-4567"
+              keyboardType="phone-pad"
+              autoFocus
+              placeholderTextColor="#A0AEC0"
+            />
+          </View>
+
+          <TouchableOpacity
+            style={[styles.button, isLoading && styles.buttonDisabled]}
+            onPress={handleSendCode}
+            disabled={isLoading}
+          >
+            <Text style={styles.buttonText}>
+              {isLoading ? 'Sending...' : 'Start Connecting IRL'}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.backButton} onPress={() => setAuthMode('username')}>
+            <Text style={styles.backButtonText}>Use Username Instead</Text>
+          </TouchableOpacity>
+        </>
+      );
+    }
+
+    // Default: login with username
+    return (
+      <>
+        <Text style={styles.title}>Welcome to Linkup</Text>
+        <Text style={styles.tagline}>Break free from endless scrolling</Text>
+        <Text style={styles.subtitle}>
+          Skip the DMs. Make real plans with real friends in real time.
+        </Text>
+
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Username</Text>
+          <TextInput
+            style={styles.input}
+            value={username}
+            onChangeText={setUsername}
+            placeholder="your_username"
+            autoCapitalize="none"
+            autoFocus
+            placeholderTextColor="#A0AEC0"
+          />
+        </View>
+
+        <TouchableOpacity
+          style={[styles.button, isLoading && styles.buttonDisabled]}
+          onPress={handleLogin}
+          disabled={isLoading}
+        >
+          <Text style={styles.buttonText}>
+            {isLoading ? 'Logging in...' : 'Login'}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.backButton} onPress={() => setStep('register')}>
+          <Text style={styles.backButtonText}>Don't have an account? Sign up</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.backButton} onPress={() => setAuthMode('phone')}>
+          <Text style={styles.backButtonText}>Use Phone Number Instead</Text>
+        </TouchableOpacity>
+
+        <Text style={styles.disclaimer}>
+          By continuing, you agree to our Terms of Service and Privacy Policy
+        </Text>
+      </>
     );
-  }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -167,38 +338,7 @@ export const PhoneVerificationScreen: React.FC = () => {
                 />
               </View>
 
-              <Text style={styles.title}>Welcome to Linkup</Text>
-              <Text style={styles.tagline}>Break free from endless scrolling</Text>
-              <Text style={styles.subtitle}>
-                Skip the DMs. Make real plans with real friends in real time.
-              </Text>
-
-              <View style={styles.inputContainer}>
-                <Text style={styles.label}>Phone Number</Text>
-                <TextInput
-                  style={styles.input}
-                  value={phoneNumber}
-                  onChangeText={setPhoneNumber}
-                  placeholder="+1 (555) 123-4567"
-                  keyboardType="phone-pad"
-                  autoFocus
-                  placeholderTextColor="#A0AEC0"
-                />
-              </View>
-
-              <TouchableOpacity
-                style={[styles.button, isLoading && styles.buttonDisabled]}
-                onPress={handleSendCode}
-                disabled={isLoading}
-              >
-                <Text style={styles.buttonText}>
-                  {isLoading ? 'Sending...' : 'Start Connecting IRL'}
-                </Text>
-              </TouchableOpacity>
-
-              <Text style={styles.disclaimer}>
-                By continuing, you agree to our Terms of Service and Privacy Policy
-              </Text>
+              {renderContent()}
             </View>
           </ScrollView>
         </KeyboardAvoidingView>
