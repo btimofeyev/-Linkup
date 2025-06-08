@@ -7,10 +7,12 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "nodemon src/index.ts",
+    "railway:build": "npm install && npm run build",
+    "railway:start": "npm run start",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
-    "irlly",
+    "linkup",
     "social",
     "meetup",
     "api"

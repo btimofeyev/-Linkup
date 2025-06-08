@@ -14,14 +14,22 @@ const PORT = process.env.PORT || 3000;
 app.use(helmet());
 
 // CORS configuration
+const allowedOrigins = [
+  process.env.FRONTEND_URL || 'http://localhost:8081',
+  'http://localhost:3000', // For development
+  'exp://localhost:8081', // Expo development
+  /^exp:\/\/.*/, // Allow all exp:// URLs for Expo
+  /^https?:\/\/.*\.exp\.direct/, // Expo tunnel URLs
+];
+
+// Add production origins from environment variable
+if (process.env.ALLOWED_ORIGINS) {
+  const prodOrigins = process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim());
+  allowedOrigins.push(...prodOrigins);
+}
+
 app.use(cors({
-  origin: [
-    process.env.FRONTEND_URL || 'http://localhost:8081',
-    'http://localhost:3000', // For development
-    'exp://localhost:8081', // Expo development
-    /^exp:\/\/.*/, // Allow all exp:// URLs for Expo
-    /^https?:\/\/.*\.exp\.direct/, // Expo tunnel URLs
-  ],
+  origin: allowedOrigins,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
