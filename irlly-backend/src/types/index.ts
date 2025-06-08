@@ -86,6 +86,7 @@ export interface FeedItem {
   creator: User;
   rsvp_status?: 'attending' | 'not_attending';
   attendee_count: number;
+  attendees: User[];
 }
 
 export interface ApiResponse<T = any> {
