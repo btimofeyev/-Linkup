@@ -7,13 +7,42 @@ export const getFeed = async (req: AuthRequest, res: Response): Promise<void> =>
   try {
     const userId = req.user!.id;
 
-    // Get user's circles to determine what they can see
-    const { data: userCircles } = await supabase
+    // Get circles where the user is a member
+    // First, find the user's contact records
+    const { data: userContacts } = await supabase
+      .from('contacts')
+      .select('id')
+      .eq('contact_user_id', userId);
+
+    const userContactIds = userContacts?.map(c => c.id) || [];
+
+    // Get circles where any of the user's contact records are members
+    let userMemberships: any[] = [];
+    if (userContactIds.length > 0) {
+      const { data: memberships } = await supabase
+        .from('circle_members')
+        .select('circle_id')
+        .in('contact_id', userContactIds);
+      userMemberships = memberships || [];
+    }
+
+    // Also get circles the user owns
+    const { data: ownedCircles } = await supabase
       .from('circles')
       .select('id')
       .eq('user_id', userId);
 
-    const userCircleIds = userCircles?.map(c => c.id) || [];
+    const memberCircleIds = userMemberships.map(m => m.circle_id);
+    const ownedCircleIds = ownedCircles?.map(c => c.id) || [];
+    const userCircleIds = [...new Set([...memberCircleIds, ...ownedCircleIds])];
+
+    console.log(`👤 User ${userId} feed access:`, {
+      userContactIds: userContactIds.length,
+      memberCircleIds: memberCircleIds.length,
+      ownedCircleIds: ownedCircleIds.length,
+      totalUserCircleIds: userCircleIds.length,
+      userCircleIds
+    });
 
     // Get active pins
     const { data: pins, error: pinsError } = await supabase
@@ -90,8 +119,16 @@ export const getFeed = async (req: AuthRequest, res: Response): Promise<void> =>
       if (pin.user_id === userId) return true;
 
       // User can see pins shared with their circles
-      return pin.pin_circles?.some((pc: any) => userCircleIds.includes(pc.circle_id));
+      const hasAccess = pin.pin_circles?.some((pc: any) => userCircleIds.includes(pc.circle_id));
+      console.log(`📍 Pin ${pin.id} access check:`, {
+        pinCircles: pin.pin_circles?.map((pc: any) => pc.circle_id),
+        userCircleIds,
+        hasAccess
+      });
+      return hasAccess;
     });
+
+    console.log(`📍 Accessible pins: ${accessiblePins?.length || 0} out of ${pins?.length || 0}`);
 
     for (const pin of accessiblePins || []) {
       // Get RSVP count for this pin
@@ -123,8 +160,16 @@ export const getFeed = async (req: AuthRequest, res: Response): Promise<void> =>
       if (meetup.user_id === userId) return true;
 
       // User can see meetups shared with their circles
-      return meetup.meetup_circles?.some((mc: any) => userCircleIds.includes(mc.circle_id));
+      const hasAccess = meetup.meetup_circles?.some((mc: any) => userCircleIds.includes(mc.circle_id));
+      console.log(`📅 Meetup ${meetup.id} access check:`, {
+        meetupCircles: meetup.meetup_circles?.map((mc: any) => mc.circle_id),
+        userCircleIds,
+        hasAccess
+      });
+      return hasAccess;
     });
+
+    console.log(`📅 Accessible meetups: ${accessibleMeetups?.length || 0} out of ${meetups?.length || 0}`);
 
     for (const meetup of accessibleMeetups || []) {
       // Get RSVP count for this meetup
@@ -164,6 +209,8 @@ export const getFeed = async (req: AuthRequest, res: Response): Promise<void> =>
       // Both are pins, sort by creation time (newest first)
       return new Date(b.data.created_at).getTime() - new Date(a.data.created_at).getTime();
     });
+
+    console.log(`📰 Final feed: ${feedItems.length} items for user ${userId}`);
 
     res.json({
       success: true,

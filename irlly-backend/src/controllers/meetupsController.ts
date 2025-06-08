@@ -147,13 +147,34 @@ export const getMeetups = async (req: AuthRequest, res: Response): Promise<void>
       return;
     }
 
-    // Filter meetups that user has access to
-    const { data: userCircles } = await supabase
+    // Get circles where the user is a member or owner
+    // First, find the user's contact records
+    const { data: userContacts } = await supabase
+      .from('contacts')
+      .select('id')
+      .eq('contact_user_id', userId);
+
+    const userContactIds = userContacts?.map(c => c.id) || [];
+
+    // Get circles where any of the user's contact records are members
+    let userMemberships: any[] = [];
+    if (userContactIds.length > 0) {
+      const { data: memberships } = await supabase
+        .from('circle_members')
+        .select('circle_id')
+        .in('contact_id', userContactIds);
+      userMemberships = memberships || [];
+    }
+
+    // Also get circles the user owns
+    const { data: ownedCircles } = await supabase
       .from('circles')
       .select('id')
       .eq('user_id', userId);
 
-    const userCircleIds = new Set(userCircles?.map(c => c.id) || []);
+    const memberCircleIds = userMemberships.map(m => m.circle_id);
+    const ownedCircleIds = ownedCircles?.map(c => c.id) || [];
+    const userCircleIds = new Set([...memberCircleIds, ...ownedCircleIds]);
 
     const accessibleMeetups = meetups?.filter(meetup => {
       // User can see their own meetups
