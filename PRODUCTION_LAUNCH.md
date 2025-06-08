@@ -1,4 +1,4 @@
-# IRLly Production Launch Checklist
+# Linkup Production Launch Checklist
 
 **Target: Launch in 2-3 hours**
 **Status: 🟡 In Progress**
@@ -21,7 +21,7 @@
 ### 1. Backend Production Setup (45 mins)
 - [ ] **Deploy Backend to Production**
   - [ ] Set up Railway/Render/Vercel account
-  - [ ] Deploy irlly-backend with environment variables
+  - [ ] Deploy linkup-backend with environment variables
   - [ ] Test production API endpoints
   
 - [ ] **Production Database**
@@ -88,7 +88,7 @@
 
 ### App Description Template
 ```
-IRLly - Spontaneous meetups with the right people
+Linkup - Spontaneous meetups with the right people
 
 Drop a pin when you're grabbing coffee, going for a walk, or hanging out somewhere fun. Your friends in the right circles will see it and can join you instantly.
 

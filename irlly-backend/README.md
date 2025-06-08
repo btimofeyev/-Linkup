@@ -1,6 +1,6 @@
-# IRLly Backend API
+# Linkup Backend API
 
-A Node.js/Express backend for the IRLly social meetup app, built with Supabase for data persistence and real-time features.
+A Node.js/Express backend for the Linkup social meetup app, built with Supabase for data persistence and real-time features.
 
 ## Features
 

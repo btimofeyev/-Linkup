@@ -1,6 +1,6 @@
-# IRLly - Social Meetup App
+# Linkup - Social Meetup App
 
-IRLly is a social meetup app that makes it easy to connect with friends and organize spontaneous or planned gatherings. Drop a pin to share what you're doing right now, or schedule future meetups with your circles.
+Linkup is a social meetup app that makes it easy to connect with friends and organize spontaneous or planned gatherings. Drop a pin to share what you're doing right now, or schedule future meetups with your circles.
 
 ## 🚀 Features
 
@@ -33,7 +33,7 @@ IRLly is a social meetup app that makes it easy to connect with friends and orga
 
 ```
 linkup/
-├── irlly/                  # React Native frontend
+├── linkup/                  # React Native frontend
 │   ├── src/
 │   │   ├── components/     # Reusable UI components
 │   │   ├── contexts/       # React contexts (Auth, Contacts, Circles)
@@ -42,7 +42,7 @@ linkup/
 │   │   ├── services/       # API service layer
 │   │   └── types/          # TypeScript type definitions
 │   └── package.json
-├── irlly-backend/          # Node.js backend
+├── linkup-backend/          # Node.js backend
 │   ├── src/
 │   │   ├── config/         # Database and app configuration
 │   │   ├── controllers/    # Route handlers
@@ -66,13 +66,13 @@ linkup/
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/yourusername/irlly.git
-cd irlly
+git clone https://github.com/yourusername/linkup.git
+cd linkup
 ```
 
 ### 2. Backend Setup
 ```bash
-cd irlly-backend
+cd linkup-backend
 npm install
 cp .env.example .env
 # Edit .env with your Supabase credentials
@@ -81,14 +81,14 @@ npm run dev
 
 ### 3. Frontend Setup
 ```bash
-cd irlly
+cd linkup
 npm install
 npm start
 ```
 
 ### 4. Database Setup
 1. Create a Supabase project
-2. Run the SQL from `irlly-backend/src/database/schema.sql`
+2. Run the SQL from `linkup-backend/src/database/schema.sql`
 3. Update `.env` with your Supabase credentials
 
 For detailed setup instructions, see [SETUP.md](SETUP.md).
@@ -113,7 +113,7 @@ For detailed setup instructions, see [SETUP.md](SETUP.md).
 
 ### Backend Development
 ```bash
-cd irlly-backend
+cd linkup-backend
 npm run dev          # Start development server
 npm run build        # Build TypeScript
 npm start           # Start production server
@@ -121,7 +121,7 @@ npm start           # Start production server
 
 ### Frontend Development
 ```bash
-cd irlly
+cd linkup
 npm start           # Start Expo development server
 npm run android     # Open on Android
 npm run ios         # Open on iOS (macOS only)
@@ -149,7 +149,7 @@ curl -X POST http://localhost:3000/api/auth/send-code \
 - `POST /api/circles` - Create friend circle
 - `POST /api/rsvp` - RSVP to event
 
-See [Backend README](irlly-backend/README.md) for complete API documentation.
+See [Backend README](linkup-backend/README.md) for complete API documentation.
 
 ## 🌍 Environment Variables
 
@@ -193,7 +193,7 @@ This project is licensed under the MIT License.
 
 For setup help or questions, check:
 - [SETUP.md](SETUP.md) for detailed setup instructions
-- [Backend README](irlly-backend/README.md) for API documentation
+- [Backend README](linkup-backend/README.md) for API documentation
 - Issues tab for known problems
 
 ## 🔮 Roadmap

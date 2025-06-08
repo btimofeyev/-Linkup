@@ -32,14 +32,14 @@ export const ContactsPermissionScreen: React.FC<ContactsPermissionScreenProps> =
         <Text style={styles.emoji}>📱</Text>
         <Text style={styles.title}>Connect with Friends</Text>
         <Text style={styles.subtitle}>
-          IRLly works better when you can see which of your contacts are also using the app.
+          Linkup works better when you can see which of your contacts are also using the app.
           We'll only access your contacts to help you find friends.
         </Text>
 
         <View style={styles.benefits}>
           <View style={styles.benefit}>
             <Text style={styles.benefitEmoji}>👥</Text>
-            <Text style={styles.benefitText}>Find friends already on IRLly</Text>
+            <Text style={styles.benefitText}>Find friends already on Linkup</Text>
           </View>
           <View style={styles.benefit}>
             <Text style={styles.benefitEmoji}>🔒</Text>

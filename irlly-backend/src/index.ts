@@ -82,7 +82,7 @@ app.use('*', (req, res) => {
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`🚀 IRLly API server running on port ${PORT}`);
+  console.log(`🚀 Linkup API server running on port ${PORT}`);
   console.log(`📝 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🔗 API endpoints available at http://localhost:${PORT}/api`);
 });

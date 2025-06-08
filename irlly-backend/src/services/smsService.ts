@@ -17,12 +17,12 @@ export const sendVerificationCode = async (
 ): Promise<boolean> => {
   try {
     if (!twilioClient) {
-      console.log(`[DEV MODE] SMS would be sent to ${phoneNumber}: Your IRLly verification code is ${code}`);
+      console.log(`[DEV MODE] SMS would be sent to ${phoneNumber}: Your Linkup verification code is ${code}`);
       return true; // Return success in development mode
     }
 
     const message = await twilioClient.messages.create({
-      body: `Your IRLly verification code is ${code}`,
+      body: `Your Linkup verification code is ${code}`,
       from: twilioPhoneNumber,
       to: phoneNumber
     });

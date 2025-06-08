@@ -14,7 +14,7 @@ const router = Router();
 router.get('/health', (req, res) => {
   res.json({ 
     success: true, 
-    message: 'IRLly API is running',
+    message: 'Linkup API is running',
     timestamp: new Date().toISOString()
   });
 });

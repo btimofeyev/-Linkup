@@ -1,7 +1,7 @@
 {
-  "name": "irlly-backend",
+  "name": "linkup-backend",
   "version": "1.0.0",
-  "description": "Backend API for IRLly social meetup app",
+  "description": "Backend API for Linkup social meetup app",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
