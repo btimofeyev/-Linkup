@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { FeedItem } from '../types';
 import { apiService } from '../services/apiService';
 
@@ -38,7 +38,9 @@ export const FeedProvider: React.FC<FeedProviderProps> = ({ children, isAuthenti
     }
   }, [isAuthenticated]);
 
-  const loadFeedFromBackend = async () => {
+  const loadFeedFromBackend = useCallback(async () => {
+    if (isLoading) return; // Prevent multiple simultaneous calls
+    
     try {
       setIsLoading(true);
       const response = await apiService.getFeed();
@@ -51,15 +53,15 @@ export const FeedProvider: React.FC<FeedProviderProps> = ({ children, isAuthenti
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [isLoading]);
 
-  const loadFeed = async () => {
+  const loadFeed = useCallback(async () => {
     await loadFeedFromBackend();
-  };
+  }, [loadFeedFromBackend]);
 
-  const refreshFeed = async () => {
+  const refreshFeed = useCallback(async () => {
     await loadFeedFromBackend();
-  };
+  }, [loadFeedFromBackend]);
 
   const value: FeedContextType = {
     feedItems,

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import * as Contacts from 'expo-contacts';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Contact } from '../types';
@@ -66,7 +66,7 @@ export const ContactsProvider: React.FC<ContactsProviderProps> = ({ children }) 
     }
   };
 
-  const loadContactsFromBackend = async () => {
+  const loadContactsFromBackend = useCallback(async () => {
     try {
       const response = await apiService.getContacts();
       if (response.success && response.data) {
@@ -88,7 +88,7 @@ export const ContactsProvider: React.FC<ContactsProviderProps> = ({ children }) 
       console.error('Error loading contacts from backend:', error);
       // Don't fail silently - this is likely because user isn't authenticated yet
     }
-  };
+  }, []);
 
   const requestPermission = async (): Promise<boolean> => {
     try {
@@ -181,13 +181,13 @@ export const ContactsProvider: React.FC<ContactsProviderProps> = ({ children }) 
     }
   };
 
-  const refreshContacts = async () => {
+  const refreshContacts = useCallback(async () => {
     if (hasPermission) {
       await syncContacts();
     } else {
       await loadContactsFromBackend();
     }
-  };
+  }, [hasPermission, loadContactsFromBackend]);
 
   const value: ContactsContextType = {
     contacts,

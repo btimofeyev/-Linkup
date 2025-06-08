@@ -22,7 +22,7 @@ export const FeedScreen: React.FC = () => {
   const { user, logout } = useAuth();
   const { feedItems, loadFeed, refreshFeed } = useFeed();
 
-  const loadNotifications = async () => {
+  const loadNotifications = React.useCallback(async () => {
     try {
       const response = await apiService.getNotifications();
       if (response.success && response.data) {
@@ -48,7 +48,7 @@ export const FeedScreen: React.FC = () => {
     } catch (error) {
       console.error('Error loading notifications:', error);
     }
-  };
+  }, []);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -56,7 +56,7 @@ export const FeedScreen: React.FC = () => {
         loadFeed();
         loadNotifications();
       }
-    }, [user, loadFeed])
+    }, [user, loadFeed, loadNotifications])
   );
 
   const handleRefresh = async () => {

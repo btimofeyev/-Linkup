@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Circle } from '../types';
 import { apiService } from '../services/apiService';
@@ -44,7 +44,7 @@ export const CirclesProvider: React.FC<CirclesProviderProps> = ({ children }) =>
     }
   }, [isAuthenticated]);
 
-  const loadCirclesFromBackend = async () => {
+  const loadCirclesFromBackend = useCallback(async () => {
     try {
       setIsLoading(true);
       const response = await apiService.getCircles();
@@ -67,7 +67,7 @@ export const CirclesProvider: React.FC<CirclesProviderProps> = ({ children }) =>
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   const createCircle = async (
     name: string,
@@ -178,9 +178,9 @@ export const CirclesProvider: React.FC<CirclesProviderProps> = ({ children }) =>
     }
   };
 
-  const refreshCircles = async () => {
+  const refreshCircles = useCallback(async () => {
     await loadCirclesFromBackend();
-  };
+  }, [loadCirclesFromBackend]);
 
   const value: CirclesContextType = {
     circles,
