@@ -28,6 +28,8 @@ export const CirclesScreen: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<UserSearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [friends, setFriends] = useState<Contact[]>([]);
+  const [showNonAppContacts, setShowNonAppContacts] = useState(false);
 
   useEffect(() => {
     console.log('Contacts in CirclesScreen:', contacts);
@@ -35,7 +37,19 @@ export const CirclesScreen: React.FC = () => {
       // Try to refresh contacts if none are loaded
       refreshContacts();
     }
+    loadFriends();
   }, [contacts]);
+
+  const loadFriends = async () => {
+    try {
+      const result = await apiService.getFriends();
+      if (result.success && result.data) {
+        setFriends(result.data.friends || []);
+      }
+    } catch (error) {
+      console.error('Error loading friends:', error);
+    }
+  };
 
   const emojiOptions = ['👥', '💼', '🎓', '🏋️', '🎵', '🍕', '☕', '🏠'];
 
@@ -75,14 +89,19 @@ export const CirclesScreen: React.FC = () => {
     setIsDetailModalVisible(true);
   };
 
-  const handleAddContact = (contactId: string) => {
+  const handleAddContact = async (contactId: string) => {
     if (selectedCircle) {
-      addContactsToCircle(selectedCircle.id, [contactId]);
-      // Update local state to reflect the change
-      setSelectedCircle({
-        ...selectedCircle,
-        contactIds: [...selectedCircle.contactIds, contactId]
-      });
+      try {
+        await addContactsToCircle(selectedCircle.id, [contactId]);
+        // Update local state to reflect the change
+        setSelectedCircle({
+          ...selectedCircle,
+          contactIds: [...selectedCircle.contactIds, contactId]
+        });
+      } catch (error) {
+        console.error('Error adding contact to circle:', error);
+        Alert.alert('Error', 'Failed to add contact to circle');
+      }
     }
   };
 
@@ -128,8 +147,9 @@ export const CirclesScreen: React.FC = () => {
 
       if (result.success) {
         Alert.alert('Success', `Added @${username} to your contacts!`);
-        // Refresh contacts to get the new contact
+        // Refresh contacts and friends to get the new contact
         await refreshContacts();
+        await loadFriends();
         // Remove the added user from search results
         setSearchResults(prev => prev.filter(user => user.username !== username));
         setSearchTerm('');
@@ -357,67 +377,82 @@ export const CirclesScreen: React.FC = () => {
               </View>
             )}
 
-            {/* Existing contacts */}
-            {contacts.length > 0 && (
+            {/* Friends on the app */}
+            {friends.length > 0 && (
               <>
                 <Text style={styles.subsectionTitle}>
-                  Your Contacts ({contacts.length})
+                  Friends on Linkup ({friends.filter(friend => !selectedCircle?.contactIds?.includes(friend.id)).length})
                 </Text>
                 
-                {/* Show registered contacts first */}
-                {contacts
-                  .filter(contact => contact.isRegistered && !selectedCircle?.contactIds?.includes(contact.contactId || contact.id))
-                  .map(contact => (
+                {friends
+                  .filter(friend => !selectedCircle?.contactIds?.includes(friend.id))
+                  .map(friend => (
                     <TouchableOpacity
-                      key={contact.id}
-                      style={styles.contactItem}
-                      onPress={() => handleAddContact(contact.contactId || contact.id)}
+                      key={friend.id}
+                      style={styles.friendItem}
+                      onPress={() => handleAddContact(friend.id)}
                     >
-                      <View>
-                        <Text style={styles.contactName}>{contact.name}</Text>
-                        {contact.username && (
-                          <Text style={styles.contactUsername}>@{contact.username}</Text>
+                      <View style={styles.friendInfo}>
+                        <Text style={styles.friendName}>{friend.name}</Text>
+                        {friend.username && (
+                          <Text style={styles.friendUsername}>@{friend.username}</Text>
                         )}
-                        <Text style={styles.contactStatus}>✅ On Linkup</Text>
+                        <Text style={styles.friendStatus}>✅ Active on Linkup</Text>
                       </View>
                       <TouchableOpacity
-                        style={styles.addToCircleButton}
-                        onPress={() => handleAddContact(contact.contactId || contact.id)}
+                        style={styles.addFriendButton}
+                        onPress={() => handleAddContact(friend.id)}
                       >
-                        <Text style={styles.addToCircleButtonText}>Add to Circle</Text>
-                      </TouchableOpacity>
-                    </TouchableOpacity>
-                  ))}
-
-                {/* Show unregistered contacts */}
-                {contacts
-                  .filter(contact => !contact.isRegistered && !selectedCircle?.contactIds?.includes(contact.contactId || contact.id))
-                  .slice(0, 10) // Limit to first 10 to avoid overwhelming UI
-                  .map(contact => (
-                    <TouchableOpacity
-                      key={contact.id}
-                      style={[styles.contactItem, styles.unregisteredContactItem]}
-                      onPress={() => handleAddContact(contact.contactId || contact.id)}
-                    >
-                      <View>
-                        <Text style={styles.contactName}>{contact.name}</Text>
-                        <Text style={styles.contactPhone}>{contact.phoneNumber}</Text>
-                        <Text style={styles.contactStatus}>📱 Not on Linkup yet</Text>
-                      </View>
-                      <TouchableOpacity
-                        style={styles.addToCircleButton}
-                        onPress={() => handleAddContact(contact.contactId || contact.id)}
-                      >
-                        <Text style={styles.addToCircleButtonText}>Add to Circle</Text>
+                        <Text style={styles.addFriendButtonText}>Add</Text>
                       </TouchableOpacity>
                     </TouchableOpacity>
                   ))}
                 
-                {contacts.filter(contact => !selectedCircle?.contactIds?.includes(contact.contactId || contact.id)).length === 0 && (
-                  <View style={styles.allAddedContainer}>
-                    <Text style={styles.allAddedText}>✅ All your contacts are already in this circle!</Text>
+                {friends.filter(friend => !selectedCircle?.contactIds?.includes(friend.id)).length === 0 && (
+                  <View style={styles.allFriendsAddedContainer}>
+                    <Text style={styles.allFriendsAddedText}>✅ All your friends are already in this circle!</Text>
                   </View>
                 )}
+              </>
+            )}
+
+            {/* Collapsible section for non-app contacts */}
+            {contacts.filter(contact => !contact.isRegistered).length > 0 && (
+              <>
+                <TouchableOpacity 
+                  style={styles.collapsibleHeader}
+                  onPress={() => setShowNonAppContacts(!showNonAppContacts)}
+                >
+                  <Text style={styles.collapsibleTitle}>
+                    Contacts not on Linkup ({contacts.filter(contact => !contact.isRegistered && !selectedCircle?.contactIds?.includes(contact.id)).length})
+                  </Text>
+                  <Text style={styles.collapsibleArrow}>
+                    {showNonAppContacts ? '▼' : '▶'}
+                  </Text>
+                </TouchableOpacity>
+                
+                {showNonAppContacts && contacts
+                  .filter(contact => !contact.isRegistered && !selectedCircle?.contactIds?.includes(contact.id))
+                  .slice(0, 15)
+                  .map(contact => (
+                    <TouchableOpacity
+                      key={contact.id}
+                      style={styles.nonAppContactItem}
+                      onPress={() => handleAddContact(contact.id)}
+                    >
+                      <View>
+                        <Text style={styles.nonAppContactName}>{contact.name}</Text>
+                        <Text style={styles.nonAppContactPhone}>{contact.phoneNumber}</Text>
+                        <Text style={styles.nonAppContactStatus}>📱 Not on Linkup yet</Text>
+                      </View>
+                      <TouchableOpacity
+                        style={styles.addNonAppContactButton}
+                        onPress={() => handleAddContact(contact.id)}
+                      >
+                        <Text style={styles.addNonAppContactButtonText}>Add</Text>
+                      </TouchableOpacity>
+                    </TouchableOpacity>
+                  ))}
               </>
             )}
 
@@ -868,5 +903,135 @@ const styles = StyleSheet.create({
     color: '#48BB78',
     fontWeight: '500',
     marginTop: 4,
+  },
+  // New friend item styles
+  friendItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    marginBottom: 8,
+    backgroundColor: '#E6FFFA',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#81E6D9',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  friendInfo: {
+    flex: 1,
+  },
+  friendName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#2D3748',
+  },
+  friendUsername: {
+    fontSize: 14,
+    color: '#4A5568',
+    marginTop: 2,
+  },
+  friendStatus: {
+    fontSize: 11,
+    color: '#48BB78',
+    fontWeight: '600',
+    marginTop: 4,
+  },
+  addFriendButton: {
+    backgroundColor: '#48BB78',
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    shadowColor: '#48BB78',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  addFriendButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  allFriendsAddedContainer: {
+    padding: 16,
+    backgroundColor: '#F0FDF4',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#BBF7D0',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  allFriendsAddedText: {
+    fontSize: 14,
+    color: '#15803D',
+    fontWeight: '500',
+  },
+  // Collapsible section styles
+  collapsibleHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  collapsibleTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#64748B',
+    flex: 1,
+  },
+  collapsibleArrow: {
+    fontSize: 14,
+    color: '#64748B',
+    fontWeight: '600',
+  },
+  nonAppContactItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 14,
+    marginBottom: 6,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderStyle: 'dashed',
+    opacity: 0.8,
+  },
+  nonAppContactName: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#475569',
+  },
+  nonAppContactPhone: {
+    fontSize: 12,
+    color: '#64748B',
+    marginTop: 2,
+  },
+  nonAppContactStatus: {
+    fontSize: 10,
+    color: '#94A3B8',
+    fontWeight: '500',
+    marginTop: 3,
+  },
+  addNonAppContactButton: {
+    backgroundColor: '#94A3B8',
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  addNonAppContactButtonText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '600',
   },
 });

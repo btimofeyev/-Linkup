@@ -208,6 +208,49 @@ export const searchUsers = async (req: AuthRequest, res: Response): Promise<void
   }
 };
 
+export const getFriends = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const userId = req.user!.id;
+
+    // Get all contacts that are registered users (friends on the app)
+    const { data: friends, error } = await supabase
+      .from('contacts')
+      .select(`
+        *,
+        contact_user:contact_user_id (
+          id,
+          name,
+          username,
+          avatar_url
+        )
+      `)
+      .eq('user_id', userId)
+      .eq('is_registered', true)
+      .not('contact_user_id', 'is', null)
+      .order('name');
+
+    if (error) {
+      console.error('Error fetching friends:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to fetch friends'
+      });
+      return;
+    }
+
+    res.json({
+      success: true,
+      data: { friends }
+    });
+  } catch (error) {
+    console.error('Get friends error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error'
+    });
+  }
+};
+
 export const addContactByUsername = [
   body('username')
     .isLength({ min: 3, max: 30 })

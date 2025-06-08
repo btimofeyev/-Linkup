@@ -115,6 +115,10 @@ class ApiService {
     return this.request('/contacts');
   }
 
+  async getFriends() {
+    return this.request('/contacts/friends');
+  }
+
   async searchUsers(searchTerm: string) {
     return this.request(`/contacts/search?q=${encodeURIComponent(searchTerm)}`);
   }
