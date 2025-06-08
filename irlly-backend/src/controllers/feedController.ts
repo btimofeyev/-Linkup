@@ -136,12 +136,6 @@ export const getFeed = async (req: AuthRequest, res: Response): Promise<void> =>
       const attendeeCount = attendees.length;
       const userRSVPStatus = rsvpMap.get(`${pin.id}-pin`);
 
-      console.log(`📋 Pin ${pin.id} RSVPs:`, {
-        allRSVPs: pinRSVPs?.length || 0,
-        attendingRSVPs: attendees.length,
-        userRSVPStatus,
-        attendeeData: attendees.map(a => ({ response: a.response, user: a.user }))
-      });
 
       feedItems.push({
         id: `pin-${pin.id}`,
@@ -186,12 +180,6 @@ export const getFeed = async (req: AuthRequest, res: Response): Promise<void> =>
       const attendeeCount = attendees.length;
       const userRSVPStatus = rsvpMap.get(`${meetup.id}-scheduled`);
 
-      console.log(`📋 Meetup ${meetup.id} RSVPs:`, {
-        allRSVPs: meetupRSVPs?.length || 0,
-        attendingRSVPs: attendees.length,
-        userRSVPStatus,
-        attendeeData: attendees.map(a => ({ response: a.response, user: a.user }))
-      });
 
       feedItems.push({
         id: `meetup-${meetup.id}`,

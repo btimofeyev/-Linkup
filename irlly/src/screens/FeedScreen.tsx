@@ -187,7 +187,7 @@ export const FeedScreen: React.FC = () => {
         <Text style={styles.itemCreator}>by {item.creator.name}</Text>
         <Text style={styles.itemAttendees}>
           {item.attendeeCount > 0 
-            ? `${item.attendees.map(a => a.name || a.username).join(', ')} attending`
+            ? `${item.attendeeCount} attending`
             : 'No one attending yet'
           }
         </Text>
