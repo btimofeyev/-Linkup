@@ -146,7 +146,7 @@ export const getFeed = async (req: AuthRequest, res: Response): Promise<void> =>
         creator: pin.creator,
         rsvp_status: userRSVPStatus,
         attendee_count: attendeeCount,
-        attendees: attendees.map(a => a.user)
+        attendees: attendees.map(a => a.user as any)
       });
     }
 
@@ -189,7 +189,7 @@ export const getFeed = async (req: AuthRequest, res: Response): Promise<void> =>
         creator: meetup.creator,
         rsvp_status: userRSVPStatus,
         attendee_count: attendeeCount,
-        attendees: attendees.map(a => a.user)
+        attendees: attendees.map(a => a.user as any)
       });
     }
 
