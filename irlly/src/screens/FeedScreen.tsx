@@ -19,11 +19,15 @@ export const FeedScreen: React.FC = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [isLoadingNotifications, setIsLoadingNotifications] = useState(false);
   const { user, logout } = useAuth();
   const { feedItems, loadFeed, refreshFeed } = useFeed();
 
   const loadNotifications = React.useCallback(async () => {
+    if (isLoadingNotifications) return; // Prevent multiple calls
+    
     try {
+      setIsLoadingNotifications(true);
       const response = await apiService.getNotifications();
       if (response.success && response.data) {
         const notificationData = response.data.notifications.map((notif: any) => ({
@@ -47,17 +51,20 @@ export const FeedScreen: React.FC = () => {
       }
     } catch (error) {
       console.error('Error loading notifications:', error);
+    } finally {
+      setIsLoadingNotifications(false);
     }
-  }, []);
+  }, [isLoadingNotifications]);
 
-  useFocusEffect(
-    React.useCallback(() => {
-      if (user) {
-        loadFeed();
-        loadNotifications();
-      }
-    }, [user, loadFeed, loadNotifications])
-  );
+  // TEMPORARILY DISABLED TO STOP INFINITE LOOP
+  // useFocusEffect(
+  //   React.useCallback(() => {
+  //     if (user) {
+  //       loadFeed();
+  //       loadNotifications();
+  //     }
+  //   }, [user, loadFeed, loadNotifications])
+  // );
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -210,12 +217,23 @@ export const FeedScreen: React.FC = () => {
       <View style={styles.content}>
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Linkup</Text>
-          <TouchableOpacity
-            style={styles.logoutButton}
-            onPress={handleLogout}
-          >
-            <Text style={styles.logoutButtonText}>Sign Out</Text>
-          </TouchableOpacity>
+          <View style={styles.headerButtons}>
+            <TouchableOpacity
+              style={styles.loadButton}
+              onPress={() => {
+                loadFeed();
+                loadNotifications();
+              }}
+            >
+              <Text style={styles.loadButtonText}>Load</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.logoutButton}
+              onPress={handleLogout}
+            >
+              <Text style={styles.logoutButtonText}>Sign Out</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Notifications Section */}
@@ -329,6 +347,26 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   logoutButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  headerButtons: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  loadButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 12,
+    backgroundColor: '#48BB78',
+    shadowColor: '#48BB78',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  loadButtonText: {
     color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '600',

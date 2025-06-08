@@ -28,15 +28,16 @@ export const FeedProvider: React.FC<FeedProviderProps> = ({ children, isAuthenti
   const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      // Only load from backend - remove AsyncStorage dependency
-      loadFeedFromBackend();
-    } else {
-      // Clear feed when user logs out
-      setFeedItems([]);
-    }
-  }, [isAuthenticated]);
+  // TEMPORARILY DISABLED TO STOP INFINITE LOOP
+  // useEffect(() => {
+  //   if (isAuthenticated) {
+  //     // Only load from backend - remove AsyncStorage dependency
+  //     loadFeedFromBackend();
+  //   } else {
+  //     // Clear feed when user logs out
+  //     setFeedItems([]);
+  //   }
+  // }, [isAuthenticated]);
 
   const loadFeedFromBackend = useCallback(async () => {
     if (isLoading) return; // Prevent multiple simultaneous calls
