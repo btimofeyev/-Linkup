@@ -316,20 +316,47 @@ export const CirclesScreen: React.FC = () => {
           <ScrollView style={styles.modalContent}>
             <Text style={styles.sectionTitle}>Members ({selectedCircle?.contactIds?.length || 0})</Text>
             
-            {selectedCircle?.contactIds?.map(contactId => {
-              const contact = contacts.find(c => c.id === contactId);
-              return contact ? (
-                <View key={contactId} style={styles.memberItem}>
-                  <Text style={styles.memberName}>{contact.name}</Text>
-                  <TouchableOpacity
-                    style={styles.removeButton}
-                    onPress={() => handleRemoveContact(contactId)}
-                  >
-                    <Text style={styles.removeButtonText}>Remove</Text>
-                  </TouchableOpacity>
-                </View>
-              ) : null;
-            })}
+            {selectedCircle?.contactIds?.length === 0 ? (
+              <View style={styles.noMembersContainer}>
+                <Text style={styles.noMembersText}>No members yet</Text>
+                <Text style={styles.noMembersSubtext}>Add contacts below to get started</Text>
+              </View>
+            ) : (
+              <View style={styles.membersGrid}>
+                {selectedCircle?.contactIds?.map(contactId => {
+                  const contact = contacts.find(c => c.id === contactId);
+                  const friend = friends.find(f => f.id === contactId);
+                  const displayContact = contact || friend;
+                  
+                  return displayContact ? (
+                    <View key={contactId} style={styles.memberCard}>
+                      <View style={styles.memberHeader}>
+                        <View style={styles.memberAvatar}>
+                          <Text style={styles.memberAvatarText}>
+                            {(displayContact.name || displayContact.username || '?')[0].toUpperCase()}
+                          </Text>
+                        </View>
+                        <View style={styles.memberInfo}>
+                          <Text style={styles.memberName}>{displayContact.name}</Text>
+                          {displayContact.username && (
+                            <Text style={styles.memberUsername}>@{displayContact.username}</Text>
+                          )}
+                          {displayContact.isRegistered && (
+                            <Text style={styles.memberStatus}>✅ Active</Text>
+                          )}
+                        </View>
+                      </View>
+                      <TouchableOpacity
+                        style={styles.removeButton}
+                        onPress={() => handleRemoveContact(contactId)}
+                      >
+                        <Text style={styles.removeButtonText}>✕</Text>
+                      </TouchableOpacity>
+                    </View>
+                  ) : null;
+                })}
+              </View>
+            )}
 
             <Text style={styles.sectionTitle}>Add Contacts</Text>
             
@@ -715,35 +742,103 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 12,
   },
-  memberItem: {
+  noMembersContainer: {
+    padding: 24,
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    marginBottom: 20,
+    borderWidth: 2,
+    borderColor: '#E2E8F0',
+    borderStyle: 'dashed',
+  },
+  noMembersText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#64748B',
+    marginBottom: 4,
+  },
+  noMembersSubtext: {
+    fontSize: 14,
+    color: '#94A3B8',
+    textAlign: 'center',
+  },
+  membersGrid: {
+    marginBottom: 20,
+  },
+  memberCard: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 16,
-    marginBottom: 8,
+    marginBottom: 12,
     backgroundColor: '#FFFFFF',
-    borderRadius: 12,
+    borderRadius: 16,
     shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+  },
+  memberHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  memberAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#FDB366',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+    shadowColor: '#ED8936',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
     elevation: 3,
+  },
+  memberAvatarText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  memberInfo: {
+    flex: 1,
   },
   memberName: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: '600',
     color: '#2D3748',
+    marginBottom: 2,
+  },
+  memberUsername: {
+    fontSize: 14,
+    color: '#64748B',
+    marginBottom: 2,
+  },
+  memberStatus: {
+    fontSize: 12,
+    color: '#10B981',
+    fontWeight: '600',
   },
   removeButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    backgroundColor: '#EF4444',
-    borderRadius: 8,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#FEE2E2',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#FECACA',
   },
   removeButtonText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '600',
+    color: '#DC2626',
+    fontSize: 16,
+    fontWeight: '700',
   },
   contactItem: {
     flexDirection: 'row',
