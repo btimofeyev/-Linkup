@@ -47,8 +47,8 @@ export const createPin = [
       const userId = req.user!.id;
       const { title, note, emoji, latitude, longitude, address, circleIds } = req.body;
 
-      // Set expiration to 4 hours from now
-      const expiresAt = new Date(Date.now() + 4 * 60 * 60 * 1000);
+      // Set expiration to 1.5 hours from now (more realistic for spontaneous activities)
+      const expiresAt = new Date(Date.now() + 1.5 * 60 * 60 * 1000);
 
       // Create pin
       const { data: pin, error: pinError } = await supabase

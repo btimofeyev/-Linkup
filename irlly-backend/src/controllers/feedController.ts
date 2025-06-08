@@ -117,14 +117,23 @@ export const getFeed = async (req: AuthRequest, res: Response): Promise<void> =>
 
 
     for (const pin of accessiblePins || []) {
-      // Get RSVP count for this pin
+      // Get RSVPs with user details for this pin
       const { data: pinRSVPs } = await supabase
         .from('rsvps')
-        .select('response')
+        .select(`
+          response,
+          user:user_id (
+            id,
+            name,
+            username,
+            avatar_url
+          )
+        `)
         .eq('meetup_id', pin.id)
         .eq('meetup_type', 'pin');
 
-      const attendeeCount = pinRSVPs?.filter(rsvp => rsvp.response === 'attending').length || 0;
+      const attendees = pinRSVPs?.filter(rsvp => rsvp.response === 'attending') || [];
+      const attendeeCount = attendees.length;
       const userRSVPStatus = rsvpMap.get(`${pin.id}-pin`);
 
       feedItems.push({
@@ -136,7 +145,8 @@ export const getFeed = async (req: AuthRequest, res: Response): Promise<void> =>
         },
         creator: pin.creator,
         rsvp_status: userRSVPStatus,
-        attendee_count: attendeeCount
+        attendee_count: attendeeCount,
+        attendees: attendees.map(a => a.user)
       });
     }
 
@@ -150,14 +160,23 @@ export const getFeed = async (req: AuthRequest, res: Response): Promise<void> =>
     });
 
     for (const meetup of accessibleMeetups || []) {
-      // Get RSVP count for this meetup
+      // Get RSVPs with user details for this meetup
       const { data: meetupRSVPs } = await supabase
         .from('rsvps')
-        .select('response')
+        .select(`
+          response,
+          user:user_id (
+            id,
+            name,
+            username,
+            avatar_url
+          )
+        `)
         .eq('meetup_id', meetup.id)
         .eq('meetup_type', 'scheduled');
 
-      const attendeeCount = meetupRSVPs?.filter(rsvp => rsvp.response === 'attending').length || 0;
+      const attendees = meetupRSVPs?.filter(rsvp => rsvp.response === 'attending') || [];
+      const attendeeCount = attendees.length;
       const userRSVPStatus = rsvpMap.get(`${meetup.id}-scheduled`);
 
       feedItems.push({
@@ -169,7 +188,8 @@ export const getFeed = async (req: AuthRequest, res: Response): Promise<void> =>
         },
         creator: meetup.creator,
         rsvp_status: userRSVPStatus,
-        attendee_count: attendeeCount
+        attendee_count: attendeeCount,
+        attendees: attendees.map(a => a.user)
       });
     }
 

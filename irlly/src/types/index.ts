@@ -99,4 +99,5 @@ export interface FeedItem {
   creator: User;
   rsvpStatus?: 'attending' | 'not_attending';
   attendeeCount: number;
+  attendees: User[];
 }
