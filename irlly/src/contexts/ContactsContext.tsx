@@ -80,6 +80,8 @@ export const ContactsProvider: React.FC<ContactsProviderProps> = ({ children }) 
           createdAt: new Date(contact.created_at),
         }));
         
+        console.log(`Contacts loaded from backend: ${backendContacts.length}`);
+        
         // Update local storage with backend data
         setContacts(backendContacts);
         await AsyncStorage.setItem('contacts', JSON.stringify(backendContacts));
@@ -119,6 +121,7 @@ export const ContactsProvider: React.FC<ContactsProviderProps> = ({ children }) 
         fields: [Contacts.Fields.Name, Contacts.Fields.PhoneNumbers],
       });
 
+      console.log(`Total raw contacts from device: ${data.length}`);
 
       const processedContacts: Contact[] = data
         .filter(contact => 
@@ -136,6 +139,7 @@ export const ContactsProvider: React.FC<ContactsProviderProps> = ({ children }) 
           createdAt: new Date(),
         }));
 
+      console.log(`Filtered contacts (with name & phone): ${processedContacts.length}`);
 
       // Sync contacts with backend
       try {
@@ -162,17 +166,20 @@ export const ContactsProvider: React.FC<ContactsProviderProps> = ({ children }) 
           
           setContacts(updatedContacts);
           await AsyncStorage.setItem('contacts', JSON.stringify(updatedContacts));
+          console.log(`Final synced contacts count: ${updatedContacts.length}`);
         } else {
           console.error('Backend sync failed:', syncResponse.error);
           // Fallback to local contacts if backend sync fails
           setContacts(processedContacts);
           await AsyncStorage.setItem('contacts', JSON.stringify(processedContacts));
+          console.log(`Fallback contacts count: ${processedContacts.length}`);
         }
       } catch (error) {
         console.error('Error syncing contacts with backend:', error);
         // Fallback to local contacts if backend sync fails
         setContacts(processedContacts);
         await AsyncStorage.setItem('contacts', JSON.stringify(processedContacts));
+        console.log(`Error fallback contacts count: ${processedContacts.length}`);
       }
     } catch (error) {
       console.error('Error syncing contacts:', error);

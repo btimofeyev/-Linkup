@@ -32,6 +32,8 @@ export const syncContacts = [
       const userId = req.user!.id;
       const { contacts } = req.body;
 
+      console.log(`Backend: processing ${contacts.length} contacts for sync`);
+
       // Process contacts in batches
       const contactsToInsert = [];
       const phoneNumbers = contacts.map((c: any) => c.phoneNumber);
@@ -79,6 +81,8 @@ export const syncContacts = [
         return;
       }
 
+      console.log(`Backend: synced ${insertedContacts?.length || 0} contacts for user ${userId}`);
+
       res.json({
         success: true,
         data: { contacts: insertedContacts },
@@ -112,6 +116,8 @@ export const getContacts = async (req: AuthRequest, res: Response): Promise<void
       });
       return;
     }
+
+    console.log(`Backend: returning ${contacts?.length || 0} contacts for user ${userId}`);
 
     res.json({
       success: true,

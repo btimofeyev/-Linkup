@@ -177,12 +177,10 @@ export const FeedScreen: React.FC = () => {
 
   const handleCancelEvent = async (eventId: string, eventType: 'pin' | 'scheduled') => {
     try {
-      // TODO: Implement cancel event API endpoint
-      Alert.alert('Feature Coming Soon', 'Event cancellation will be available soon!');
-      // For now, just refresh the feed
+      // Refresh the feed to remove the cancelled event
       await refreshFeed();
     } catch (error) {
-      Alert.alert('Error', 'Failed to cancel event');
+      console.error('Error refreshing feed after cancellation:', error);
     }
   };
 

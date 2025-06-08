@@ -209,6 +209,18 @@ class ApiService {
     return this.request('/meetups');
   }
 
+  async cancelPin(pinId: string) {
+    return this.request(`/pins/${pinId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async cancelMeetup(meetupId: string) {
+    return this.request(`/meetups/${meetupId}`, {
+      method: 'DELETE',
+    });
+  }
+
   // RSVPs
   async createRSVP(data: {
     meetupId: string;

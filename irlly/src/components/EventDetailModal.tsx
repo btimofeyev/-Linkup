@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { FeedItem, ScheduledMeetup } from '../types';
 import { useAuth } from '../contexts/AuthContext';
+import { apiService } from '../services/apiService';
 
 interface EventDetailModalProps {
   visible: boolean;
@@ -56,11 +57,28 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
         {
           text: 'Yes, Cancel',
           style: 'destructive',
-          onPress: () => {
-            if (onCancelEvent) {
-              onCancelEvent(item.data.id, item.type);
+          onPress: async () => {
+            try {
+              let response;
+              if (item.type === 'pin') {
+                response = await apiService.cancelPin(item.data.id);
+              } else {
+                response = await apiService.cancelMeetup(item.data.id);
+              }
+
+              if (response.success) {
+                Alert.alert('Success', 'Event cancelled successfully');
+                if (onCancelEvent) {
+                  onCancelEvent(item.data.id, item.type);
+                }
+                onClose();
+              } else {
+                Alert.alert('Error', response.error || 'Failed to cancel event');
+              }
+            } catch (error) {
+              console.error('Error cancelling event:', error);
+              Alert.alert('Error', 'Network error occurred');
             }
-            onClose();
           },
         },
       ]

@@ -303,6 +303,23 @@ export const deleteMeetup = [
       const userId = req.user!.id;
       const { meetupId } = req.params;
 
+      // Verify the user owns this meetup
+      const { data: meetup, error: fetchError } = await supabase
+        .from('scheduled_meetups')
+        .select('id, user_id, title')
+        .eq('id', meetupId)
+        .eq('user_id', userId)
+        .single();
+
+      if (fetchError || !meetup) {
+        res.status(404).json({
+          success: false,
+          error: 'Meetup not found or you do not have permission to delete it'
+        });
+        return;
+      }
+
+      // Delete the meetup (this will cascade delete related meetup_circles and rsvps due to foreign key constraints)
       const { error } = await supabase
         .from('scheduled_meetups')
         .delete()
@@ -318,9 +335,11 @@ export const deleteMeetup = [
         return;
       }
 
+      console.log(`Meetup "${meetup.title}" (${meetupId}) cancelled by user ${userId}`);
+
       res.json({
         success: true,
-        message: 'Meetup deleted successfully'
+        message: 'Meetup cancelled successfully'
       });
     } catch (error) {
       console.error('Delete meetup error:', error);

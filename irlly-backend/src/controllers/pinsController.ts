@@ -273,6 +273,23 @@ export const deletePin = [
       const userId = req.user!.id;
       const { pinId } = req.params;
 
+      // Verify the user owns this pin
+      const { data: pin, error: fetchError } = await supabase
+        .from('pins')
+        .select('id, user_id, title')
+        .eq('id', pinId)
+        .eq('user_id', userId)
+        .single();
+
+      if (fetchError || !pin) {
+        res.status(404).json({
+          success: false,
+          error: 'Pin not found or you do not have permission to delete it'
+        });
+        return;
+      }
+
+      // Delete the pin (this will cascade delete related pin_circles and rsvps due to foreign key constraints)
       const { error } = await supabase
         .from('pins')
         .delete()
@@ -288,9 +305,11 @@ export const deletePin = [
         return;
       }
 
+      console.log(`Pin "${pin.title}" (${pinId}) cancelled by user ${userId}`);
+
       res.json({
         success: true,
-        message: 'Pin deleted successfully'
+        message: 'Pin cancelled successfully'
       });
     } catch (error) {
       console.error('Delete pin error:', error);

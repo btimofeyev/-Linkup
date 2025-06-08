@@ -32,6 +32,7 @@ export const CirclesScreen: React.FC = () => {
   const [showNonAppContacts, setShowNonAppContacts] = useState(false);
 
   useEffect(() => {
+    console.log(`CirclesScreen: received ${contacts.length} contacts from ContactsContext`);
     if (contacts.length === 0) {
       // Try to refresh contacts if none are loaded
       refreshContacts();
@@ -43,6 +44,7 @@ export const CirclesScreen: React.FC = () => {
     try {
       const result = await apiService.getFriends();
       if (result.success && result.data) {
+        console.log(`CirclesScreen: loaded ${result.data.friends?.length || 0} friends from API`);
         setFriends(result.data.friends || []);
       }
     } catch (error) {
