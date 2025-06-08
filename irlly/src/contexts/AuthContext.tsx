@@ -84,8 +84,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = async () => {
     try {
+      // Clear essential auth data from AsyncStorage
       await AsyncStorage.removeItem('user');
       await AsyncStorage.removeItem('accessToken');
+      await AsyncStorage.removeItem('hasShownContactsScreen');
+      
       apiService.setAccessToken('');
       setUser(null);
     } catch (error) {

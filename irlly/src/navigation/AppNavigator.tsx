@@ -3,6 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Text } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { useAuth } from '../contexts/AuthContext';
 import { useContacts } from '../contexts/ContactsContext';
@@ -55,6 +56,38 @@ const MainTabs = () => (
 const AuthenticatedStack = () => {
   const { hasPermission } = useContacts();
   const [hasShownContactsScreen, setHasShownContactsScreen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadContactsScreenState = async () => {
+      try {
+        const hasShown = await AsyncStorage.getItem('hasShownContactsScreen');
+        if (hasShown === 'true') {
+          setHasShownContactsScreen(true);
+        }
+      } catch (error) {
+        console.error('Error loading contacts screen state:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadContactsScreenState();
+  }, []);
+
+  const handleContactsScreenCompleted = async () => {
+    try {
+      await AsyncStorage.setItem('hasShownContactsScreen', 'true');
+      setHasShownContactsScreen(true);
+    } catch (error) {
+      console.error('Error saving contacts screen state:', error);
+      setHasShownContactsScreen(true);
+    }
+  };
+
+  if (isLoading) {
+    return <Text>Loading...</Text>;
+  }
 
   // Check if we should show contacts permission screen
   const shouldShowContactsPermission = !hasPermission && !hasShownContactsScreen;
@@ -64,11 +97,11 @@ const AuthenticatedStack = () => {
       <ContactsPermissionScreen
         onPermissionGranted={() => {
           console.log('Contacts permission granted');
-          setHasShownContactsScreen(true);
+          handleContactsScreenCompleted();
         }}
         onSkip={() => {
           console.log('Contacts permission skipped');
-          setHasShownContactsScreen(true);
+          handleContactsScreenCompleted();
         }}
       />
     );

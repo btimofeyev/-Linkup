@@ -12,35 +12,25 @@ import {
 import { useFocusEffect } from '@react-navigation/native';
 import { FeedItem, ScheduledMeetup } from '../types';
 import { useAuth } from '../contexts/AuthContext';
+import { useFeed } from '../contexts/FeedContext';
 import { apiService } from '../services/apiService';
 
 export const FeedScreen: React.FC = () => {
-  const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { user, logout } = useAuth();
+  const { feedItems, loadFeed, refreshFeed } = useFeed();
 
   useFocusEffect(
     React.useCallback(() => {
-      loadFeed();
-    }, [user])
-  );
-
-  const loadFeed = async () => {
-    if (!user) return;
-    
-    try {
-      const response = await apiService.getFeed();
-      if (response.success && response.data) {
-        setFeedItems(response.data.feed || []);
+      if (user) {
+        loadFeed();
       }
-    } catch (error) {
-      console.error('Error loading feed:', error);
-    }
-  };
+    }, [user, loadFeed])
+  );
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
-    await loadFeed();
+    await refreshFeed();
     setIsRefreshing(false);
   };
 
@@ -56,7 +46,7 @@ export const FeedScreen: React.FC = () => {
       
       if (rsvpResponse.success) {
         // Refresh feed to show updated RSVP status
-        await loadFeed();
+        await refreshFeed();
       }
     } catch (error) {
       console.error('Error updating RSVP:', error);
