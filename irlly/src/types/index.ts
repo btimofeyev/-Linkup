@@ -99,5 +99,10 @@ export interface FeedItem {
   creator: User;
   rsvpStatus?: 'attending' | 'not_attending';
   attendeeCount: number;
-  attendees: User[];
+  attendees: {
+    id: string;
+    name?: string;
+    username?: string;
+    avatar_url?: string;
+  }[];
 }
