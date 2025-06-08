@@ -47,7 +47,13 @@ export const FeedProvider: React.FC<FeedProviderProps> = ({ children, isAuthenti
       const response = await apiService.getFeed();
       if (response.success && response.data) {
         const backendFeed = response.data.feed || [];
-        setFeedItems(backendFeed);
+        // Transform backend response to match frontend types
+        const transformedFeed = backendFeed.map((item: any) => ({
+          ...item,
+          attendeeCount: item.attendee_count,
+          rsvpStatus: item.rsvp_status
+        }));
+        setFeedItems(transformedFeed);
       }
     } catch (error) {
       console.error('Error loading feed from backend:', error);
