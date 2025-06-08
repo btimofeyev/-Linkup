@@ -1,7 +1,9 @@
 export interface User {
   id: string;
-  phoneNumber: string;
+  username?: string;
+  phoneNumber?: string;
   name?: string;
+  email?: string;
   avatar?: string;
   createdAt: Date;
 }
@@ -11,9 +13,18 @@ export interface Contact {
   userId: string;
   contactId: string;
   name: string;
-  phoneNumber: string;
+  username?: string;
+  phoneNumber?: string;
+  email?: string;
   isRegistered: boolean;
   createdAt: Date;
+}
+
+export interface UserSearchResult {
+  id: string;
+  username: string;
+  name: string;
+  avatar_url?: string;
 }
 
 export interface Circle {

@@ -57,11 +57,25 @@ class ApiService {
     });
   }
 
+  async registerWithUsername(data: { username: string; name: string; email?: string }) {
+    return this.request<{ user: any; accessToken: string }>('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async loginWithUsername(username: string) {
+    return this.request<{ user: any; accessToken: string }>('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ username }),
+    });
+  }
+
   async getProfile() {
     return this.request('/auth/profile');
   }
 
-  async updateProfile(data: { name?: string; avatarUrl?: string }) {
+  async updateProfile(data: { name?: string; username?: string; avatarUrl?: string; email?: string }) {
     return this.request('/auth/profile', {
       method: 'PUT',
       body: JSON.stringify(data),
@@ -78,6 +92,17 @@ class ApiService {
 
   async getContacts() {
     return this.request('/contacts');
+  }
+
+  async searchUsers(searchTerm: string) {
+    return this.request(`/contacts/search?q=${encodeURIComponent(searchTerm)}`);
+  }
+
+  async addContactByUsername(username: string) {
+    return this.request('/contacts/add', {
+      method: 'POST',
+      body: JSON.stringify({ username }),
+    });
   }
 
   // Circles

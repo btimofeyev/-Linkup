@@ -2,6 +2,8 @@ import { Router } from 'express';
 import { 
   sendVerificationCodeHandler, 
   verifyCodeAndLogin, 
+  registerWithUsername,
+  loginWithUsername,
   updateProfile, 
   getProfile 
 } from '../controllers/authController';
@@ -32,6 +34,8 @@ const smsLimiter = rateLimit({
 // Public routes
 router.post('/send-code', smsLimiter, sendVerificationCodeHandler);
 router.post('/verify', authLimiter, verifyCodeAndLogin);
+router.post('/register', authLimiter, registerWithUsername);
+router.post('/login', authLimiter, loginWithUsername);
 
 // Protected routes
 router.get('/profile', authenticateToken, getProfile);

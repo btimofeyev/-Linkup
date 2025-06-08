@@ -193,6 +193,148 @@ export const verifyCodeAndLogin = [
   }
 ];
 
+export const registerWithUsername = [
+  // Validation
+  body('username')
+    .isLength({ min: 3, max: 30 })
+    .matches(/^[a-zA-Z0-9_]{3,30}$/)
+    .withMessage('Username must be 3-30 characters, letters, numbers, and underscores only'),
+  body('name')
+    .isLength({ min: 1, max: 100 })
+    .trim()
+    .withMessage('Name is required and must be between 1 and 100 characters'),
+  body('email')
+    .optional()
+    .isEmail()
+    .withMessage('Invalid email format'),
+
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        res.status(400).json({
+          success: false,
+          error: 'Validation failed',
+          data: errors.array()
+        });
+        return;
+      }
+
+      const { username, name, email } = req.body;
+
+      // Check if username is already taken
+      const { data: existingUser } = await supabase
+        .from('users')
+        .select('id')
+        .eq('username', username)
+        .single();
+
+      if (existingUser) {
+        res.status(400).json({
+          success: false,
+          error: 'Username is already taken'
+        });
+        return;
+      }
+
+      // Create user
+      const { data: newUser, error: createError } = await supabase
+        .from('users')
+        .insert({
+          username,
+          name,
+          email,
+          is_verified: true
+        })
+        .select()
+        .single();
+
+      if (createError) {
+        console.error('Error creating user:', createError);
+        res.status(500).json({
+          success: false,
+          error: 'Failed to create user'
+        });
+        return;
+      }
+
+      // Generate access token
+      const accessToken = generateAccessToken(newUser.id);
+
+      res.json({
+        success: true,
+        data: {
+          user: newUser,
+          accessToken
+        },
+        message: 'Account created successfully'
+      });
+    } catch (error) {
+      console.error('Register error:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Internal server error'
+      });
+    }
+  }
+];
+
+export const loginWithUsername = [
+  // Validation
+  body('username')
+    .isLength({ min: 3, max: 30 })
+    .matches(/^[a-zA-Z0-9_]{3,30}$/)
+    .withMessage('Invalid username format'),
+
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        res.status(400).json({
+          success: false,
+          error: 'Validation failed',
+          data: errors.array()
+        });
+        return;
+      }
+
+      const { username } = req.body;
+
+      // Find user by username
+      const { data: user, error: userError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('username', username)
+        .single();
+
+      if (userError || !user) {
+        res.status(404).json({
+          success: false,
+          error: 'User not found'
+        });
+        return;
+      }
+
+      // Generate access token
+      const accessToken = generateAccessToken(user.id);
+
+      res.json({
+        success: true,
+        data: {
+          user,
+          accessToken
+        }
+      });
+    } catch (error) {
+      console.error('Login error:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Internal server error'
+      });
+    }
+  }
+];
+
 export const updateProfile = [
   // Validation
   body('name')
@@ -200,10 +342,19 @@ export const updateProfile = [
     .isLength({ min: 1, max: 100 })
     .trim()
     .withMessage('Name must be between 1 and 100 characters'),
+  body('username')
+    .optional()
+    .isLength({ min: 3, max: 30 })
+    .matches(/^[a-zA-Z0-9_]{3,30}$/)
+    .withMessage('Username must be 3-30 characters, letters, numbers, and underscores only'),
   body('avatarUrl')
     .optional()
     .isURL()
     .withMessage('Avatar URL must be a valid URL'),
+  body('email')
+    .optional()
+    .isEmail()
+    .withMessage('Invalid email format'),
 
   async (req: Request, res: Response): Promise<void> => {
     try {
@@ -218,11 +369,31 @@ export const updateProfile = [
       }
 
       const userId = (req as any).user.id;
-      const { name, avatarUrl } = req.body;
+      const { name, username, avatarUrl, email } = req.body;
+
+      // If updating username, check if it's available
+      if (username) {
+        const { data: existingUser } = await supabase
+          .from('users')
+          .select('id')
+          .eq('username', username)
+          .neq('id', userId)
+          .single();
+
+        if (existingUser) {
+          res.status(400).json({
+            success: false,
+            error: 'Username is already taken'
+          });
+          return;
+        }
+      }
 
       const updateData: any = {};
       if (name !== undefined) updateData.name = name;
+      if (username !== undefined) updateData.username = username;
       if (avatarUrl !== undefined) updateData.avatar_url = avatarUrl;
+      if (email !== undefined) updateData.email = email;
 
       const { data: user, error } = await supabase
         .from('users')

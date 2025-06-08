@@ -137,6 +137,7 @@ export const getRegisteredContacts = async (req: AuthRequest, res: Response): Pr
         contact_user:contact_user_id (
           id,
           name,
+          username,
           avatar_url
         )
       `)
@@ -165,3 +166,149 @@ export const getRegisteredContacts = async (req: AuthRequest, res: Response): Pr
     });
   }
 };
+
+export const searchUsers = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const userId = req.user!.id;
+    const { q: searchTerm } = req.query;
+
+    if (!searchTerm || typeof searchTerm !== 'string' || searchTerm.trim().length < 2) {
+      res.status(400).json({
+        success: false,
+        error: 'Search term must be at least 2 characters'
+      });
+      return;
+    }
+
+    const { data: users, error } = await supabase
+      .rpc('search_users_by_username', {
+        search_term: searchTerm.trim(),
+        requesting_user_id: userId
+      });
+
+    if (error) {
+      console.error('Error searching users:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to search users'
+      });
+      return;
+    }
+
+    res.json({
+      success: true,
+      data: { users }
+    });
+  } catch (error) {
+    console.error('Search users error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error'
+    });
+  }
+};
+
+export const addContactByUsername = [
+  body('username')
+    .isLength({ min: 3, max: 30 })
+    .matches(/^[a-zA-Z0-9_]{3,30}$/)
+    .withMessage('Invalid username format'),
+
+  async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        res.status(400).json({
+          success: false,
+          error: 'Validation failed',
+          data: errors.array()
+        });
+        return;
+      }
+
+      const userId = req.user!.id;
+      const { username } = req.body;
+
+      // Find the user by username
+      const { data: targetUser, error: userError } = await supabase
+        .from('users')
+        .select('id, username, name, avatar_url')
+        .eq('username', username)
+        .single();
+
+      if (userError || !targetUser) {
+        res.status(404).json({
+          success: false,
+          error: 'User not found'
+        });
+        return;
+      }
+
+      if (targetUser.id === userId) {
+        res.status(400).json({
+          success: false,
+          error: 'Cannot add yourself as a contact'
+        });
+        return;
+      }
+
+      // Check if already a contact
+      const { data: existingContact } = await supabase
+        .from('contacts')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('contact_user_id', targetUser.id)
+        .single();
+
+      if (existingContact) {
+        res.status(400).json({
+          success: false,
+          error: 'User is already in your contacts'
+        });
+        return;
+      }
+
+      // Add as contact
+      const { data: newContact, error: insertError } = await supabase
+        .from('contacts')
+        .insert({
+          user_id: userId,
+          contact_user_id: targetUser.id,
+          name: targetUser.name || targetUser.username,
+          username: targetUser.username,
+          is_registered: true
+        })
+        .select(`
+          *,
+          contact_user:contact_user_id (
+            id,
+            name,
+            username,
+            avatar_url
+          )
+        `)
+        .single();
+
+      if (insertError) {
+        console.error('Error adding contact:', insertError);
+        res.status(500).json({
+          success: false,
+          error: 'Failed to add contact'
+        });
+        return;
+      }
+
+      res.json({
+        success: true,
+        data: { contact: newContact },
+        message: `Added ${targetUser.username} to your contacts`
+      });
+    } catch (error) {
+      console.error('Add contact error:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Internal server error'
+      });
+    }
+  }
+];
