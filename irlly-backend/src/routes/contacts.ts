@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { syncContacts, getContacts, getRegisteredContacts, getFriends, searchUsers, addContactByUsername } from '../controllers/contactsController';
+import { syncContacts, getContacts, getRegisteredContacts, getFriends, searchUsers, addContactByUsername, debugUsers } from '../controllers/contactsController';
 import { authenticateToken } from '../middleware/auth';
 
 const router = Router();
@@ -13,5 +13,6 @@ router.get('/registered', getRegisteredContacts);
 router.get('/friends', getFriends);
 router.get('/search', searchUsers);
 router.post('/add', addContactByUsername);
+router.get('/debug-users', debugUsers);
 
 export default router;

@@ -257,6 +257,29 @@ export const getFriends = async (req: AuthRequest, res: Response): Promise<void>
   }
 };
 
+export const debugUsers = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { data: users, error } = await supabase
+      .from('users')
+      .select('id, username, name, email')
+      .order('created_at');
+
+    if (error) {
+      console.error('Error fetching users:', error);
+      res.status(500).json({ success: false, error: 'Failed to fetch users' });
+      return;
+    }
+
+    res.json({
+      success: true,
+      data: { users, requestingUserId: req.user!.id }
+    });
+  } catch (error) {
+    console.error('Debug users error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+};
+
 export const addContactByUsername = [
   body('username')
     .isLength({ min: 3, max: 30 })
@@ -278,12 +301,24 @@ export const addContactByUsername = [
       const userId = req.user!.id;
       const { username } = req.body;
 
+      console.log('Backend: Add contact by username request:', {
+        requestingUserId: userId,
+        searchingForUsername: username
+      });
+
       // Find the user by username
       const { data: targetUser, error: userError } = await supabase
         .from('users')
         .select('id, username, name, avatar_url')
         .eq('username', username)
         .single();
+
+      console.log('Backend: Target user found:', {
+        targetUserId: targetUser?.id,
+        targetUsername: targetUser?.username,
+        requestingUserId: userId,
+        isSameUser: targetUser?.id === userId
+      });
 
       if (userError || !targetUser) {
         res.status(404).json({
@@ -370,6 +405,7 @@ export const addContactByUsername = [
       
       console.log('Backend: Successfully added contact by username:', {
         contactId: newContact.id,
+        requestingUserId: userId,
         contactUserId: newContact.contact_user_id,
         targetUserId: targetUser.id,
         name: newContact.name,
