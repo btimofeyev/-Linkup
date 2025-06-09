@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -7,17 +7,17 @@ import {
   StyleSheet,
   Alert,
   SafeAreaView,
-  ImageBackground,
-  Image,
   KeyboardAvoidingView,
   ScrollView,
   Platform,
+  Animated,
+  ImageBackground,
+  Image,
 } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
 import { logger } from '../utils/logger';
 
 const BackgroundImage = require('../../assets/nybackground.png');
-const LogoImage = require('../../assets/link_logo.png');
 
 interface EmailVerificationScreenProps {
   navigation: any;
@@ -29,6 +29,10 @@ const EmailVerificationScreen: React.FC<EmailVerificationScreenProps> = ({ navig
   const [step, setStep] = useState<'email' | 'code'>('email');
   const [isLoading, setIsLoading] = useState(false);
   
+  // Animation refs for logo
+  const logoFloatAnim = useRef(new Animated.Value(0)).current;
+  const shimmerAnim = useRef(new Animated.Value(0)).current;
+  
   const { sendEmailOTP, verifyEmailOTP, isAuthenticated, needsProfileSetup } = useAuth();
 
   // Handle auth state changes to reset loading state
@@ -38,6 +42,39 @@ const EmailVerificationScreen: React.FC<EmailVerificationScreenProps> = ({ navig
       setIsLoading(false);
     }
   }, [isAuthenticated, needsProfileSetup]);
+
+  // Logo animation effects
+  useEffect(() => {
+    // Floating logo animation
+    const logoFloat = () => {
+      Animated.sequence([
+        Animated.timing(logoFloatAnim, {
+          toValue: 1,
+          duration: 1500,
+          useNativeDriver: true,
+        }),
+        Animated.timing(logoFloatAnim, {
+          toValue: 0,
+          duration: 1500,
+          useNativeDriver: true,
+        }),
+      ]).start(() => logoFloat());
+    };
+    logoFloat();
+
+    // Shimmer effect
+    const shimmer = () => {
+      Animated.timing(shimmerAnim, {
+        toValue: 1,
+        duration: 2000,
+        useNativeDriver: true,
+      }).start(() => {
+        shimmerAnim.setValue(0);
+        shimmer();
+      });
+    };
+    shimmer();
+  }, []);
 
   const handleSendCode = async () => {
     if (!email.trim()) {
@@ -91,6 +128,16 @@ const EmailVerificationScreen: React.FC<EmailVerificationScreenProps> = ({ navig
     }
   };
 
+  const logoTranslateY = logoFloatAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, -10],
+  });
+
+  const shimmerTranslateX = shimmerAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-120, 120],
+  });
+
   return (
     <ImageBackground source={BackgroundImage} style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
@@ -103,7 +150,29 @@ const EmailVerificationScreen: React.FC<EmailVerificationScreenProps> = ({ navig
             keyboardShouldPersistTaps="handled"
           >
             <View style={styles.header}>
-              <Image source={LogoImage} style={styles.logo} />
+              {/* Logo Container with Square Background and Shimmer */}
+              <Animated.View 
+                style={[
+                  styles.logoContainer,
+                  { transform: [{ translateY: logoTranslateY }] }
+                ]}
+              >
+                <View style={styles.logoBox}>
+                  {/* Shimmer Effect */}
+                  <Animated.View
+                    style={[
+                      styles.shimmer,
+                      { transform: [{ translateX: shimmerTranslateX }] }
+                    ]}
+                  />
+                  <Image
+                    source={require('../../assets/linkuplogo.png')}
+                    style={styles.logo}
+                    resizeMode="contain"
+                  />
+                </View>
+              </Animated.View>
+
               <Text style={styles.title}>
                 {step === 'email' ? 'Welcome to Linkup' : 'Enter Verification Code'}
               </Text>
@@ -200,11 +269,36 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 40,
   },
-  logo: {
+  logoContainer: {
+    marginBottom: 32,
+    position: 'relative',
+  },
+  logoBox: {
     width: 120,
     height: 120,
-    marginBottom: 20,
-    resizeMode: 'contain',
+    backgroundColor: '#FDB366',
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#ED8936',
+    shadowOffset: { width: 0, height: 20 },
+    shadowOpacity: 0.3,
+    shadowRadius: 40,
+    elevation: 20,
+    overflow: 'hidden',
+  },
+  shimmer: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    width: 120,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    zIndex: 1,
+  },
+  logo: {
+    width: 80,
+    height: 80,
+    tintColor: 'white',
   },
   title: {
     fontSize: 28,
