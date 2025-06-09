@@ -8,7 +8,7 @@ export class AuthService {
         email: email,
         options: {
           shouldCreateUser: true,
-          emailRedirectTo: undefined // This prevents magic link, forces OTP
+          shouldSendMagicLink: false  // 🔑 Send OTP code instead of magic link
         }
       });
 
@@ -16,7 +16,7 @@ export class AuthService {
         return { success: false, error: error.message };
       }
 
-      return { success: true, message: 'Verification code sent to your email' };
+      return { success: true, message: 'Check your email for a 6-digit verification code' };
     } catch (error) {
       return { success: false, error: 'Failed to send verification code' };
     }
