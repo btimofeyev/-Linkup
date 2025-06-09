@@ -222,6 +222,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         throw new Error('No authenticated user found');
       }
 
+      console.log('AuthContext: Creating profile for user:', {
+        id: supabaseUser.id,
+        email: supabaseUser.email,
+        username: username.toLowerCase(),
+        name: name.trim()
+      });
+
       // Create user profile in database
       const { data: profile, error } = await supabase
         .from('users')
@@ -237,11 +244,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         .select()
         .single();
 
+      console.log('AuthContext: Profile creation result:', { profile, error });
+
       if (error) {
+        console.error('AuthContext: Profile creation error details:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        });
+        
         if (error.code === '23505') {
           throw new Error('Username is already taken. Please choose a different one.');
         }
-        throw new Error('Failed to create profile. Please try again.');
+        throw new Error(`Failed to create profile: ${error.message}`);
       }
 
       // Update Supabase user metadata

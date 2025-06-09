@@ -2,12 +2,38 @@
 
 -- Add email and username columns to users table (if not exists)
 ALTER TABLE users 
-ADD COLUMN IF NOT EXISTS email VARCHAR(255) UNIQUE,
-ADD COLUMN IF NOT EXISTS username VARCHAR(30) UNIQUE;
+ADD COLUMN IF NOT EXISTS email VARCHAR(255),
+ADD COLUMN IF NOT EXISTS username VARCHAR(30);
 
--- Make email required and phone_number optional
+-- Make phone_number optional (drop NOT NULL constraint)
 ALTER TABLE users 
-ALTER COLUMN phone_number DROP NOT NULL,
+ALTER COLUMN phone_number DROP NOT NULL;
+
+-- Add unique constraints for email and username
+DO $$ 
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.table_constraints 
+        WHERE constraint_name = 'users_email_key'
+    ) THEN
+        ALTER TABLE users ADD CONSTRAINT users_email_key UNIQUE(email);
+    END IF;
+    
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.table_constraints 
+        WHERE constraint_name = 'users_username_key'
+    ) THEN
+        ALTER TABLE users ADD CONSTRAINT users_username_key UNIQUE(username);
+    END IF;
+END $$;
+
+-- Now make email and username NOT NULL (after adding columns)
+-- Note: This might fail if there are existing users without email/username
+-- In production, you'd want to handle this more carefully
+UPDATE users SET email = COALESCE(email, 'placeholder@example.com') WHERE email IS NULL;
+UPDATE users SET username = COALESCE(username, 'user_' || EXTRACT(EPOCH FROM NOW())::text) WHERE username IS NULL;
+
+ALTER TABLE users 
 ALTER COLUMN email SET NOT NULL,
 ALTER COLUMN username SET NOT NULL;
 
