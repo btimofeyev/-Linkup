@@ -103,3 +103,22 @@ BEGIN
     RAISE NOTICE 'Friend request notification: % (%) wants to add % as a friend', from_name, from_username, target_user_id;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Fix RLS policies for users table to allow profile creation
+DROP POLICY IF EXISTS "Users can view their own data" ON users;
+DROP POLICY IF EXISTS "Users can update their own data" ON users;
+DROP POLICY IF EXISTS "Users can insert their own profile" ON users;
+
+-- Create comprehensive RLS policies
+CREATE POLICY "Users can view their own data" ON users
+    FOR SELECT USING (auth.uid()::text = id::text);
+
+CREATE POLICY "Users can update their own data" ON users
+    FOR UPDATE USING (auth.uid()::text = id::text);
+
+-- CRITICAL: Allow users to insert their own profile
+CREATE POLICY "Users can insert their own profile" ON users
+    FOR INSERT WITH CHECK (auth.uid()::text = id::text);
+
+-- Ensure RLS is enabled
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
