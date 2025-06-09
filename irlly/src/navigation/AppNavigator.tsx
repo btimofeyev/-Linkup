@@ -8,7 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '../contexts/AuthContext';
 import { useContacts } from '../contexts/ContactsContext';
 import { OnboardingScreen } from '../screens/OnboardingScreen';
-import { PhoneVerificationScreen } from '../screens/PhoneVerificationScreen';
+import EmailVerificationScreen from '../screens/EmailVerificationScreen';
 import { ContactsPermissionScreen } from '../screens/ContactsPermissionScreen';
 import { FeedScreen } from '../screens/FeedScreen';
 import { CreatePinScreen } from '../screens/CreatePinScreen';
@@ -110,7 +110,7 @@ const AuthenticatedStack = () => {
 
 const AuthStack = () => (
   <Stack.Navigator screenOptions={{ headerShown: false }}>
-    <Stack.Screen name="PhoneVerification" component={PhoneVerificationScreen} />
+    <Stack.Screen name="EmailVerification" component={EmailVerificationScreen} />
   </Stack.Navigator>
 );
 

@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
 import { supabase } from '../config/database';
 import { User } from '../types';
 
@@ -24,16 +23,9 @@ export const authenticateToken = async (
       return;
     }
 
-    // Verify JWT token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string };
+    // Verify Supabase JWT token
+    const { data: { user }, error } = await supabase.auth.getUser(token);
     
-    // Get user from database
-    const { data: user, error } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', decoded.userId)
-      .single();
-
     if (error || !user) {
       res.status(401).json({ 
         success: false, 
@@ -42,7 +34,48 @@ export const authenticateToken = async (
       return;
     }
 
-    req.user = user;
+    // Get user profile from our users table or create if doesn't exist
+    let { data: userProfile, error: profileError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', user.id)
+      .single();
+
+    if (profileError && profileError.code === 'PGRST116') {
+      // User doesn't exist in our table, create them
+      const { data: newUser, error: createError } = await supabase
+        .from('users')
+        .insert({
+          id: user.id,
+          email: user.email!,
+          name: user.user_metadata?.name || user.email?.split('@')[0] || '',
+          username: user.user_metadata?.username || user.email?.split('@')[0] || '',
+          phone_number: user.phone || null,
+          avatar_url: user.user_metadata?.avatar_url
+        })
+        .select()
+        .single();
+
+      if (createError) {
+        console.error('Error creating user profile:', createError);
+        res.status(500).json({ 
+          success: false, 
+          error: 'Failed to create user profile' 
+        });
+        return;
+      }
+      
+      userProfile = newUser;
+    } else if (profileError) {
+      console.error('Error fetching user profile:', profileError);
+      res.status(401).json({ 
+        success: false, 
+        error: 'Invalid token' 
+      });
+      return;
+    }
+
+    req.user = userProfile;
     next();
   } catch (error) {
     console.error('Auth middleware error:', error);
@@ -53,8 +86,9 @@ export const authenticateToken = async (
   }
 };
 
-export const generateAccessToken = (userId: string): string => {
-  return jwt.sign({ userId }, process.env.JWT_SECRET!, { 
-    expiresIn: '7d' 
-  });
-};
+// No longer needed - Supabase handles token generation
+// export const generateAccessToken = (userId: string): string => {
+//   return jwt.sign({ userId }, process.env.JWT_SECRET!, { 
+//     expiresIn: '7d' 
+//   });
+// };

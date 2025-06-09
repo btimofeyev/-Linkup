@@ -1,18 +1,14 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { User } from '../types';
-import { apiService } from '../services/apiService';
+import { authService } from '../services/authService';
+import { supabase } from '../services/supabaseClient';
 
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  sendVerificationCode: (phoneNumber: string) => Promise<void>;
-  verifyCodeAndLogin: (phoneNumber: string, code: string) => Promise<void>;
-  checkUsernameAvailability: (username: string, phoneNumber: string) => Promise<{ available: boolean; message: string }>;
-  sendVerificationForRegistration: (data: { username: string; phoneNumber: string; name: string; email?: string }) => Promise<void>;
-  verifyAndCreateUser: (data: { username: string; phoneNumber: string; code: string; name: string; email?: string }) => Promise<void>;
-  sendVerificationForLogin: (username: string) => Promise<{ phoneNumber: string }>;
-  verifyAndLogin: (username: string, code: string) => Promise<void>;
+  sendEmailMagicLink: (email: string) => Promise<void>;
+  verifyEmailOTP: (email: string, code: string) => Promise<void>;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
 }
@@ -37,16 +33,43 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   useEffect(() => {
     loadUserFromStorage();
+    
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === 'SIGNED_IN' && session) {
+          const userData = {
+            id: session.user.id,
+            email: session.user.email!,
+            name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || '',
+            username: session.user.user_metadata?.username || session.user.email?.split('@')[0] || '',
+            avatarUrl: session.user.user_metadata?.avatar_url
+          };
+          
+          setUser(userData);
+          await AsyncStorage.setItem('user', JSON.stringify(userData));
+          await AsyncStorage.setItem('session', JSON.stringify(session));
+        } else if (event === 'SIGNED_OUT') {
+          setUser(null);
+          await AsyncStorage.removeItem('user');
+          await AsyncStorage.removeItem('session');
+        }
+      }
+    );
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const loadUserFromStorage = async () => {
     try {
       const userData = await AsyncStorage.getItem('user');
-      const accessToken = await AsyncStorage.getItem('accessToken');
+      const sessionData = await AsyncStorage.getItem('session');
       
-      if (userData && accessToken) {
+      if (userData && sessionData) {
         setUser(JSON.parse(userData));
-        apiService.setAccessToken(accessToken);
+        // Restore Supabase session
+        const session = JSON.parse(sessionData);
+        await supabase.auth.setSession(session);
       }
     } catch (error) {
       console.error('Error loading user from storage:', error);
@@ -55,132 +78,36 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const sendVerificationCode = async (phoneNumber: string) => {
+  const sendEmailMagicLink = async (email: string) => {
     try {
-      const response = await apiService.sendVerificationCode(phoneNumber);
+      const response = await authService.sendEmailMagicLink(email);
       if (!response.success) {
-        throw new Error(response.error || 'Failed to send verification code');
+        throw new Error(response.error || 'Failed to send magic link');
       }
     } catch (error) {
-      console.error('Error sending verification code:', error);
+      console.error('Error sending magic link:', error);
       throw error;
     }
   };
 
-  const verifyCodeAndLogin = async (phoneNumber: string, code: string) => {
+  const verifyEmailOTP = async (email: string, code: string) => {
     try {
-      const response = await apiService.verifyCodeAndLogin(phoneNumber, code);
+      const response = await authService.verifyEmailOTP(email, code);
       if (!response.success || !response.data) {
         throw new Error(response.error || 'Failed to verify code');
       }
-
-      const { user, accessToken } = response.data;
-      
-      await AsyncStorage.setItem('user', JSON.stringify(user));
-      await AsyncStorage.setItem('accessToken', accessToken);
-      
-      apiService.setAccessToken(accessToken);
-      setUser(user);
+      // User and session will be set automatically by onAuthStateChange
     } catch (error) {
-      console.error('Error during login:', error);
+      console.error('Error during verification:', error);
       throw error;
     }
   };
 
-  const checkUsernameAvailability = async (username: string, phoneNumber: string): Promise<{ available: boolean; message: string }> => {
-    try {
-      const response = await apiService.checkUsernameAvailability(username, phoneNumber);
-      if (!response.success || !response.data) {
-        throw new Error(response.error || 'Failed to check availability');
-      }
-      
-      return {
-        available: response.data.available,
-        message: response.data.message
-      };
-    } catch (error) {
-      console.error('Error checking availability:', error);
-      throw error;
-    }
-  };
-
-  const sendVerificationForRegistration = async (data: { username: string; phoneNumber: string; name: string; email?: string }) => {
-    try {
-      const response = await apiService.sendVerificationForRegistration(data);
-      if (!response.success) {
-        throw new Error(response.error || 'Failed to send verification code');
-      }
-    } catch (error) {
-      console.error('Error sending verification for registration:', error);
-      throw error;
-    }
-  };
-
-  const verifyAndCreateUser = async (data: { username: string; phoneNumber: string; code: string; name: string; email?: string }) => {
-    try {
-      const response = await apiService.verifyAndCreateUser(data);
-      if (!response.success || !response.data) {
-        throw new Error(response.error || 'Failed to create account');
-      }
-
-      const { user, accessToken } = response.data;
-      
-      await AsyncStorage.setItem('user', JSON.stringify(user));
-      await AsyncStorage.setItem('accessToken', accessToken);
-      
-      apiService.setAccessToken(accessToken);
-      setUser(user);
-    } catch (error) {
-      console.error('Error creating user:', error);
-      throw error;
-    }
-  };
-
-  const sendVerificationForLogin = async (username: string): Promise<{ phoneNumber: string }> => {
-    try {
-      const response = await apiService.sendVerificationForLogin(username);
-      if (!response.success) {
-        throw new Error(response.error || 'Failed to send verification code');
-      }
-      
-      return {
-        phoneNumber: response.data?.phoneNumber || ''
-      };
-    } catch (error) {
-      console.error('Error sending verification for login:', error);
-      throw error;
-    }
-  };
-
-  const verifyAndLogin = async (username: string, code: string) => {
-    try {
-      const response = await apiService.verifyAndLogin(username, code);
-      if (!response.success || !response.data) {
-        throw new Error(response.error || 'Failed to login');
-      }
-
-      const { user, accessToken } = response.data;
-      
-      await AsyncStorage.setItem('user', JSON.stringify(user));
-      await AsyncStorage.setItem('accessToken', accessToken);
-      
-      apiService.setAccessToken(accessToken);
-      setUser(user);
-    } catch (error) {
-      console.error('Error during login:', error);
-      throw error;
-    }
-  };
 
   const logout = async () => {
     try {
-      // Clear essential auth data from AsyncStorage
-      await AsyncStorage.removeItem('user');
-      await AsyncStorage.removeItem('accessToken');
-      await AsyncStorage.removeItem('hasShownContactsScreen');
-      
-      apiService.setAccessToken('');
-      setUser(null);
+      await authService.signOut();
+      // Auth state change will handle clearing storage
     } catch (error) {
       console.error('Error during logout:', error);
     }
@@ -189,13 +116,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const value: AuthContextType = {
     user,
     isLoading,
-    sendVerificationCode,
-    verifyCodeAndLogin,
-    checkUsernameAvailability,
-    sendVerificationForRegistration,
-    verifyAndCreateUser,
-    sendVerificationForLogin,
-    verifyAndLogin,
+    sendEmailMagicLink,
+    verifyEmailOTP,
     logout,
     isAuthenticated: !!user,
   };

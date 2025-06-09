@@ -1,5 +1,4 @@
 import { Router } from 'express';
-import authRoutes from './auth';
 import contactsRoutes from './contacts';
 import circlesRoutes from './circles';
 import pinsRoutes from './pins';
@@ -19,8 +18,7 @@ router.get('/health', (req, res) => {
   });
 });
 
-// API routes
-router.use('/auth', authRoutes);
+// API routes - auth now handled by Supabase
 router.use('/contacts', contactsRoutes);
 router.use('/circles', circlesRoutes);
 router.use('/pins', pinsRoutes);

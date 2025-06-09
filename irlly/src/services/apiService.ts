@@ -1,13 +1,14 @@
+import { supabase } from './supabaseClient';
+
 // API URLs for different environments
 const API_BASE_URL = 'https://linkup-production-8095.up.railway.app/api';  // Production
 // const API_BASE_URL = 'http://192.168.100.96:3000/api';  // Home PC (Development)
 // const API_BASE_URL = 'http://192.168.1.32:3000/api';    // Laptop local (Development)
 
 class ApiService {
-  private accessToken: string | null = null;
-
-  setAccessToken(token: string) {
-    this.accessToken = token;
+  private async getAuthToken(): Promise<string | null> {
+    const { data: { session } } = await supabase.auth.getSession();
+    return session?.access_token || null;
   }
 
   private async request<T>(
@@ -21,8 +22,10 @@ class ApiService {
       ...(options.headers as Record<string, string>),
     };
 
-    if (this.accessToken) {
-      headers['Authorization'] = `Bearer ${this.accessToken}`;
+    // Get Supabase auth token automatically
+    const token = await this.getAuthToken();
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
     }
 
     try {
@@ -42,66 +45,7 @@ class ApiService {
     }
   }
 
-  // Authentication
-  async sendVerificationCode(phoneNumber: string) {
-    return this.request('/auth/send-code', {
-      method: 'POST',
-      body: JSON.stringify({ phoneNumber }),
-    });
-  }
-
-  async verifyCodeAndLogin(phoneNumber: string, code: string) {
-    return this.request<{ user: any; accessToken: string }>('/auth/verify', {
-      method: 'POST',
-      body: JSON.stringify({ phoneNumber, code }),
-    });
-  }
-
-  async checkUsernameAvailability(username: string, phoneNumber: string) {
-    return this.request('/auth/check-availability', {
-      method: 'POST',
-      body: JSON.stringify({ username, phoneNumber }),
-    });
-  }
-
-  async sendVerificationForRegistration(data: { username: string; phoneNumber: string; name: string; email?: string }) {
-    return this.request('/auth/register/send-code', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  }
-
-  async verifyAndCreateUser(data: { username: string; phoneNumber: string; code: string; name: string; email?: string }) {
-    return this.request<{ user: any; accessToken: string }>('/auth/register/verify', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  }
-
-  async sendVerificationForLogin(username: string) {
-    return this.request('/auth/login/send-code', {
-      method: 'POST',
-      body: JSON.stringify({ username }),
-    });
-  }
-
-  async verifyAndLogin(username: string, code: string) {
-    return this.request<{ user: any; accessToken: string }>('/auth/login/verify', {
-      method: 'POST',
-      body: JSON.stringify({ username, code }),
-    });
-  }
-
-  async getProfile() {
-    return this.request('/auth/profile');
-  }
-
-  async updateProfile(data: { name?: string; username?: string; avatarUrl?: string; email?: string }) {
-    return this.request('/auth/profile', {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  }
+  // Authentication now handled by Supabase Auth
 
   // Contacts
   async syncContacts(contacts: Array<{ name: string; phoneNumber: string }>) {
