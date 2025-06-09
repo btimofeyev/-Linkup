@@ -19,7 +19,7 @@ interface ProfileEditScreenProps {
 }
 
 export const ProfileEditScreen: React.FC<ProfileEditScreenProps> = ({ onClose }) => {
-  const { user, logout, refreshUser } = useAuth();
+  const { user, refreshUser } = useAuth();
   const [name, setName] = useState(user?.name || '');
   const [username, setUsername] = useState(user?.username || '');
   const [isLoading, setIsLoading] = useState(false);
@@ -92,27 +92,6 @@ export const ProfileEditScreen: React.FC<ProfileEditScreenProps> = ({ onClose })
     }
   };
 
-  const handleSignOut = () => {
-    Alert.alert(
-      'Sign Out',
-      'Are you sure you want to sign out?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Sign Out', 
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await logout();
-              onClose();
-            } catch (error) {
-              Alert.alert('Error', 'Failed to sign out');
-            }
-          }
-        }
-      ]
-    );
-  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -173,12 +152,6 @@ export const ProfileEditScreen: React.FC<ProfileEditScreenProps> = ({ onClose })
             </Text>
           </View>
 
-          <View style={styles.dangerZone}>
-            <Text style={styles.dangerTitle}>Account</Text>
-            <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
-              <Text style={styles.signOutText}>Sign Out</Text>
-            </TouchableOpacity>
-          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

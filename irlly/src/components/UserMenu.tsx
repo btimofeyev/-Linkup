@@ -6,6 +6,7 @@ import {
   StyleSheet,
   Modal,
   TouchableWithoutFeedback,
+  Alert,
 } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
 import { ProfileEditScreen } from '../screens/ProfileEditScreen';
@@ -15,7 +16,7 @@ interface UserMenuProps {
 }
 
 export const UserMenu: React.FC<UserMenuProps> = ({ style }) => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const [isProfileEditVisible, setIsProfileEditVisible] = useState(false);
 
@@ -26,6 +27,28 @@ export const UserMenu: React.FC<UserMenuProps> = ({ style }) => {
 
   const closeProfileEdit = () => {
     setIsProfileEditVisible(false);
+  };
+
+  const handleSignOut = () => {
+    setIsDropdownVisible(false);
+    Alert.alert(
+      'Sign Out',
+      'Are you sure you want to sign out?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Sign Out', 
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await logout();
+            } catch (error) {
+              Alert.alert('Error', 'Failed to sign out');
+            }
+          }
+        }
+      ]
+    );
   };
 
   const getUserInitials = () => {
@@ -84,10 +107,10 @@ export const UserMenu: React.FC<UserMenuProps> = ({ style }) => {
 
                 <TouchableOpacity
                   style={styles.menuItem}
-                  onPress={() => setIsDropdownVisible(false)}
+                  onPress={handleSignOut}
                 >
-                  <Text style={styles.menuIcon}>❌</Text>
-                  <Text style={styles.menuText}>Cancel</Text>
+                  <Text style={styles.menuIcon}>🚪</Text>
+                  <Text style={styles.menuText}>Sign Out</Text>
                 </TouchableOpacity>
               </View>
             </TouchableWithoutFeedback>

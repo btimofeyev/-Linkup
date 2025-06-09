@@ -119,6 +119,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           return;
         }
 
+        if (event === 'SIGNED_OUT') {
+          console.log('AuthContext: SIGNED_OUT event');
+          setUser(null);
+          setNeedsProfileSetup(false);
+          setSupabaseUser(null);
+          setIsLoading(false);
+          setIsHandlingAuth(false);
+          setLastHandledUserId(null);
+          setHasLoadedFromStorage(false);
+          await AsyncStorage.removeItem('user');
+          await AsyncStorage.removeItem('session');
+          return;
+        }
+
         if (hasLoadedFromStorageRef.current && userRef.current) {
           console.log('AuthContext: User already loaded from storage, ignoring auth state change', {
             hasLoadedFromStorage: hasLoadedFromStorageRef.current,
@@ -132,17 +146,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           console.log('AuthContext: SIGNED_IN event - checking profile for user:', session.user.id);
           console.log('AuthContext: User email:', session.user.email);
           await handleAuthenticatedUser(session.user);
-        } else if (event === 'SIGNED_OUT') {
-          console.log('AuthContext: SIGNED_OUT event');
-          setUser(null);
-          setNeedsProfileSetup(false);
-          setSupabaseUser(null);
-          setIsLoading(false);
-          setIsHandlingAuth(false);
-          setLastHandledUserId(null);
-          setHasLoadedFromStorage(false);
-          await AsyncStorage.removeItem('user');
-          await AsyncStorage.removeItem('session');
         } else {
           console.log('AuthContext: Other auth event:', event);
         }
