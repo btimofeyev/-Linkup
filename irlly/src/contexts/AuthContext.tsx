@@ -36,6 +36,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [needsProfileSetup, setNeedsProfileSetup] = useState(false);
   const [supabaseUser, setSupabaseUser] = useState<any>(null);
+  const [isHandlingAuth, setIsHandlingAuth] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -70,7 +71,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       } catch (error) {
         console.error('AuthContext: Error initializing auth:', error);
         if (mounted) {
-          if (error.message === 'Auth initialization timeout') {
+          if (error instanceof Error && error.message === 'Auth initialization timeout') {
             console.log('AuthContext: Initialization timed out, forcing loading to false');
           }
           setIsLoading(false);
@@ -115,8 +116,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   const handleAuthenticatedUser = async (supabaseUserData: any) => {
+    // Prevent duplicate calls
+    if (isHandlingAuth) {
+      console.log('AuthContext: Already handling auth, skipping duplicate call');
+      return;
+    }
+
     try {
       console.log('AuthContext: handleAuthenticatedUser called with user:', supabaseUserData.id, supabaseUserData.email);
+      setIsHandlingAuth(true);
       setSupabaseUser(supabaseUserData);
       
       // Check if user has a profile in our database with timeout
@@ -148,7 +156,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       } else if (error) {
         // Other error - log it but don't block
         console.error('AuthContext: Profile check error:', error);
-        if (error.message === 'Profile check timeout') {
+        if (error instanceof Error && error.message === 'Profile check timeout') {
           console.log('AuthContext: Profile check timed out, assuming needs setup');
           setNeedsProfileSetup(true);
           setUser(null);
@@ -189,6 +197,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } finally {
       console.log('AuthContext: Setting loading to false');
       setIsLoading(false);
+      setIsHandlingAuth(false);
     }
   };
 
@@ -223,7 +232,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             // Clear invalid session data but keep user logged in
             await AsyncStorage.removeItem('session');
             
-            if (error.message === 'Session restore timeout') {
+            if (error instanceof Error && error.message === 'Session restore timeout') {
               console.log('AuthContext: Session restore timed out, but keeping user logged in from storage');
             } else {
               // Only clear user if it's a real auth error
