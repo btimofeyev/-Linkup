@@ -14,14 +14,22 @@ import { FeedScreen } from '../screens/FeedScreen';
 import { CreatePinScreen } from '../screens/CreatePinScreen';
 import { ScheduleMeetupScreen } from '../screens/ScheduleMeetupScreen';
 import { CirclesScreen } from '../screens/CirclesScreen';
+import { ContactsManagementScreen } from '../screens/ContactsManagementScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
 const TabIcon = ({ focused, title }: { focused: boolean; title: string }) => (
   <Text style={{ color: focused ? '#007AFF' : '#666', fontSize: 24 }}>
-    {title === 'Feed' ? '🏠' : title === 'Pin' ? '📍' : title === 'Plan' ? '📅' : '👥'}
+    {title === 'Feed' ? '🏠' : title === 'Pin' ? '📍' : title === 'Plan' ? '📅' : title === 'Circles' ? '👥' : '👥'}
   </Text>
+);
+
+const CirclesStack = () => (
+  <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Screen name="CirclesMain" component={CirclesScreen} />
+    <Stack.Screen name="ContactsManagement" component={ContactsManagementScreen} />
+  </Stack.Navigator>
 );
 
 const MainTabs = () => (
@@ -48,7 +56,7 @@ const MainTabs = () => (
     />
     <Tab.Screen 
       name="Circles" 
-      component={CirclesScreen}
+      component={CirclesStack}
     />
   </Tab.Navigator>
 );

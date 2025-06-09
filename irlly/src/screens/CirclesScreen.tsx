@@ -11,12 +11,14 @@ import {
   TextInput,
   ScrollView,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { useCircles } from '../contexts/CirclesContext';
 import { useContacts } from '../contexts/ContactsContext';
 import { Circle, Contact, UserSearchResult } from '../types';
 import { apiService } from '../services/apiService';
 
 export const CirclesScreen: React.FC = () => {
+  const navigation = useNavigation();
   const { circles, createCircle, deleteCircle, addContactsToCircle, removeContactFromCircle } = useCircles();
   const { contacts, refreshContacts } = useContacts();
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
@@ -213,6 +215,12 @@ export const CirclesScreen: React.FC = () => {
     <SafeAreaView style={styles.container}>
       <View style={styles.wrapper}>
         <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.contactsButton}
+            onPress={() => navigation.navigate('ContactsManagement' as never)}
+          >
+            <Text style={styles.contactsButtonText}>👥 Contacts</Text>
+          </TouchableOpacity>
           <Text style={styles.headerTitle}>Circles</Text>
           <TouchableOpacity
             style={styles.addButton}
@@ -519,6 +527,17 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: '700',
     color: '#2D3748',
+  },
+  contactsButton: {
+    backgroundColor: '#E2E8F0',
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  contactsButtonText: {
+    color: '#4A5568',
+    fontSize: 14,
+    fontWeight: '600',
   },
   addButton: {
     width: 42,

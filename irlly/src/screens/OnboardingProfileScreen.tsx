@@ -139,7 +139,8 @@ export const OnboardingProfileScreen: React.FC = () => {
 
               <View style={styles.infoContainer}>
                 <Text style={styles.infoTitle}>What's next?</Text>
-                <Text style={styles.infoText}>• Add friends from your contacts</Text>
+                <Text style={styles.infoText}>• Search and add friends by username</Text>
+                <Text style={styles.infoText}>• Import contacts or share your @{username || 'username'}</Text>
                 <Text style={styles.infoText}>• Create circles to organize your friends</Text>
                 <Text style={styles.infoText}>• Start making real plans together!</Text>
               </View>

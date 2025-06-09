@@ -7,8 +7,10 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- Users table
 CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    phone_number VARCHAR(20) UNIQUE NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    phone_number VARCHAR(20) UNIQUE,
     name VARCHAR(100),
+    username VARCHAR(30) UNIQUE NOT NULL,
     avatar_url TEXT,
     is_verified BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -21,11 +23,13 @@ CREATE TABLE contacts (
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     contact_user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     name VARCHAR(100) NOT NULL,
-    phone_number VARCHAR(20) NOT NULL,
+    phone_number VARCHAR(20),
+    username VARCHAR(30),
     is_registered BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    UNIQUE(user_id, phone_number)
+    UNIQUE(user_id, phone_number),
+    UNIQUE(user_id, username)
 );
 
 -- Circles table
@@ -119,9 +123,12 @@ CREATE TABLE verification_codes (
 );
 
 -- Indexes for better performance
+CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_users_phone_number ON users(phone_number);
+CREATE INDEX idx_users_username ON users(username);
 CREATE INDEX idx_contacts_user_id ON contacts(user_id);
 CREATE INDEX idx_contacts_phone_number ON contacts(phone_number);
+CREATE INDEX idx_contacts_username ON contacts(username);
 CREATE INDEX idx_circles_user_id ON circles(user_id);
 CREATE INDEX idx_circle_members_circle_id ON circle_members(circle_id);
 CREATE INDEX idx_circle_members_contact_id ON circle_members(contact_id);
