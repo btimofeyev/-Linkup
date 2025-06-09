@@ -54,7 +54,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
           if (error && error.code === 'PGRST116') {
             // User doesn't have a profile, needs setup
-            console.log('User needs profile setup');
+            console.log('User needs profile setup - setting needsProfileSetup to true');
+            setNeedsProfileSetup(true);
+            setUser(null);
+          } else if (error) {
+            // Other error
+            console.log('Profile check error:', error);
             setNeedsProfileSetup(true);
             setUser(null);
           } else if (profile) {
@@ -73,10 +78,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             await AsyncStorage.setItem('user', JSON.stringify(userData));
           }
           
+          // Always set loading to false after auth check
+          setIsLoading(false);
+          
           await AsyncStorage.setItem('session', JSON.stringify(session));
         } else if (event === 'SIGNED_OUT') {
           setUser(null);
           setNeedsProfileSetup(false);
+          setIsLoading(false);
           await AsyncStorage.removeItem('user');
           await AsyncStorage.removeItem('session');
         }
@@ -91,15 +100,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const userData = await AsyncStorage.getItem('user');
       const sessionData = await AsyncStorage.getItem('session');
       
+      console.log('Loading from storage:', { userData: !!userData, sessionData: !!sessionData });
+      
       if (userData && sessionData) {
         setUser(JSON.parse(userData));
         // Restore Supabase session
         const session = JSON.parse(sessionData);
         await supabase.auth.setSession(session);
+      } else {
+        // No stored session, set loading to false
+        setIsLoading(false);
       }
     } catch (error) {
       console.error('Error loading user from storage:', error);
-    } finally {
       setIsLoading(false);
     }
   };
