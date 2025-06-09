@@ -47,20 +47,29 @@ export const CirclesProvider: React.FC<CirclesProviderProps> = ({ children }) =>
   const loadCirclesFromBackend = useCallback(async () => {
     try {
       setIsLoading(true);
+      console.log('CirclesContext: Loading circles from backend...');
       const response = await apiService.getCircles();
+      console.log('CirclesContext: Backend response:', response);
+      
       if (response.success && response.data && (response.data as any).circles) {
         const circlesData = (response.data as any).circles;
+        console.log('CirclesContext: Raw circles data:', circlesData);
+        
         const backendCircles: Circle[] = circlesData.map((circle: any) => ({
           id: circle.id,
           userId: circle.user_id,
           name: circle.name,
           emoji: circle.emoji,
           // Fix: Access the nested contact data correctly
-          contactIds: circle.circle_members?.map((member: any) => member.contact?.id) || [],
+          contactIds: circle.circle_members?.map((member: any) => member.contact?.id).filter(Boolean) || [],
           createdAt: new Date(circle.created_at),
         }));
         
+        console.log('CirclesContext: Loaded circles:', backendCircles);
         setCircles(backendCircles);
+      } else {
+        console.log('CirclesContext: No circles data in response');
+        setCircles([]);
       }
     } catch (error) {
       console.error('Error loading circles from backend:', error);
@@ -74,12 +83,15 @@ export const CirclesProvider: React.FC<CirclesProviderProps> = ({ children }) =>
     emoji?: string,
     contactIds: string[] = []
   ): Promise<Circle> => {
+    console.log('CirclesContext: Creating circle:', { name, emoji, contactIds });
     
     const response = await apiService.createCircle({
       name,
       emoji,
       contactIds,
     });
+
+    console.log('CirclesContext: Create circle response:', response);
 
     if (response.success && response.data && (response.data as any).circle) {
       const circleData = (response.data as any).circle;
@@ -92,8 +104,10 @@ export const CirclesProvider: React.FC<CirclesProviderProps> = ({ children }) =>
         createdAt: new Date(circleData.created_at),
       };
       
-      const updatedCircles = [...circles, newCircle];
-      setCircles(updatedCircles);
+      console.log('CirclesContext: Created new circle:', newCircle);
+      
+      // Refresh circles from backend to get latest data
+      await loadCirclesFromBackend();
       
       return newCircle;
     }

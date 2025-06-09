@@ -15,7 +15,11 @@ import { useContacts } from '../contexts/ContactsContext';
 import { Contact, UserSearchResult } from '../types';
 import { apiService } from '../services/apiService';
 
-export const ContactsManagementScreen: React.FC = () => {
+interface ContactsManagementScreenProps {
+  onClose?: () => void; // Optional prop for modal usage
+}
+
+export const ContactsManagementScreen: React.FC<ContactsManagementScreenProps> = ({ onClose }) => {
   const { contacts, refreshContacts } = useContacts();
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -102,6 +106,13 @@ export const ContactsManagementScreen: React.FC = () => {
     <SafeAreaView style={styles.container}>
       <View style={styles.wrapper}>
         <View style={styles.header}>
+        {onClose ? (
+          <TouchableOpacity onPress={onClose}>
+            <Text style={styles.cancelText}>Done</Text>
+          </TouchableOpacity>
+        ) : (
+          <View style={{ width: 50 }} />
+        )}
         <Text style={styles.title}>My Contacts</Text>
         <TouchableOpacity
           style={styles.addButton}
@@ -239,6 +250,11 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: '700',
     color: '#2D3748',
+  },
+  cancelText: {
+    fontSize: 16,
+    color: '#4A5568',
+    fontWeight: '500',
   },
   addButton: {
     width: 36,

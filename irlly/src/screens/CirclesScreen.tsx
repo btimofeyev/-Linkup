@@ -17,6 +17,7 @@ import { useContacts } from '../contexts/ContactsContext';
 import { Circle, Contact, UserSearchResult } from '../types';
 import { apiService } from '../services/apiService';
 import { UserMenu } from '../components/UserMenu';
+import { ContactsManagementScreen } from './ContactsManagementScreen';
 
 export const CirclesScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -24,7 +25,7 @@ export const CirclesScreen: React.FC = () => {
   const { contacts, refreshContacts } = useContacts();
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
   const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
-  const [isAddContactModalVisible, setIsAddContactModalVisible] = useState(false);
+  const [isContactsModalVisible, setIsContactsModalVisible] = useState(false);
   const [selectedCircle, setSelectedCircle] = useState<Circle | null>(null);
   const [newCircleName, setNewCircleName] = useState('');
   const [selectedEmoji, setSelectedEmoji] = useState('👥');
@@ -233,7 +234,7 @@ export const CirclesScreen: React.FC = () => {
         <View style={styles.header}>
           <TouchableOpacity
             style={styles.contactsButton}
-            onPress={() => navigation.navigate('ContactsManagement' as never)}
+            onPress={() => setIsContactsModalVisible(true)}
           >
             <Text style={styles.contactsButtonText}>👥 Contacts</Text>
           </TouchableOpacity>
@@ -520,6 +521,15 @@ export const CirclesScreen: React.FC = () => {
             )}
           </ScrollView>
         </SafeAreaView>
+      </Modal>
+
+      {/* Contacts Modal */}
+      <Modal
+        visible={isContactsModalVisible}
+        animationType="slide"
+        presentationStyle="pageSheet"
+      >
+        <ContactsManagementScreen onClose={() => setIsContactsModalVisible(false)} />
       </Modal>
     </SafeAreaView>
   );
