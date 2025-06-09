@@ -4,11 +4,13 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Text } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { supabase } from '../services/supabaseClient';
 
 import { useAuth } from '../contexts/AuthContext';
 import { useContacts } from '../contexts/ContactsContext';
 import { OnboardingScreen } from '../screens/OnboardingScreen';
 import EmailVerificationScreen from '../screens/EmailVerificationScreen';
+import ProfileSetupScreen from '../screens/ProfileSetupScreen';
 import { ContactsPermissionScreen } from '../screens/ContactsPermissionScreen';
 import { FeedScreen } from '../screens/FeedScreen';
 import { CreatePinScreen } from '../screens/CreatePinScreen';
@@ -108,11 +110,34 @@ const AuthenticatedStack = () => {
   return <MainTabs />;
 };
 
-const AuthStack = () => (
-  <Stack.Navigator screenOptions={{ headerShown: false }}>
-    <Stack.Screen name="EmailVerification" component={EmailVerificationScreen} />
-  </Stack.Navigator>
-);
+const AuthStack = () => {
+  const { needsProfileSetup, completeProfileSetup } = useAuth();
+  const [currentUser, setCurrentUser] = useState(null);
+
+  useEffect(() => {
+    const getSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setCurrentUser(session?.user || null);
+    };
+    getSession();
+  }, [needsProfileSetup]);
+
+  if (needsProfileSetup) {
+    return (
+      <ProfileSetupScreen 
+        navigation={null}
+        user={currentUser}
+        onComplete={completeProfileSetup}
+      />
+    );
+  }
+
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="EmailVerification" component={EmailVerificationScreen} />
+    </Stack.Navigator>
+  );
+};
 
 export const AppNavigator: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();

@@ -7,8 +7,10 @@ import { supabase } from '../services/supabaseClient';
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
+  needsProfileSetup: boolean;
   sendEmailOTP: (email: string) => Promise<void>;
   verifyEmailOTP: (email: string, code: string) => Promise<void>;
+  completeProfileSetup: () => Promise<void>;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
 }
@@ -30,6 +32,7 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [needsProfileSetup, setNeedsProfileSetup] = useState(false);
 
   useEffect(() => {
     loadUserFromStorage();
@@ -38,19 +41,36 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (event === 'SIGNED_IN' && session) {
-          const userData = {
-            id: session.user.id,
-            email: session.user.email!,
-            name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || '',
-            username: session.user.user_metadata?.username || session.user.email?.split('@')[0] || '',
-            avatarUrl: session.user.user_metadata?.avatar_url
-          };
+          // Check if user has a profile in our database
+          const { data: profile, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+
+          if (error && error.code === 'PGRST116') {
+            // User doesn't have a profile, needs setup
+            setNeedsProfileSetup(true);
+            setUser(null);
+          } else if (profile) {
+            // User has a complete profile
+            const userData = {
+              id: profile.id,
+              email: profile.email,
+              name: profile.name,
+              username: profile.username,
+              avatarUrl: profile.avatar_url
+            };
+            
+            setUser(userData);
+            setNeedsProfileSetup(false);
+            await AsyncStorage.setItem('user', JSON.stringify(userData));
+          }
           
-          setUser(userData);
-          await AsyncStorage.setItem('user', JSON.stringify(userData));
           await AsyncStorage.setItem('session', JSON.stringify(session));
         } else if (event === 'SIGNED_OUT') {
           setUser(null);
+          setNeedsProfileSetup(false);
           await AsyncStorage.removeItem('user');
           await AsyncStorage.removeItem('session');
         }
@@ -104,6 +124,37 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
 
+  const completeProfileSetup = async () => {
+    try {
+      // Get current session
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      // Fetch updated user profile
+      const { data: profile, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', session.user.id)
+        .single();
+
+      if (profile) {
+        const userData = {
+          id: profile.id,
+          email: profile.email,
+          name: profile.name,
+          username: profile.username,
+          avatarUrl: profile.avatar_url
+        };
+        
+        setUser(userData);
+        setNeedsProfileSetup(false);
+        await AsyncStorage.setItem('user', JSON.stringify(userData));
+      }
+    } catch (error) {
+      console.error('Error completing profile setup:', error);
+    }
+  };
+
   const logout = async () => {
     try {
       await authService.signOut();
@@ -116,8 +167,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const value: AuthContextType = {
     user,
     isLoading,
+    needsProfileSetup,
     sendEmailOTP,
     verifyEmailOTP,
+    completeProfileSetup,
     logout,
     isAuthenticated: !!user,
   };
