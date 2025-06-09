@@ -19,6 +19,20 @@ const BackgroundImage = require('../../assets/nybackground.png');
 const LogoImage = require('../../assets/link_logo.png');
 
 export const PhoneVerificationScreen: React.FC = () => {
+  // Phone verification is currently disabled - redirect to email auth
+  React.useEffect(() => {
+    Alert.alert(
+      'Feature Unavailable', 
+      'Phone verification is currently disabled. Please use email authentication instead.',
+      [{ text: 'OK' }]
+    );
+  }, []);
+
+  const handleAnyAction = () => {
+    Alert.alert('Feature Unavailable', 'Please use email authentication instead.');
+  };
+
+  // Return a simplified UI that doesn't use undefined functions
   const [authMode, setAuthMode] = useState<'phone' | 'username'>('username');
   const [step, setStep] = useState<'phone' | 'code' | 'register' | 'login' | 'register-verify' | 'login-verify'>('login');
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -29,13 +43,14 @@ export const PhoneVerificationScreen: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [maskedPhone, setMaskedPhone] = useState('');
   const { 
-    sendVerificationCode, 
-    verifyCodeAndLogin,
-    checkUsernameAvailability,
-    sendVerificationForRegistration,
-    verifyAndCreateUser,
-    sendVerificationForLogin,
-    verifyAndLogin
+    // Note: Phone verification is currently disabled in favor of email auth
+    // sendVerificationCode, 
+    // verifyCodeAndLogin,
+    // checkUsernameAvailability,
+    // sendVerificationForRegistration,
+    // verifyAndCreateUser,
+    // sendVerificationForLogin,
+    // verifyAndLogin
   } = useAuth();
 
   const handleSendCode = async () => {

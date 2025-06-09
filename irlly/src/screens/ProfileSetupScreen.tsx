@@ -41,13 +41,13 @@ const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({ navigation, use
         .maybeSingle();
 
       if (error && error.code !== 'PGRST116') {
-        console.error('Error checking username:', error);
+        logger.error('Error checking username:', error);
         return false;
       }
 
       return !data; // Available if no data found
     } catch (error) {
-      console.error('Error checking username:', error);
+      logger.error('Error checking username:', error);
       return false;
     }
   };
@@ -113,7 +113,7 @@ const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({ navigation, use
         });
 
       if (error) {
-        console.error('Error saving profile:', error);
+        logger.error('Error saving profile:', error);
         Alert.alert('Error', 'Failed to save profile. Please try again.');
         return;
       }
@@ -127,12 +127,12 @@ const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({ navigation, use
       });
 
       if (metadataError) {
-        console.error('Error updating metadata:', metadataError);
+        logger.error('Error updating metadata:', metadataError);
       }
 
       onComplete();
     } catch (error) {
-      console.error('Error saving profile:', error);
+      logger.error('Error saving profile:', error);
       Alert.alert('Error', 'Failed to save profile. Please try again.');
     } finally {
       setIsLoading(false);

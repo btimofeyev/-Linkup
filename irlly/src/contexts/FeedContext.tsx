@@ -60,7 +60,7 @@ export const FeedProvider: React.FC<FeedProviderProps> = ({ children, isAuthenti
         setFeedItems([]);
       }
     } catch (error) {
-      console.error('Error loading feed from backend:', error);
+      logger.error('Error loading feed from backend:', error);
     } finally {
       setIsLoading(false);
     }

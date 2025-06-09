@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { User } from '../types';
 import { authService } from '../services/authService';
 import { supabase } from '../services/supabaseClient';
+import { logger } from '../utils/logger';
 
 interface AuthContextType {
   user: User | null;
@@ -64,7 +65,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     
     const initializeAuth = async () => {
       try {
-        console.log('AuthContext: Starting auth initialization...');
+        logger.log('AuthContext: Starting auth initialization...');
         
         // Add overall timeout to prevent the whole initialization from hanging
         const initPromise = (async () => {
@@ -77,10 +78,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           const { data: { session } } = await supabase.auth.getSession();
           
           if (session && mounted) {
-            console.log('AuthContext: Found existing session, checking profile...');
+            logger.log('AuthContext: Found existing session, checking profile...');
             await handleAuthenticatedUser(session.user);
           } else if (mounted) {
-            console.log('AuthContext: No existing session found');
+            logger.log('AuthContext: No existing session found');
             setIsLoading(false);
           }
         })();
@@ -92,10 +93,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         await Promise.race([initPromise, timeoutPromise]);
         
       } catch (error) {
-        console.error('AuthContext: Error initializing auth:', error);
+        logger.error('AuthContext: Error initializing auth:', error);
         if (mounted) {
           if (error instanceof Error && error.message === 'Auth initialization timeout') {
-            console.log('AuthContext: Initialization timed out, forcing loading to false');
+            logger.log('AuthContext: Initialization timed out, forcing loading to false');
           }
           setIsLoading(false);
         }
@@ -107,20 +108,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('AuthContext: Auth state change event:', event, 'Session exists:', !!session);
+        logger.log('AuthContext: Auth state change event:', event, 'Session exists:', !!session);
         
         if (!mounted) {
-          console.log('AuthContext: Component unmounted, ignoring auth state change');
+          logger.log('AuthContext: Component unmounted, ignoring auth state change');
           return;
         }
 
         if (isRestoringFromStorageRef.current) {
-          console.log('AuthContext: Ignoring auth state change during storage restoration');
+          logger.log('AuthContext: Ignoring auth state change during storage restoration');
           return;
         }
 
         if (event === 'SIGNED_OUT') {
-          console.log('AuthContext: SIGNED_OUT event');
+          logger.log('AuthContext: SIGNED_OUT event');
           setUser(null);
           setNeedsProfileSetup(false);
           setSupabaseUser(null);
@@ -134,7 +135,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
 
         if (hasLoadedFromStorageRef.current && userRef.current) {
-          console.log('AuthContext: User already loaded from storage, ignoring auth state change', {
+          logger.log('AuthContext: User already loaded from storage, ignoring auth state change', {
             hasLoadedFromStorage: hasLoadedFromStorageRef.current,
             hasUser: !!userRef.current,
             userId: userRef.current?.id
@@ -143,11 +144,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
 
         if (event === 'SIGNED_IN' && session) {
-          console.log('AuthContext: SIGNED_IN event - checking profile for user:', session.user.id);
-          console.log('AuthContext: User email:', session.user.email);
+          logger.log('AuthContext: SIGNED_IN event - checking profile for user:', session.user.id);
+          logger.log('AuthContext: User email:', session.user.email);
           await handleAuthenticatedUser(session.user);
         } else {
-          console.log('AuthContext: Other auth event:', event);
+          logger.log('AuthContext: Other auth event:', event);
         }
       }
     );
@@ -161,18 +162,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const handleAuthenticatedUser = async (supabaseUserData: any) => {
     // Prevent duplicate calls for the same user
     if (isHandlingAuth || lastHandledUserId === supabaseUserData.id) {
-      console.log('AuthContext: Already handling auth for this user, skipping duplicate call');
+      logger.log('AuthContext: Already handling auth for this user, skipping duplicate call');
       return;
     }
 
     try {
-      console.log('AuthContext: handleAuthenticatedUser called with user:', supabaseUserData.id, supabaseUserData.email);
+      logger.log('AuthContext: handleAuthenticatedUser called with user:', supabaseUserData.id, supabaseUserData.email);
       setIsHandlingAuth(true);
       setLastHandledUserId(supabaseUserData.id);
       setSupabaseUser(supabaseUserData);
       
       // Check if user has a profile in our database with timeout
-      console.log('AuthContext: Checking for existing profile in database...');
+      logger.log('AuthContext: Checking for existing profile in database...');
       
       const profileCheckPromise = supabase
         .from('users')
@@ -190,18 +191,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         timeoutPromise
       ]) as any;
 
-      console.log('AuthContext: Profile check result:', { profile, error });
+      logger.log('AuthContext: Profile check result:', { profile, error });
 
       if (error && error.code === 'PGRST116') {
         // User doesn't have a profile, needs setup
-        console.log('AuthContext: User needs profile setup');
+        logger.log('AuthContext: User needs profile setup');
         setNeedsProfileSetup(true);
         setUser(null);
       } else if (error) {
         // Other error - log it but don't block
-        console.error('AuthContext: Profile check error:', error);
+        logger.error('AuthContext: Profile check error:', error);
         if (error instanceof Error && error.message === 'Profile check timeout') {
-          console.log('AuthContext: Profile check timed out, assuming needs setup');
+          logger.log('AuthContext: Profile check timed out, assuming needs setup');
           setNeedsProfileSetup(true);
           setUser(null);
         } else {
@@ -210,7 +211,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
       } else if (profile) {
         // User has a complete profile
-        console.log('AuthContext: User has complete profile');
+        logger.log('AuthContext: User has complete profile');
         const userData: User = {
           id: profile.id,
           email: profile.email,
@@ -230,16 +231,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
       } else {
         // No profile data returned
-        console.log('AuthContext: No profile data returned, needs setup');
+        logger.log('AuthContext: No profile data returned, needs setup');
         setNeedsProfileSetup(true);
         setUser(null);
       }
     } catch (error) {
-      console.error('AuthContext: Error handling authenticated user:', error);
+      logger.error('AuthContext: Error handling authenticated user:', error);
       setNeedsProfileSetup(true);
       setUser(null);
     } finally {
-      console.log('AuthContext: Setting loading to false');
+      logger.log('AuthContext: Setting loading to false');
       setIsLoading(false);
       setIsHandlingAuth(false);
     }
@@ -250,19 +251,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const userData = await AsyncStorage.getItem('user');
       const sessionData = await AsyncStorage.getItem('session');
       
-      console.log('AuthContext: Loading from storage:', { userData: !!userData, sessionData: !!sessionData });
+      logger.log('AuthContext: Loading from storage:', { userData: !!userData, sessionData: !!sessionData });
       
       if (userData && sessionData) {
         const user = JSON.parse(userData);
         const session = JSON.parse(sessionData);
         
-        console.log('AuthContext: Found stored user data, restoring session...');
+        logger.log('AuthContext: Found stored user data, restoring session...');
         
         // Set user data from storage immediately
         setUser(user);
         setNeedsProfileSetup(false);
         setHasLoadedFromStorage(true);
-        console.log('AuthContext: User restored from storage successfully', {
+        logger.log('AuthContext: User restored from storage successfully', {
           userId: user.id,
           settingHasLoadedFromStorage: true
         });
@@ -271,18 +272,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setTimeout(async () => {
           try {
             await supabase.auth.setSession(session);
-            console.log('AuthContext: Background session restore completed');
+            logger.log('AuthContext: Background session restore completed');
           } catch (error) {
-            console.log('AuthContext: Background session restore failed, but user remains logged in');
+            logger.log('AuthContext: Background session restore failed, but user remains logged in');
             // Clean up invalid session data
             await AsyncStorage.removeItem('session');
           }
         }, 100); // Small delay to avoid immediate auth state change
       } else {
-        console.log('AuthContext: No stored user data found');
+        logger.log('AuthContext: No stored user data found');
       }
     } catch (error) {
-      console.error('AuthContext: Error loading user from storage:', error);
+      logger.error('AuthContext: Error loading user from storage:', error);
       // Clear corrupted storage data
       await AsyncStorage.removeItem('user');
       await AsyncStorage.removeItem('session');
@@ -298,26 +299,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         throw new Error(response.error || 'Failed to send verification code');
       }
     } catch (error) {
-      console.error('Error sending verification code:', error);
+      logger.error('Error sending verification code:', error);
       throw error;
     }
   };
 
   const verifyEmailOTP = async (email: string, code: string) => {
     try {
-      console.log('AuthContext: Starting email OTP verification');
+      logger.log('AuthContext: Starting email OTP verification');
       const response = await authService.verifyEmailOTP(email, code);
-      console.log('AuthContext: OTP verification response:', response);
+      logger.log('AuthContext: OTP verification response:', response);
       
       if (!response.success || !response.data) {
         throw new Error(response.error || 'Failed to verify code');
       }
       
-      console.log('AuthContext: OTP verification successful, user:', response.data.user);
-      console.log('AuthContext: Waiting for onAuthStateChange to handle user setup...');
+      logger.log('AuthContext: OTP verification successful, user:', response.data.user);
+      logger.log('AuthContext: Waiting for onAuthStateChange to handle user setup...');
       // User and session will be set automatically by onAuthStateChange
     } catch (error) {
-      console.error('AuthContext: Error during verification:', error);
+      logger.error('AuthContext: Error during verification:', error);
       throw error;
     }
   };
@@ -328,7 +329,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         throw new Error('No authenticated user found');
       }
 
-      console.log('AuthContext: Creating profile for user:', {
+      logger.log('AuthContext: Creating profile for user:', {
         id: supabaseUser.id,
         email: supabaseUser.email,
         username: username.toLowerCase(),
@@ -353,10 +354,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       let profile = profileResult.data;
       let error = profileResult.error;
 
-      console.log('AuthContext: Profile creation result:', { profile, error });
+      logger.log('AuthContext: Profile creation result:', { profile, error });
 
       if (error) {
-        console.error('AuthContext: Profile creation error details:', {
+        logger.error('AuthContext: Profile creation error details:', {
           code: error.code,
           message: error.message,
           details: error.details,
@@ -366,7 +367,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         if (error.code === '23505') {
           if (error.message.includes('users_pkey')) {
             // User record already exists, try to update instead
-            console.log('AuthContext: User record exists, attempting to update instead...');
+            logger.log('AuthContext: User record exists, attempting to update instead...');
             const updateResult = await supabase
               .from('users')
               .update({
@@ -380,7 +381,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               .single();
 
             if (updateResult.error) {
-              console.error('AuthContext: Profile update error:', updateResult.error);
+              logger.error('AuthContext: Profile update error:', updateResult.error);
               if (updateResult.error.message.includes('username')) {
                 throw new Error('Username is already taken. Please choose a different one.');
               }
@@ -389,7 +390,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             
             profile = updateResult.data;
             error = null; // Clear the error since update succeeded
-            console.log('AuthContext: Profile updated successfully:', profile);
+            logger.log('AuthContext: Profile updated successfully:', profile);
           } else {
             throw new Error('Username is already taken. Please choose a different one.');
           }
@@ -425,7 +426,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         await AsyncStorage.setItem('session', JSON.stringify(session));
       }
     } catch (error) {
-      console.error('Error completing profile setup:', error);
+      logger.error('Error completing profile setup:', error);
       throw error;
     }
   };
@@ -453,7 +454,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         await AsyncStorage.setItem('user', JSON.stringify(userData));
       }
     } catch (error) {
-      console.error('Error refreshing user data:', error);
+      logger.error('Error refreshing user data:', error);
     }
   };
 
@@ -462,7 +463,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       await authService.signOut();
       // Auth state change will handle clearing storage
     } catch (error) {
-      console.error('Error during logout:', error);
+      logger.error('Error during logout:', error);
     }
   };
 

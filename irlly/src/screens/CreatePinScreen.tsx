@@ -62,7 +62,7 @@ export const CreatePinScreen: React.FC = () => {
         setAddress(formattedAddress);
       }
     } catch (error) {
-      console.error('Error getting location:', error);
+      logger.error('Error getting location:', error);
       Alert.alert('Error', 'Failed to get your location');
     }
   };
@@ -111,7 +111,7 @@ export const CreatePinScreen: React.FC = () => {
         throw new Error(response.error || 'Failed to create pin');
       }
     } catch (error) {
-      console.error('Error creating pin:', error);
+      logger.error('Error creating pin:', error);
       Alert.alert('Error', 'Failed to drop pin. Please try again.');
     } finally {
       setIsLoading(false);

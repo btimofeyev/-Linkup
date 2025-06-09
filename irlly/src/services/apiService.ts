@@ -1,4 +1,5 @@
 import { supabase } from './supabaseClient';
+import { logger } from '../utils/logger';
 
 // API URLs for different environments
 const API_BASE_URL = 'https://linkup-production-8095.up.railway.app/api';  // Production
@@ -37,7 +38,7 @@ class ApiService {
       const result = await response.json();
       return result;
     } catch (error) {
-      console.error('API request failed:', error);
+      logger.error('API request failed:', error);
       return {
         success: false,
         error: 'Network error'

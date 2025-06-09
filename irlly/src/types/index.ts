@@ -81,10 +81,16 @@ export interface Notification {
   type: 'friend_request' | 'friend_accepted' | 'meetup_invite' | 'rsvp_update';
   title: string;
   message: string;
-  data?: any;
+  data?: {
+    friend_request_id?: string;
+    from_user_id?: string;
+    from_username?: string;
+    from_name?: string;
+    [key: string]: any;
+  };
   isRead: boolean;
   createdAt: Date;
-  fromUser?: {
+  fromUser?: string | {
     id: string;
     username: string;
     name: string;
@@ -105,4 +111,19 @@ export interface FeedItem {
     username?: string;
     avatar_url?: string;
   }[];
+}
+
+export interface ApiResponse<T = any> {
+  success: boolean;
+  data?: T;
+  error?: string;
+  message?: string;
+}
+
+export interface SearchUsersResponse {
+  users: UserSearchResult[];
+}
+
+export interface GetFriendsResponse {
+  friends: Contact[];
 }

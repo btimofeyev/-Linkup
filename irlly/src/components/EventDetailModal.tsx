@@ -76,7 +76,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
                 Alert.alert('Error', response.error || 'Failed to cancel event');
               }
             } catch (error) {
-              console.error('Error cancelling event:', error);
+              logger.error('Error cancelling event:', error);
               Alert.alert('Error', 'Network error occurred');
             }
           },

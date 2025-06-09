@@ -83,7 +83,7 @@ export const ScheduleMeetupScreen: React.FC = () => {
         setLocation(formattedAddress);
       }
     } catch (error) {
-      console.error('Error getting location:', error);
+      logger.error('Error getting location:', error);
       Alert.alert('Error', 'Failed to get your location');
     }
   };
@@ -130,7 +130,7 @@ export const ScheduleMeetupScreen: React.FC = () => {
         throw new Error(response.error || 'Failed to create meetup');
       }
     } catch (error) {
-      console.error('Error scheduling meetup:', error);
+      logger.error('Error scheduling meetup:', error);
       Alert.alert('Error', 'Failed to schedule meetup. Please try again.');
     } finally {
       setIsLoading(false);

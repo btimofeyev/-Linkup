@@ -75,7 +75,7 @@ const AuthenticatedStack = () => {
           setHasShownContactsScreen(true);
         }
       } catch (error) {
-        console.error('Error loading contacts screen state:', error);
+        logger.error('Error loading contacts screen state:', error);
       } finally {
         setIsLoading(false);
       }
@@ -89,7 +89,7 @@ const AuthenticatedStack = () => {
       await AsyncStorage.setItem('hasShownContactsScreen', 'true');
       setHasShownContactsScreen(true);
     } catch (error) {
-      console.error('Error saving contacts screen state:', error);
+      logger.error('Error saving contacts screen state:', error);
       setHasShownContactsScreen(true);
     }
   };
@@ -126,7 +126,7 @@ const AuthStack = () => (
 export const AppNavigator: React.FC = () => {
   const { isAuthenticated, isLoading, needsProfileSetup } = useAuth();
 
-  console.log('AppNavigator state:', { isAuthenticated, isLoading, needsProfileSetup });
+  logger.log('AppNavigator state:', { isAuthenticated, isLoading, needsProfileSetup });
 
   if (isLoading) {
     return <LoadingScreen />;

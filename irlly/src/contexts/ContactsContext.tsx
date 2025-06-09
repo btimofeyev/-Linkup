@@ -49,7 +49,7 @@ export const ContactsProvider: React.FC<ContactsProviderProps> = ({ children }) 
         loadContactsFromBackend();
       }
     } catch (error) {
-      console.error('Error checking contacts permission:', error);
+      logger.error('Error checking contacts permission:', error);
       setHasPermission(false);
     }
   };
@@ -62,7 +62,7 @@ export const ContactsProvider: React.FC<ContactsProviderProps> = ({ children }) 
         setContacts(parsedContacts);
       }
     } catch (error) {
-      console.error('Error loading contacts from storage:', error);
+      logger.error('Error loading contacts from storage:', error);
     }
   };
 
@@ -82,17 +82,17 @@ export const ContactsProvider: React.FC<ContactsProviderProps> = ({ children }) 
           createdAt: new Date(contact.created_at),
         })) : [];
         
-        console.log(`Contacts loaded from backend: ${backendContacts.length}`);
-        console.log('Backend registered contacts:', backendContacts.filter(c => c.isRegistered).length);
-        console.log('Backend username contacts:', backendContacts.filter(c => c.username).length);
-        console.log('Username contacts details:', backendContacts.filter(c => c.username).map(c => ({ name: c.name, username: c.username, isRegistered: c.isRegistered })));
+        logger.log(`Contacts loaded from backend: ${backendContacts.length}`);
+        logger.log('Backend registered contacts:', backendContacts.filter(c => c.isRegistered).length);
+        logger.log('Backend username contacts:', backendContacts.filter(c => c.username).length);
+        logger.log('Username contacts details:', backendContacts.filter(c => c.username).map(c => ({ name: c.name, username: c.username, isRegistered: c.isRegistered })));
         
         // Update local storage with backend data
         setContacts(backendContacts);
         await AsyncStorage.setItem('contacts', JSON.stringify(backendContacts));
       }
     } catch (error) {
-      console.error('Error loading contacts from backend:', error);
+      logger.error('Error loading contacts from backend:', error);
       // Don't fail silently - this is likely because user isn't authenticated yet
     }
   }, []);
@@ -109,14 +109,14 @@ export const ContactsProvider: React.FC<ContactsProviderProps> = ({ children }) 
       
       return granted;
     } catch (error) {
-      console.error('Error requesting contacts permission:', error);
+      logger.error('Error requesting contacts permission:', error);
       return false;
     }
   };
 
   const syncContacts = async () => {
     if (!hasPermission) {
-      console.warn('No permission to access contacts');
+      logger.warn('No permission to access contacts');
       return;
     }
 
@@ -126,7 +126,7 @@ export const ContactsProvider: React.FC<ContactsProviderProps> = ({ children }) 
         fields: [Contacts.Fields.Name, Contacts.Fields.PhoneNumbers],
       });
 
-      console.log(`Total raw contacts from device: ${data.length}`);
+      logger.log(`Total raw contacts from device: ${data.length}`);
 
       const processedContacts: Contact[] = data
         .filter(contact => 
@@ -144,7 +144,7 @@ export const ContactsProvider: React.FC<ContactsProviderProps> = ({ children }) 
           createdAt: new Date(),
         }));
 
-      console.log(`Filtered contacts (with name & phone): ${processedContacts.length}`);
+      logger.log(`Filtered contacts (with name & phone): ${processedContacts.length}`);
 
       // Sync contacts with backend
       try {
@@ -172,23 +172,23 @@ export const ContactsProvider: React.FC<ContactsProviderProps> = ({ children }) 
           
           setContacts(allContacts);
           await AsyncStorage.setItem('contacts', JSON.stringify(allContacts));
-          console.log(`Final synced contacts count: ${allContacts.length} (includes username-based contacts)`);
+          logger.log(`Final synced contacts count: ${allContacts.length} (includes username-based contacts)`);
         } else {
-          console.error('Backend sync failed:', syncResponse.error);
+          logger.error('Backend sync failed:', syncResponse.error);
           // Fallback to local contacts if backend sync fails
           setContacts(processedContacts);
           await AsyncStorage.setItem('contacts', JSON.stringify(processedContacts));
-          console.log(`Fallback contacts count: ${processedContacts.length}`);
+          logger.log(`Fallback contacts count: ${processedContacts.length}`);
         }
       } catch (error) {
-        console.error('Error syncing contacts with backend:', error);
+        logger.error('Error syncing contacts with backend:', error);
         // Fallback to local contacts if backend sync fails
         setContacts(processedContacts);
         await AsyncStorage.setItem('contacts', JSON.stringify(processedContacts));
-        console.log(`Error fallback contacts count: ${processedContacts.length}`);
+        logger.log(`Error fallback contacts count: ${processedContacts.length}`);
       }
     } catch (error) {
-      console.error('Error syncing contacts:', error);
+      logger.error('Error syncing contacts:', error);
     } finally {
       setIsLoading(false);
     }

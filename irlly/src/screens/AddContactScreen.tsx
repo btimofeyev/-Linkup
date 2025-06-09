@@ -10,7 +10,7 @@ import {
   Alert,
 } from 'react-native';
 import { apiService } from '../services/apiService';
-import { UserSearchResult } from '../types';
+import { UserSearchResult, ApiResponse, SearchUsersResponse } from '../types';
 
 interface AddContactScreenProps {
   onContactAdded?: () => void;
@@ -37,8 +37,8 @@ export const AddContactScreen: React.FC<AddContactScreenProps> = ({
     try {
       const result = await apiService.searchUsers(searchTerm.trim());
 
-      if (result.success && result.data && 'users' in result.data) {
-        setSearchResults(result.data.users || []);
+      if (result.success && result.data) {
+        setSearchResults((result.data as SearchUsersResponse).users || []);
       } else {
         Alert.alert('Error', result.error || 'Search failed');
         setSearchResults([]);

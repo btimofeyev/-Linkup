@@ -12,8 +12,9 @@ import {
   ScrollView,
 } from 'react-native';
 import { useContacts } from '../contexts/ContactsContext';
-import { Contact, UserSearchResult } from '../types';
+import { Contact, UserSearchResult, ApiResponse, SearchUsersResponse } from '../types';
 import { apiService } from '../services/apiService';
+import { logger } from '../utils/logger';
 
 interface ContactsManagementScreenProps {
   onClose?: () => void; // Optional prop for modal usage
@@ -41,7 +42,7 @@ export const ContactsManagementScreen: React.FC<ContactsManagementScreenProps> =
       const result = await apiService.searchUsers(searchTerm.trim());
 
       if (result.success && result.data) {
-        setSearchResults(result.data.users || []);
+        setSearchResults((result.data as SearchUsersResponse).users || []);
       } else {
         Alert.alert('Error', result.error || 'Search failed');
         setSearchResults([]);
@@ -80,7 +81,7 @@ export const ContactsManagementScreen: React.FC<ContactsManagementScreenProps> =
 
   const registeredContacts = contacts.filter(contact => contact.isRegistered);
   
-  console.log('ContactsManagement: Total contacts:', contacts.length, 'Registered contacts:', registeredContacts.length);
+  logger.log('ContactsManagement: Total contacts:', contacts.length, 'Registered contacts:', registeredContacts.length);
 
   const renderContact = ({ item }: { item: Contact }) => (
     <View style={styles.contactItem}>

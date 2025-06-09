@@ -14,10 +14,11 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { useCircles } from '../contexts/CirclesContext';
 import { useContacts } from '../contexts/ContactsContext';
-import { Circle, Contact, UserSearchResult } from '../types';
+import { Circle, Contact, UserSearchResult, ApiResponse, SearchUsersResponse, GetFriendsResponse } from '../types';
 import { apiService } from '../services/apiService';
 import { UserMenu } from '../components/UserMenu';
 import { ContactsManagementScreen } from './ContactsManagementScreen';
+import { logger } from '../utils/logger';
 
 export const CirclesScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -36,7 +37,7 @@ export const CirclesScreen: React.FC = () => {
   const [showNonAppContacts, setShowNonAppContacts] = useState(false);
 
   useEffect(() => {
-    console.log(`CirclesScreen: received ${contacts.length} contacts from ContactsContext`);
+    logger.log(`CirclesScreen: received ${contacts.length} contacts from ContactsContext`);
     if (contacts.length === 0) {
       // Try to refresh contacts if none are loaded
       refreshContacts();
@@ -48,8 +49,8 @@ export const CirclesScreen: React.FC = () => {
     try {
       const result = await apiService.getFriends();
       if (result.success && result.data) {
-        console.log(`CirclesScreen: loaded ${result.data.friends?.length || 0} friends from API`);
-        const friendsData = result.data.friends || [];
+        logger.log(`CirclesScreen: loaded ${(result.data as GetFriendsResponse).friends?.length || 0} friends from API`);
+        const friendsData = (result.data as GetFriendsResponse).friends || [];
         setFriends(friendsData.map((friend: any) => ({
           id: friend.id, // This should be the contacts.id, not contact_user_id
           userId: friend.user_id,
@@ -62,7 +63,7 @@ export const CirclesScreen: React.FC = () => {
         })));
       }
     } catch (error) {
-      console.error('Error loading friends:', error);
+      logger.error('Error loading friends:', error);
     }
   };
 
@@ -114,7 +115,7 @@ export const CirclesScreen: React.FC = () => {
           contactIds: [...selectedCircle.contactIds, contactId]
         });
       } catch (error) {
-        console.error('Error adding contact to circle:', error);
+        logger.error('Error adding contact to circle:', error);
         Alert.alert('Error', 'Failed to add contact to circle');
       }
     }
@@ -142,7 +143,7 @@ export const CirclesScreen: React.FC = () => {
       const result = await apiService.searchUsers(searchTerm.trim());
 
       if (result.success && result.data) {
-        setSearchResults(result.data.users || []);
+        setSearchResults((result.data as SearchUsersResponse).users || []);
       } else {
         Alert.alert('Error', result.error || 'Search failed');
         setSearchResults([]);

@@ -16,6 +16,7 @@ import { useFeed } from '../contexts/FeedContext';
 import { apiService } from '../services/apiService';
 import { EventDetailModal } from '../components/EventDetailModal';
 import { UserMenu } from '../components/UserMenu';
+import { logger } from '../utils/logger';
 
 export const FeedScreen: React.FC = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -33,7 +34,7 @@ export const FeedScreen: React.FC = () => {
     try {
       setIsLoadingNotifications(true);
       const response = await apiService.getNotifications();
-      console.log('FeedScreen: Notifications response:', response);
+      logger.log('FeedScreen: Notifications response:', response);
       if (response.success && response.data && (response.data as any).notifications) {
         const notificationsArray = (response.data as any).notifications;
         const notificationData = Array.isArray(notificationsArray) ? notificationsArray.map((notif: any) => ({
@@ -53,14 +54,14 @@ export const FeedScreen: React.FC = () => {
             avatarUrl: notif.from_user.avatar_url,
           } : undefined,
         })) : [];
-        console.log('FeedScreen: Processed notifications:', notificationData);
+        logger.log('FeedScreen: Processed notifications:', notificationData);
         setNotifications(notificationData);
       } else {
-        console.log('FeedScreen: No notifications data in response');
+        logger.log('FeedScreen: No notifications data in response');
         setNotifications([]);
       }
     } catch (error) {
-      console.error('Error loading notifications:', error);
+      logger.error('Error loading notifications:', error);
     } finally {
       setIsLoadingNotifications(false);
     }
@@ -95,11 +96,11 @@ export const FeedScreen: React.FC = () => {
         // Refresh feed to show updated RSVP status
         await refreshFeed();
       } else {
-        console.error('RSVP failed:', rsvpResponse.error);
+        logger.error('RSVP failed:', rsvpResponse.error);
         Alert.alert('Error', rsvpResponse.error || 'Failed to update RSVP');
       }
     } catch (error) {
-      console.error('Error updating RSVP:', error);
+      logger.error('Error updating RSVP:', error);
       Alert.alert('Error', 'Network error occurred');
     }
   };
@@ -128,7 +129,7 @@ export const FeedScreen: React.FC = () => {
   };
 
   const handleAcceptFriendRequest = async (notification: Notification) => {
-    console.log('🔔 Accepting friend request, notification data:', {
+    logger.log('🔔 Accepting friend request, notification data:', {
       id: notification.id,
       type: notification.type,
       data: notification.data,
@@ -139,7 +140,7 @@ export const FeedScreen: React.FC = () => {
     const fromUsername = typeof notification.fromUser === 'string' ? notification.fromUser : notification.fromUser?.username;
     
     if (!friendRequestId) {
-      console.log('🚨 Friend request ID not found in notification data');
+      logger.log('🚨 Friend request ID not found in notification data');
       Alert.alert('Error', 'Friend request ID not found');
       return;
     }
@@ -190,7 +191,7 @@ export const FeedScreen: React.FC = () => {
       await apiService.markNotificationAsRead(notificationId);
       await loadNotifications();
     } catch (error) {
-      console.error('Error marking notification as read:', error);
+      logger.error('Error marking notification as read:', error);
     }
   };
 
@@ -210,7 +211,7 @@ export const FeedScreen: React.FC = () => {
       // Refresh the feed to remove the cancelled event
       await refreshFeed();
     } catch (error) {
-      console.error('Error refreshing feed after cancellation:', error);
+      logger.error('Error refreshing feed after cancellation:', error);
     }
   };
 

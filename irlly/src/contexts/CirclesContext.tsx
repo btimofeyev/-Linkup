@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Circle } from '../types';
 import { apiService } from '../services/apiService';
 import { useAuth } from './AuthContext';
+import { logger } from '../utils/logger';
 
 interface CirclesContextType {
   circles: Circle[];
@@ -47,13 +48,13 @@ export const CirclesProvider: React.FC<CirclesProviderProps> = ({ children }) =>
   const loadCirclesFromBackend = useCallback(async () => {
     try {
       setIsLoading(true);
-      console.log('CirclesContext: Loading circles from backend...');
+      logger.log('CirclesContext: Loading circles from backend...');
       const response = await apiService.getCircles();
-      console.log('CirclesContext: Backend response:', response);
+      logger.log('CirclesContext: Backend response:', response);
       
       if (response.success && response.data && (response.data as any).circles) {
         const circlesData = (response.data as any).circles;
-        console.log('CirclesContext: Raw circles data:', circlesData);
+        logger.log('CirclesContext: Raw circles data:', circlesData);
         
         const backendCircles: Circle[] = circlesData.map((circle: any) => ({
           id: circle.id,
@@ -65,14 +66,14 @@ export const CirclesProvider: React.FC<CirclesProviderProps> = ({ children }) =>
           createdAt: new Date(circle.created_at),
         }));
         
-        console.log('CirclesContext: Loaded circles:', backendCircles);
+        logger.log('CirclesContext: Loaded circles:', backendCircles);
         setCircles(backendCircles);
       } else {
-        console.log('CirclesContext: No circles data in response');
+        logger.log('CirclesContext: No circles data in response');
         setCircles([]);
       }
     } catch (error) {
-      console.error('Error loading circles from backend:', error);
+      logger.error('Error loading circles from backend:', error);
     } finally {
       setIsLoading(false);
     }
@@ -83,7 +84,7 @@ export const CirclesProvider: React.FC<CirclesProviderProps> = ({ children }) =>
     emoji?: string,
     contactIds: string[] = []
   ): Promise<Circle> => {
-    console.log('CirclesContext: Creating circle:', { name, emoji, contactIds });
+    logger.log('CirclesContext: Creating circle:', { name, emoji, contactIds });
     
     const response = await apiService.createCircle({
       name,
@@ -91,7 +92,7 @@ export const CirclesProvider: React.FC<CirclesProviderProps> = ({ children }) =>
       contactIds,
     });
 
-    console.log('CirclesContext: Create circle response:', response);
+    logger.log('CirclesContext: Create circle response:', response);
 
     if (response.success && response.data && (response.data as any).circle) {
       const circleData = (response.data as any).circle;
@@ -104,7 +105,7 @@ export const CirclesProvider: React.FC<CirclesProviderProps> = ({ children }) =>
         createdAt: new Date(circleData.created_at),
       };
       
-      console.log('CirclesContext: Created new circle:', newCircle);
+      logger.log('CirclesContext: Created new circle:', newCircle);
       
       // Refresh circles from backend to get latest data
       await loadCirclesFromBackend();
@@ -161,7 +162,7 @@ export const CirclesProvider: React.FC<CirclesProviderProps> = ({ children }) =>
         throw new Error(response.error || 'Failed to add contacts to circle');
       }
     } catch (error) {
-      console.error('Error adding contacts to circle:', error);
+      logger.error('Error adding contacts to circle:', error);
       throw error;
     }
   };
@@ -187,7 +188,7 @@ export const CirclesProvider: React.FC<CirclesProviderProps> = ({ children }) =>
         throw new Error(response.error || 'Failed to remove contact from circle');
       }
     } catch (error) {
-      console.error('Error removing contact from circle:', error);
+      logger.error('Error removing contact from circle:', error);
       throw error;
     }
   };

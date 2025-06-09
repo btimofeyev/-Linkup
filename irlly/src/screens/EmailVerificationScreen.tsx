@@ -33,7 +33,7 @@ const EmailVerificationScreen: React.FC<EmailVerificationScreenProps> = ({ navig
   // Handle auth state changes to reset loading state
   useEffect(() => {
     if (isAuthenticated || needsProfileSetup) {
-      console.log('EmailVerificationScreen: Auth state changed - authenticated:', isAuthenticated, 'needsProfileSetup:', needsProfileSetup);
+      logger.log('EmailVerificationScreen: Auth state changed - authenticated:', isAuthenticated, 'needsProfileSetup:', needsProfileSetup);
       setIsLoading(false);
     }
   }, [isAuthenticated, needsProfileSetup]);
@@ -69,12 +69,12 @@ const EmailVerificationScreen: React.FC<EmailVerificationScreenProps> = ({ navig
 
     setIsLoading(true);
     try {
-      console.log('EmailVerificationScreen: Starting verification for email:', email);
+      logger.log('EmailVerificationScreen: Starting verification for email:', email);
       await verifyEmailOTP(email, code);
-      console.log('EmailVerificationScreen: Verification successful, waiting for auth state change...');
+      logger.log('EmailVerificationScreen: Verification successful, waiting for auth state change...');
       // Navigation will be handled by AuthContext onAuthStateChange
     } catch (error: any) {
-      console.error('EmailVerificationScreen: Verification failed:', error);
+      logger.error('EmailVerificationScreen: Verification failed:', error);
       Alert.alert('Error', error.message || 'Invalid verification code');
       setIsLoading(false);
     }
