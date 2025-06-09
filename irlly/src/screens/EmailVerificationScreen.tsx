@@ -131,20 +131,16 @@ const EmailVerificationScreen: React.FC<EmailVerificationScreenProps> = ({ navig
             keyboardShouldPersistTaps="handled"
           >
             <View style={styles.header}>
-              {/* Logo Container with Square Background and Shimmer */}
               <Animated.View 
                 style={[
-                  styles.logoContainer,
                   { transform: [{ translateY: logoTranslateY }] }
                 ]}
               >
-                <View style={styles.logoBox}>
-                  <Image
-                    source={require('../../assets/linkuplogo.png')}
-                    style={styles.logo}
-                    resizeMode="contain"
-                  />
-                </View>
+                <Image
+                  source={require('../../assets/linkuplogo.png')}
+                  style={styles.logo}
+                  resizeMode="contain"
+                />
               </Animated.View>
 
               <Text style={styles.title}>
@@ -243,27 +239,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 40,
   },
-  logoContainer: {
-    marginBottom: 32,
-    position: 'relative',
-  },
-  logoBox: {
+  logo: {
     width: 120,
     height: 120,
-    backgroundColor: '#FDB366',
-    borderRadius: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#ED8936',
-    shadowOffset: { width: 0, height: 20 },
-    shadowOpacity: 0.3,
-    shadowRadius: 40,
-    elevation: 20,
-  },
-  logo: {
-    width: 80,
-    height: 80,
-    tintColor: 'white',
+    marginBottom: 20,
+    resizeMode: 'contain',
   },
   title: {
     fontSize: 28,
