@@ -1,0 +1,5 @@
+irlly/
+*.md
+.git/
+.gitignore
+CLAUDE.md

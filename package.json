@@ -1,0 +1,14 @@
+{
+  "name": "linkup-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "cd irlly-backend && npm install && npm run build",
+    "start": "cd irlly-backend && npm start",
+    "dev": "cd irlly-backend && npm run dev"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  }
+}
