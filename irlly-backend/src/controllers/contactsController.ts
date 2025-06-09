@@ -33,6 +33,16 @@ export const syncContacts = [
       const { contacts } = req.body;
 
       console.log(`Backend: processing ${contacts.length} contacts for sync`);
+      
+      // Check existing username-based contacts before deletion
+      const { data: existingUsernameContacts } = await supabase
+        .from('contacts')
+        .select('id, name, username')
+        .eq('user_id', userId)
+        .not('username', 'is', null);
+      
+      console.log(`Backend: preserving ${existingUsernameContacts?.length || 0} username-based contacts:`, 
+        existingUsernameContacts?.map(c => c.username) || []);
 
       // Process contacts in batches
       const contactsToInsert = [];
@@ -61,11 +71,12 @@ export const syncContacts = [
         });
       }
 
-      // Delete existing contacts and insert new ones
+      // Delete only phone-based contacts, preserve username-based contacts
       await supabase
         .from('contacts')
         .delete()
-        .eq('user_id', userId);
+        .eq('user_id', userId)
+        .is('username', null); // Only delete contacts that don't have usernames (phone-based contacts)
 
       const { data: insertedContacts, error: insertError } = await supabase
         .from('contacts')
