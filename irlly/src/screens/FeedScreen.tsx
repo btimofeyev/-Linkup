@@ -128,18 +128,57 @@ export const FeedScreen: React.FC = () => {
   };
 
   const handleAcceptFriendRequest = async (notification: Notification) => {
-    if (!notification.fromUser || !notification.data?.friend_request_id) return;
+    console.log('🔔 Accepting friend request, notification data:', {
+      id: notification.id,
+      type: notification.type,
+      data: notification.data,
+      fromUser: notification.fromUser
+    });
+    
+    const friendRequestId = notification.data?.friend_request_id;
+    const fromUsername = typeof notification.fromUser === 'string' ? notification.fromUser : notification.fromUser?.username;
+    
+    if (!friendRequestId) {
+      console.log('🚨 Friend request ID not found in notification data');
+      Alert.alert('Error', 'Friend request ID not found');
+      return;
+    }
     
     try {
-      const response = await apiService.respondToFriendRequest(notification.data.friend_request_id, 'accept');
+      const response = await apiService.respondToFriendRequest(friendRequestId, 'accept');
       if (response.success) {
-        Alert.alert('Success', `Friend request accepted! @${notification.fromUser.username} is now your friend.`);
+        Alert.alert('Success', `Friend request accepted! @${fromUsername} is now your friend.`);
         // Mark notification as read
         await apiService.markNotificationAsRead(notification.id);
         // Reload notifications
         await loadNotifications();
       } else {
         Alert.alert('Error', response.error || 'Failed to accept friend request');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Network error occurred');
+    }
+  };
+
+  const handleRejectFriendRequest = async (notification: Notification) => {
+    const friendRequestId = notification.data?.friend_request_id;
+    const fromUsername = typeof notification.fromUser === 'string' ? notification.fromUser : notification.fromUser?.username;
+    
+    if (!friendRequestId) {
+      Alert.alert('Error', 'Friend request ID not found');
+      return;
+    }
+    
+    try {
+      const response = await apiService.respondToFriendRequest(friendRequestId, 'reject');
+      if (response.success) {
+        Alert.alert('Friend request rejected', `Rejected friend request from @${fromUsername}`);
+        // Mark notification as read
+        await apiService.markNotificationAsRead(notification.id);
+        // Reload notifications
+        await loadNotifications();
+      } else {
+        Alert.alert('Error', response.error || 'Failed to reject friend request');
       }
     } catch (error) {
       Alert.alert('Error', 'Network error occurred');
@@ -274,12 +313,20 @@ export const FeedScreen: React.FC = () => {
                       </View>
                       <View style={styles.notificationActions}>
                         {notification.type === 'friend_request' && notification.fromUser && (
-                          <TouchableOpacity
-                            style={styles.addBackButton}
-                            onPress={() => handleAcceptFriendRequest(notification)}
-                          >
-                            <Text style={styles.addBackButtonText}>Accept</Text>
-                          </TouchableOpacity>
+                          <View style={styles.friendRequestActions}>
+                            <TouchableOpacity
+                              style={styles.acceptButton}
+                              onPress={() => handleAcceptFriendRequest(notification)}
+                            >
+                              <Text style={styles.acceptButtonText}>Accept</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                              style={styles.rejectButton}
+                              onPress={() => handleRejectFriendRequest(notification)}
+                            >
+                              <Text style={styles.rejectButtonText}>Reject</Text>
+                            </TouchableOpacity>
+                          </View>
                         )}
                         <TouchableOpacity
                           style={styles.markReadButton}
@@ -554,6 +601,32 @@ const styles = StyleSheet.create({
   notificationActions: {
     alignItems: 'flex-end',
     gap: 8,
+  },
+  friendRequestActions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  acceptButton: {
+    backgroundColor: '#48BB78',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  acceptButtonText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  rejectButton: {
+    backgroundColor: '#F56565',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  rejectButtonText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '600',
   },
   addBackButton: {
     backgroundColor: '#FDB366',
