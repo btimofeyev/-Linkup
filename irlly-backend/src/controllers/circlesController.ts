@@ -56,6 +56,23 @@ export const createCircle = [
 
       // Add members if provided
       if (contactIds.length > 0) {
+        // Verify contacts are mutual friends
+        const { data: validContacts, error: contactCheckError } = await supabase
+          .from('contacts')
+          .select('id')
+          .in('id', contactIds)
+          .eq('user_id', userId)
+          .not('contact_user_id', 'is', null); // Only mutual friends
+
+        if (contactCheckError || !validContacts || validContacts.length !== contactIds.length) {
+          console.error('Invalid contacts provided for circle creation');
+          res.status(400).json({
+            success: false,
+            error: 'Some contacts are not in your friends list'
+          });
+          return;
+        }
+
         const members = contactIds.map((contactId: string) => ({
           circle_id: circle.id,
           contact_id: contactId
@@ -67,7 +84,11 @@ export const createCircle = [
 
         if (membersError) {
           console.error('Error adding circle members:', membersError);
-          // Don't fail the request, just log the error
+          res.status(500).json({
+            success: false,
+            error: 'Failed to add members to circle'
+          });
+          return;
         }
       }
 
@@ -288,18 +309,29 @@ export const addContactsToCircle = [
         return;
       }
 
-      // Verify that the contact IDs exist in the contacts table
+      // Verify that the contact IDs exist in the contacts table and are mutual friends
       const { data: existingContacts, error: contactCheckError } = await supabase
         .from('contacts')
         .select('id, name, username, contact_user_id')
         .in('id', contactIds)
-        .eq('user_id', userId);
+        .eq('user_id', userId)
+        .not('contact_user_id', 'is', null); // Only mutual friends (registered users)
 
       if (contactCheckError) {
         console.error('Error checking contact existence:', contactCheckError);
-      } else {
-        console.log('Backend: Existing contacts found:', existingContacts?.length || 0, 'of', contactIds.length);
-        console.log('Backend: Contact details:', existingContacts);
+        res.status(500).json({
+          success: false,
+          error: 'Failed to verify contacts'
+        });
+        return;
+      }
+
+      if (!existingContacts || existingContacts.length !== contactIds.length) {
+        res.status(400).json({
+          success: false,
+          error: 'Some contacts are not in your friends list or do not exist'
+        });
+        return;
       }
 
       // Add members

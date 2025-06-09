@@ -51,18 +51,18 @@ export const AddContactScreen: React.FC<AddContactScreenProps> = ({
     }
   };
 
-  const handleAddContact = async (username: string) => {
+  const handleSendFriendRequest = async (username: string) => {
     setIsLoading(true);
     try {
-      const result = await apiService.addContactByUsername(username);
+      const result = await apiService.sendFriendRequest(username);
 
       if (result.success) {
-        Alert.alert('Success', `Added @${username} to your contacts!`);
-        // Remove the added user from search results
+        Alert.alert('Success', `Friend request sent to @${username}!`);
+        // Remove the user from search results
         setSearchResults(prev => prev.filter(user => user.username !== username));
         onContactAdded?.();
       } else {
-        Alert.alert('Error', result.error || 'Failed to add contact');
+        Alert.alert('Error', result.error || 'Failed to send friend request');
       }
     } catch (error) {
       Alert.alert('Error', 'Network error occurred');
@@ -134,10 +134,10 @@ export const AddContactScreen: React.FC<AddContactScreenProps> = ({
                     </View>
                     <TouchableOpacity
                       style={[styles.addButton, isLoading && styles.addButtonDisabled]}
-                      onPress={() => handleAddContact(user.username)}
+                      onPress={() => handleSendFriendRequest(user.username)}
                       disabled={isLoading}
                     >
-                      <Text style={styles.addButtonText}>Add</Text>
+                      <Text style={styles.addButtonText}>Send Request</Text>
                     </TouchableOpacity>
                   </View>
                 ))}

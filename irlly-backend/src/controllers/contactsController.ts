@@ -313,7 +313,7 @@ export const debugUsers = async (req: AuthRequest, res: Response): Promise<void>
   }
 };
 
-export const addContactByUsername = [
+export const sendFriendRequest = [
   body('username')
     .isLength({ min: 3, max: 30 })
     .matches(/^[a-zA-Z0-9_]{3,30}$/)
@@ -334,24 +334,12 @@ export const addContactByUsername = [
       const userId = req.user!.id;
       const { username } = req.body;
 
-      console.log('Backend: Add contact by username request:', {
-        requestingUserId: userId,
-        searchingForUsername: username
-      });
-
       // Find the user by username
       const { data: targetUser, error: userError } = await supabase
         .from('users')
         .select('id, username, name, avatar_url')
         .eq('username', username)
         .single();
-
-      console.log('Backend: Target user found:', {
-        targetUserId: targetUser?.id,
-        targetUsername: targetUser?.username,
-        requestingUserId: userId,
-        isSameUser: targetUser?.id === userId
-      });
 
       if (userError || !targetUser) {
         res.status(404).json({
@@ -364,12 +352,12 @@ export const addContactByUsername = [
       if (targetUser.id === userId) {
         res.status(400).json({
           success: false,
-          error: 'Cannot add yourself as a contact'
+          error: 'Cannot send friend request to yourself'
         });
         return;
       }
 
-      // Check if already a contact
+      // Check if already friends
       const { data: existingContact } = await supabase
         .from('contacts')
         .select('id')
@@ -385,32 +373,40 @@ export const addContactByUsername = [
         return;
       }
 
-      // Add as contact
-      const { data: newContact, error: insertError } = await supabase
-        .from('contacts')
-        .insert({
-          user_id: userId,
-          contact_user_id: targetUser.id,
-          name: targetUser.name || targetUser.username,
-          username: targetUser.username,
-          is_registered: true
-        })
-        .select(`
-          *,
-          contact_user:contact_user_id (
-            id,
-            name,
-            username,
-            avatar_url
-          )
-        `)
+      // Check if friend request already exists
+      const { data: existingRequest } = await supabase
+        .from('friend_requests')
+        .select('id, status')
+        .eq('from_user_id', userId)
+        .eq('to_user_id', targetUser.id)
         .single();
 
-      if (insertError) {
-        console.error('Error adding contact:', insertError);
+      if (existingRequest) {
+        res.status(400).json({
+          success: false,
+          error: existingRequest.status === 'pending' 
+            ? 'Friend request already sent' 
+            : 'Friend request already processed'
+        });
+        return;
+      }
+
+      // Create friend request
+      const { data: friendRequest, error: requestError } = await supabase
+        .from('friend_requests')
+        .insert({
+          from_user_id: userId,
+          to_user_id: targetUser.id,
+          status: 'pending'
+        })
+        .select()
+        .single();
+
+      if (requestError) {
+        console.error('Error creating friend request:', requestError);
         res.status(500).json({
           success: false,
-          error: 'Failed to add contact'
+          error: 'Failed to send friend request'
         });
         return;
       }
@@ -424,14 +420,6 @@ export const addContactByUsername = [
           .single();
       
         if (fromUser) {
-          console.log('🔔 Creating notification for:', {
-            target_user_id: targetUser.id,
-            from_user_id: userId,
-            from_username: fromUser.username,
-            from_name: fromUser.name || fromUser.username
-          });
-          
-          // Try the function first
           const functionResult = await supabase.rpc('create_friend_request_notification', {
             target_user_id: targetUser.id,
             from_user_id: userId,
@@ -440,9 +428,6 @@ export const addContactByUsername = [
           });
           
           if (functionResult.error) {
-            console.log('🔔 Function failed, trying direct insert:', functionResult.error);
-            
-            // Fallback to direct database insert
             const { data: notification, error: directError } = await supabase
               .from('notifications')
               .insert({
@@ -450,47 +435,183 @@ export const addContactByUsername = [
                 from_user_id: userId,
                 type: 'friend_request',
                 title: 'New Friend Request',
-                message: `${fromUser.name || fromUser.username} (@${fromUser.username}) added you as a contact`,
+                message: `${fromUser.name || fromUser.username} (@${fromUser.username}) sent you a friend request`,
                 data: {
                   from_user_id: userId,
                   from_username: fromUser.username,
-                  from_name: fromUser.name || fromUser.username
+                  from_name: fromUser.name || fromUser.username,
+                  friend_request_id: friendRequest.id
                 },
                 is_read: false
               })
               .select()
               .single();
-      
-            if (directError) {
-              console.error('🚨 Direct notification insert also failed:', directError);
-            } else {
-              console.log('✅ Notification created via direct insert:', notification?.id);
-            }
-          } else {
-            console.log('✅ Notification created via function successfully');
           }
         }
       } catch (notificationError) {
-        console.error('🚨 Notification creation error:', notificationError);
-        // Don't fail the main operation if notification fails
+        console.error('Notification creation error:', notificationError);
       }
-      
-      console.log('Backend: Successfully added contact by username:', {
-        contactId: newContact.id,
-        requestingUserId: userId,
-        contactUserId: newContact.contact_user_id,
-        targetUserId: targetUser.id,
-        name: newContact.name,
-        username: newContact.username
-      });
       
       res.json({
         success: true,
-        data: { contact: newContact },
-        message: `Added ${targetUser.username} to your contacts`
+        data: { friendRequest },
+        message: `Friend request sent to ${targetUser.username}`
       });
     } catch (error) {
-      console.error('Add contact error:', error);
+      console.error('Send friend request error:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Internal server error'
+      });
+    }
+  }
+];
+
+export const getFriendRequests = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const userId = req.user!.id;
+
+    const { data: friendRequests, error } = await supabase
+      .from('friend_requests')
+      .select(`
+        *,
+        from_user:from_user_id (
+          id,
+          username,
+          name,
+          avatar_url
+        )
+      `)
+      .eq('to_user_id', userId)
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching friend requests:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to fetch friend requests'
+      });
+      return;
+    }
+
+    res.json({
+      success: true,
+      data: { friendRequests }
+    });
+  } catch (error) {
+    console.error('Get friend requests error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error'
+    });
+  }
+};
+
+export const respondToFriendRequest = [
+  body('requestId')
+    .isUUID()
+    .withMessage('Invalid request ID'),
+  body('action')
+    .isIn(['accept', 'reject'])
+    .withMessage('Action must be accept or reject'),
+
+  async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        res.status(400).json({
+          success: false,
+          error: 'Validation failed',
+          data: errors.array()
+        });
+        return;
+      }
+
+      const userId = req.user!.id;
+      const { requestId, action } = req.body;
+
+      // Get the friend request
+      const { data: friendRequest, error: requestError } = await supabase
+        .from('friend_requests')
+        .select(`
+          *,
+          from_user:from_user_id (
+            id,
+            username,
+            name,
+            avatar_url
+          )
+        `)
+        .eq('id', requestId)
+        .eq('to_user_id', userId)
+        .eq('status', 'pending')
+        .single();
+
+      if (requestError || !friendRequest) {
+        res.status(404).json({
+          success: false,
+          error: 'Friend request not found'
+        });
+        return;
+      }
+
+      // Update friend request status
+      const { error: updateError } = await supabase
+        .from('friend_requests')
+        .update({ status: action === 'accept' ? 'accepted' : 'rejected' })
+        .eq('id', requestId);
+
+      if (updateError) {
+        console.error('Error updating friend request:', updateError);
+        res.status(500).json({
+          success: false,
+          error: 'Failed to respond to friend request'
+        });
+        return;
+      }
+
+      if (action === 'accept') {
+        // Add both users as contacts to each other
+        const contactsToInsert = [
+          {
+            user_id: userId,
+            contact_user_id: friendRequest.from_user_id,
+            name: friendRequest.from_user.name || friendRequest.from_user.username,
+            username: friendRequest.from_user.username,
+            is_registered: true
+          },
+          {
+            user_id: friendRequest.from_user_id,
+            contact_user_id: userId,
+            name: req.user!.name || req.user!.username,
+            username: req.user!.username,
+            is_registered: true
+          }
+        ];
+
+        const { error: contactsError } = await supabase
+          .from('contacts')
+          .insert(contactsToInsert);
+
+        if (contactsError) {
+          console.error('Error adding mutual contacts:', contactsError);
+          res.status(500).json({
+            success: false,
+            error: 'Failed to add contacts'
+          });
+          return;
+        }
+      }
+
+      res.json({
+        success: true,
+        message: action === 'accept' 
+          ? `Friend request accepted` 
+          : `Friend request rejected`
+      });
+    } catch (error) {
+      console.error('Respond to friend request error:', error);
       res.status(500).json({
         success: false,
         error: 'Internal server error'

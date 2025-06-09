@@ -67,10 +67,21 @@ class ApiService {
     return this.request(`/contacts/search?q=${encodeURIComponent(searchTerm)}`);
   }
 
-  async addContactByUsername(username: string) {
-    return this.request('/contacts/add', {
+  async sendFriendRequest(username: string) {
+    return this.request('/contacts/friend-request', {
       method: 'POST',
       body: JSON.stringify({ username }),
+    });
+  }
+
+  async getFriendRequests() {
+    return this.request('/contacts/friend-requests');
+  }
+
+  async respondToFriendRequest(requestId: string, action: 'accept' | 'reject') {
+    return this.request('/contacts/friend-request/respond', {
+      method: 'POST',
+      body: JSON.stringify({ requestId, action }),
     });
   }
 

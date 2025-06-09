@@ -155,42 +155,18 @@ export const CirclesScreen: React.FC = () => {
     }
   };
 
-  const handleAddNewContact = async (username: string) => {
+  const handleSendFriendRequest = async (username: string) => {
     setIsSearching(true);
     try {
-      const result = await apiService.addContactByUsername(username);
+      const result = await apiService.sendFriendRequest(username);
 
       if (result.success) {
-        Alert.alert('Success', `Added @${username} to your contacts!`);
-        // Refresh contacts and friends to get the new contact
-        await refreshContacts();
-        await loadFriends();
-        // Remove the added user from search results
+        Alert.alert('Success', `Friend request sent to @${username}!`);
+        // Remove the user from search results
         setSearchResults(prev => prev.filter(user => user.username !== username));
         setSearchTerm('');
-        
-        // Auto-add to current circle if we're in circle detail view
-        if (selectedCircle && result.data?.contact) {
-          setTimeout(async () => {
-            try {
-              console.log('CirclesScreen: Adding contact to circle:', {
-                contactId: result.data.contact.id,
-                contactData: result.data.contact,
-                circleId: selectedCircle.id
-              });
-              await addContactsToCircle(selectedCircle.id, [result.data.contact.id]);
-              setSelectedCircle({
-                ...selectedCircle,
-                contactIds: [...selectedCircle.contactIds, result.data.contact.id]
-              });
-              Alert.alert('Added to Circle', `@${username} has been added to "${selectedCircle.name}"`);
-            } catch (error) {
-              console.error('Error adding to circle:', error);
-            }
-          }, 500); // Small delay to ensure contact is loaded
-        }
       } else {
-        Alert.alert('Error', result.error || 'Failed to add contact');
+        Alert.alert('Error', result.error || 'Failed to send friend request');
       }
     } catch (error) {
       Alert.alert('Error', 'Network error occurred');
@@ -423,10 +399,10 @@ export const CirclesScreen: React.FC = () => {
                     </View>
                     <TouchableOpacity
                       style={[styles.addNewButton, isSearching && styles.addNewButtonDisabled]}
-                      onPress={() => handleAddNewContact(user.username)}
+                      onPress={() => handleSendFriendRequest(user.username)}
                       disabled={isSearching}
                     >
-                      <Text style={styles.addNewButtonText}>Add</Text>
+                      <Text style={styles.addNewButtonText}>Send Request</Text>
                     </TouchableOpacity>
                   </View>
                 ))}

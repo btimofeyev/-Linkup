@@ -54,20 +54,17 @@ export const ContactsManagementScreen: React.FC<ContactsManagementScreenProps> =
     }
   };
 
-  const handleAddContact = async (username: string) => {
+  const handleSendFriendRequest = async (username: string) => {
     setIsSearching(true);
     try {
-      const result = await apiService.addContactByUsername(username);
+      const result = await apiService.sendFriendRequest(username);
 
       if (result.success) {
-        Alert.alert('Success', `Added @${username} to your contacts!`);
-        console.log('ContactsManagement: Successfully added contact, refreshing...');
-        await refreshContacts();
-        console.log('ContactsManagement: Contacts after refresh:', contacts.length);
+        Alert.alert('Success', `Friend request sent to @${username}!`);
         setSearchResults(prev => prev.filter(user => user.username !== username));
         setSearchTerm('');
       } else {
-        Alert.alert('Error', result.error || 'Failed to add contact');
+        Alert.alert('Error', result.error || 'Failed to send friend request');
       }
     } catch (error) {
       Alert.alert('Error', 'Network error occurred');
@@ -205,10 +202,10 @@ export const ContactsManagementScreen: React.FC<ContactsManagementScreenProps> =
                     </View>
                     <TouchableOpacity
                       style={[styles.addNewButton, isSearching && styles.addNewButtonDisabled]}
-                      onPress={() => handleAddContact(user.username)}
+                      onPress={() => handleSendFriendRequest(user.username)}
                       disabled={isSearching}
                     >
-                      <Text style={styles.addNewButtonText}>Add</Text>
+                      <Text style={styles.addNewButtonText}>Send Request</Text>
                     </TouchableOpacity>
                   </View>
                 ))}

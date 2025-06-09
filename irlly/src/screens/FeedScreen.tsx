@@ -127,19 +127,19 @@ export const FeedScreen: React.FC = () => {
     }
   };
 
-  const handleAddBack = async (notification: Notification) => {
-    if (!notification.fromUser) return;
+  const handleAcceptFriendRequest = async (notification: Notification) => {
+    if (!notification.fromUser || !notification.data?.friend_request_id) return;
     
     try {
-      const response = await apiService.addContactByUsername(notification.fromUser.username);
+      const response = await apiService.respondToFriendRequest(notification.data.friend_request_id, 'accept');
       if (response.success) {
-        Alert.alert('Success', `Added @${notification.fromUser.username} back to your contacts!`);
+        Alert.alert('Success', `Friend request accepted! @${notification.fromUser.username} is now your friend.`);
         // Mark notification as read
         await apiService.markNotificationAsRead(notification.id);
         // Reload notifications
         await loadNotifications();
       } else {
-        Alert.alert('Error', response.error || 'Failed to add contact');
+        Alert.alert('Error', response.error || 'Failed to accept friend request');
       }
     } catch (error) {
       Alert.alert('Error', 'Network error occurred');
@@ -276,9 +276,9 @@ export const FeedScreen: React.FC = () => {
                         {notification.type === 'friend_request' && notification.fromUser && (
                           <TouchableOpacity
                             style={styles.addBackButton}
-                            onPress={() => handleAddBack(notification)}
+                            onPress={() => handleAcceptFriendRequest(notification)}
                           >
-                            <Text style={styles.addBackButtonText}>Add Back</Text>
+                            <Text style={styles.addBackButtonText}>Accept</Text>
                           </TouchableOpacity>
                         )}
                         <TouchableOpacity

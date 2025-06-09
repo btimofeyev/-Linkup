@@ -112,6 +112,17 @@ CREATE TABLE rsvps (
     UNIQUE(user_id, meetup_id, meetup_type)
 );
 
+-- Friend requests table
+CREATE TABLE friend_requests (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    from_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    to_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'accepted', 'rejected')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(from_user_id, to_user_id)
+);
+
 -- Verification codes table (for phone number verification)
 CREATE TABLE verification_codes (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -144,6 +155,8 @@ CREATE INDEX idx_meetup_circles_circle_id ON meetup_circles(circle_id);
 CREATE INDEX idx_rsvps_user_id ON rsvps(user_id);
 CREATE INDEX idx_rsvps_meetup ON rsvps(meetup_id, meetup_type);
 CREATE INDEX idx_verification_codes_phone ON verification_codes(phone_number, expires_at);
+CREATE INDEX idx_friend_requests_to_user ON friend_requests(to_user_id, status);
+CREATE INDEX idx_friend_requests_from_user ON friend_requests(from_user_id, status);
 
 -- Row Level Security (RLS) policies
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
@@ -155,6 +168,7 @@ ALTER TABLE pin_circles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE scheduled_meetups ENABLE ROW LEVEL SECURITY;
 ALTER TABLE meetup_circles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE rsvps ENABLE ROW LEVEL SECURITY;
+ALTER TABLE friend_requests ENABLE ROW LEVEL SECURITY;
 
 -- Users can only see their own data
 CREATE POLICY "Users can view their own data" ON users
@@ -218,6 +232,19 @@ CREATE POLICY "Users can view meetups they have access to" ON scheduled_meetups
 CREATE POLICY "Users can manage their own RSVPs" ON rsvps
     FOR ALL USING (auth.uid()::text = user_id::text);
 
+-- Friend request policies
+CREATE POLICY "Users can view friend requests involving them" ON friend_requests
+    FOR SELECT USING (
+        auth.uid()::text = from_user_id::text OR 
+        auth.uid()::text = to_user_id::text
+    );
+
+CREATE POLICY "Users can create friend requests" ON friend_requests
+    FOR INSERT WITH CHECK (auth.uid()::text = from_user_id::text);
+
+CREATE POLICY "Users can update friend requests sent to them" ON friend_requests
+    FOR UPDATE USING (auth.uid()::text = to_user_id::text);
+
 -- Functions for automatic updated_at timestamps
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
@@ -234,3 +261,4 @@ CREATE TRIGGER update_circles_updated_at BEFORE UPDATE ON circles FOR EACH ROW E
 CREATE TRIGGER update_pins_updated_at BEFORE UPDATE ON pins FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_scheduled_meetups_updated_at BEFORE UPDATE ON scheduled_meetups FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_rsvps_updated_at BEFORE UPDATE ON rsvps FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_friend_requests_updated_at BEFORE UPDATE ON friend_requests FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
