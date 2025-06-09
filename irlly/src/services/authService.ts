@@ -1,13 +1,14 @@
 import { supabase } from './supabaseClient';
 
 export class AuthService {
-  // Send magic link via email
-  async sendEmailMagicLink(email: string) {
+  // Send OTP code via email (not magic link)
+  async sendEmailOTP(email: string) {
     try {
       const { error } = await supabase.auth.signInWithOtp({
         email: email,
         options: {
-          shouldCreateUser: true
+          shouldCreateUser: true,
+          emailRedirectTo: undefined // This prevents magic link, forces OTP
         }
       });
 
@@ -15,9 +16,9 @@ export class AuthService {
         return { success: false, error: error.message };
       }
 
-      return { success: true, message: 'Magic link sent to your email' };
+      return { success: true, message: 'Verification code sent to your email' };
     } catch (error) {
-      return { success: false, error: 'Failed to send magic link' };
+      return { success: false, error: 'Failed to send verification code' };
     }
   }
 

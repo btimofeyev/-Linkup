@@ -7,7 +7,7 @@ import { supabase } from '../services/supabaseClient';
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  sendEmailMagicLink: (email: string) => Promise<void>;
+  sendEmailOTP: (email: string) => Promise<void>;
   verifyEmailOTP: (email: string, code: string) => Promise<void>;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
@@ -78,14 +78,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const sendEmailMagicLink = async (email: string) => {
+  const sendEmailOTP = async (email: string) => {
     try {
-      const response = await authService.sendEmailMagicLink(email);
+      const response = await authService.sendEmailOTP(email);
       if (!response.success) {
-        throw new Error(response.error || 'Failed to send magic link');
+        throw new Error(response.error || 'Failed to send verification code');
       }
     } catch (error) {
-      console.error('Error sending magic link:', error);
+      console.error('Error sending verification code:', error);
       throw error;
     }
   };
@@ -116,7 +116,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const value: AuthContextType = {
     user,
     isLoading,
-    sendEmailMagicLink,
+    sendEmailOTP,
     verifyEmailOTP,
     logout,
     isAuthenticated: !!user,
