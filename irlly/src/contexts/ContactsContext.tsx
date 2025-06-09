@@ -82,7 +82,9 @@ export const ContactsProvider: React.FC<ContactsProviderProps> = ({ children }) 
         }));
         
         console.log(`Contacts loaded from backend: ${backendContacts.length}`);
-        console.log('Backend contacts:', backendContacts.map(c => ({ name: c.name, username: c.username, isRegistered: c.isRegistered })));
+        console.log('Backend registered contacts:', backendContacts.filter(c => c.isRegistered).length);
+        console.log('Backend username contacts:', backendContacts.filter(c => c.username).length);
+        console.log('Username contacts details:', backendContacts.filter(c => c.username).map(c => ({ name: c.name, username: c.username, isRegistered: c.isRegistered })));
         
         // Update local storage with backend data
         setContacts(backendContacts);

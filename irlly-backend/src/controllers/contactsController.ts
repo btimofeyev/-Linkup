@@ -118,6 +118,8 @@ export const getContacts = async (req: AuthRequest, res: Response): Promise<void
     }
 
     console.log(`Backend: returning ${contacts?.length || 0} contacts for user ${userId}`);
+    console.log('Backend: Registered contacts:', contacts?.filter(c => c.is_registered).length || 0);
+    console.log('Backend: Username-based contacts:', contacts?.filter(c => c.username && c.is_registered).length || 0);
 
     res.json({
       success: true,
