@@ -31,7 +31,6 @@ const EmailVerificationScreen: React.FC<EmailVerificationScreenProps> = ({ navig
   
   // Animation refs for logo
   const logoFloatAnim = useRef(new Animated.Value(0)).current;
-  const shimmerAnim = useRef(new Animated.Value(0)).current;
   
   const { sendEmailOTP, verifyEmailOTP, isAuthenticated, needsProfileSetup } = useAuth();
 
@@ -61,19 +60,6 @@ const EmailVerificationScreen: React.FC<EmailVerificationScreenProps> = ({ navig
       ]).start(() => logoFloat());
     };
     logoFloat();
-
-    // Shimmer effect
-    const shimmer = () => {
-      Animated.timing(shimmerAnim, {
-        toValue: 1,
-        duration: 2000,
-        useNativeDriver: true,
-      }).start(() => {
-        shimmerAnim.setValue(0);
-        shimmer();
-      });
-    };
-    shimmer();
   }, []);
 
   const handleSendCode = async () => {
@@ -133,11 +119,6 @@ const EmailVerificationScreen: React.FC<EmailVerificationScreenProps> = ({ navig
     outputRange: [0, -10],
   });
 
-  const shimmerTranslateX = shimmerAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [-120, 120],
-  });
-
   return (
     <ImageBackground source={BackgroundImage} style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
@@ -158,13 +139,6 @@ const EmailVerificationScreen: React.FC<EmailVerificationScreenProps> = ({ navig
                 ]}
               >
                 <View style={styles.logoBox}>
-                  {/* Shimmer Effect */}
-                  <Animated.View
-                    style={[
-                      styles.shimmer,
-                      { transform: [{ translateX: shimmerTranslateX }] }
-                    ]}
-                  />
                   <Image
                     source={require('../../assets/linkuplogo.png')}
                     style={styles.logo}
@@ -285,15 +259,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 40,
     elevation: 20,
-    overflow: 'hidden',
-  },
-  shimmer: {
-    position: 'absolute',
-    top: 0,
-    bottom: 0,
-    width: 120,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    zIndex: 1,
   },
   logo: {
     width: 80,
