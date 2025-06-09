@@ -230,7 +230,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       });
 
       // Create user profile in database
-      const { data: profile, error } = await supabase
+      let profileResult = await supabase
         .from('users')
         .insert({
           id: supabaseUser.id,
@@ -243,6 +243,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         })
         .select()
         .single();
+
+      let profile = profileResult.data;
+      let error = profileResult.error;
 
       console.log('AuthContext: Profile creation result:', { profile, error });
 
@@ -258,7 +261,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           if (error.message.includes('users_pkey')) {
             // User record already exists, try to update instead
             console.log('AuthContext: User record exists, attempting to update instead...');
-            const { data: updateProfile, error: updateError } = await supabase
+            const updateResult = await supabase
               .from('users')
               .update({
                 email: supabaseUser.email,
@@ -270,15 +273,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               .select()
               .single();
 
-            if (updateError) {
-              console.error('AuthContext: Profile update error:', updateError);
-              if (updateError.message.includes('username')) {
+            if (updateResult.error) {
+              console.error('AuthContext: Profile update error:', updateResult.error);
+              if (updateResult.error.message.includes('username')) {
                 throw new Error('Username is already taken. Please choose a different one.');
               }
-              throw new Error(`Failed to update profile: ${updateError.message}`);
+              throw new Error(`Failed to update profile: ${updateResult.error.message}`);
             }
             
-            profile = updateProfile;
+            profile = updateResult.data;
+            error = null; // Clear the error since update succeeded
             console.log('AuthContext: Profile updated successfully:', profile);
           } else {
             throw new Error('Username is already taken. Please choose a different one.');
