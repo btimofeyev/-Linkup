@@ -148,7 +148,7 @@ const EmailVerificationScreen: React.FC<EmailVerificationScreenProps> = ({ navig
               </Text>
               <Text style={styles.subtitle}>
                 {step === 'email' 
-                  ? 'Enter your email to get started' 
+                  ? 'Real connections, real moments' 
                   : `We sent a 6-digit code to ${email}`
                 }
               </Text>
