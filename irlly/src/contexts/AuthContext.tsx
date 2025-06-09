@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { User } from '../types';
 import { authService } from '../services/authService';
@@ -40,6 +40,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [lastHandledUserId, setLastHandledUserId] = useState<string | null>(null);
   const [isRestoringFromStorage, setIsRestoringFromStorage] = useState(false);
   const [hasLoadedFromStorage, setHasLoadedFromStorage] = useState(false);
+
+  // Use refs to access current state in auth listener
+  const hasLoadedFromStorageRef = useRef(hasLoadedFromStorage);
+  const userRef = useRef(user);
+  const isRestoringFromStorageRef = useRef(isRestoringFromStorage);
+
+  // Update refs when state changes
+  useEffect(() => {
+    hasLoadedFromStorageRef.current = hasLoadedFromStorage;
+  }, [hasLoadedFromStorage]);
+  
+  useEffect(() => {
+    userRef.current = user;
+  }, [user]);
+  
+  useEffect(() => {
+    isRestoringFromStorageRef.current = isRestoringFromStorage;
+  }, [isRestoringFromStorage]);
 
   useEffect(() => {
     let mounted = true;
@@ -96,13 +114,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           return;
         }
 
-        if (isRestoringFromStorage) {
+        if (isRestoringFromStorageRef.current) {
           console.log('AuthContext: Ignoring auth state change during storage restoration');
           return;
         }
 
-        if (hasLoadedFromStorage && user) {
-          console.log('AuthContext: User already loaded from storage, ignoring auth state change');
+        if (hasLoadedFromStorageRef.current && userRef.current) {
+          console.log('AuthContext: User already loaded from storage, ignoring auth state change', {
+            hasLoadedFromStorage: hasLoadedFromStorageRef.current,
+            hasUser: !!userRef.current,
+            userId: userRef.current?.id
+          });
           return;
         }
 
@@ -237,7 +259,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUser(user);
         setNeedsProfileSetup(false);
         setHasLoadedFromStorage(true);
-        console.log('AuthContext: User restored from storage successfully');
+        console.log('AuthContext: User restored from storage successfully', {
+          userId: user.id,
+          settingHasLoadedFromStorage: true
+        });
         
         // Silently try to restore session in background, but don't block on it
         setTimeout(async () => {
