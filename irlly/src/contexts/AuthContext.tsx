@@ -42,22 +42,37 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     
     const initializeAuth = async () => {
       try {
-        // First, try to load from storage
-        await loadUserFromStorage();
+        console.log('AuthContext: Starting auth initialization...');
         
-        // Then check current session
-        const { data: { session } } = await supabase.auth.getSession();
+        // Add overall timeout to prevent the whole initialization from hanging
+        const initPromise = (async () => {
+          // First, try to load from storage
+          await loadUserFromStorage();
+          
+          // Then check current session
+          const { data: { session } } = await supabase.auth.getSession();
+          
+          if (session && mounted) {
+            console.log('AuthContext: Found existing session, checking profile...');
+            await handleAuthenticatedUser(session.user);
+          } else if (mounted) {
+            console.log('AuthContext: No existing session found');
+            setIsLoading(false);
+          }
+        })();
+
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Auth initialization timeout')), 15000)
+        );
+
+        await Promise.race([initPromise, timeoutPromise]);
         
-        if (session && mounted) {
-          console.log('Found existing session, checking profile...');
-          await handleAuthenticatedUser(session.user);
-        } else if (mounted) {
-          console.log('No existing session found');
-          setIsLoading(false);
-        }
       } catch (error) {
-        console.error('Error initializing auth:', error);
+        console.error('AuthContext: Error initializing auth:', error);
         if (mounted) {
+          if (error.message === 'Auth initialization timeout') {
+            console.log('AuthContext: Initialization timed out, forcing loading to false');
+          }
           setIsLoading(false);
         }
       }
@@ -104,29 +119,46 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       console.log('AuthContext: handleAuthenticatedUser called with user:', supabaseUserData.id, supabaseUserData.email);
       setSupabaseUser(supabaseUserData);
       
-      // Check if user has a profile in our database
+      // Check if user has a profile in our database with timeout
       console.log('AuthContext: Checking for existing profile in database...');
-      const { data: profile, error } = await supabase
+      
+      const profileCheckPromise = supabase
         .from('users')
         .select('*')
         .eq('id', supabaseUserData.id)
         .single();
 
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Profile check timeout')), 10000)
+      );
+
+      const { data: profile, error } = await Promise.race([
+        profileCheckPromise,
+        timeoutPromise
+      ]) as any;
+
       console.log('AuthContext: Profile check result:', { profile, error });
 
       if (error && error.code === 'PGRST116') {
         // User doesn't have a profile, needs setup
-        console.log('User needs profile setup');
+        console.log('AuthContext: User needs profile setup');
         setNeedsProfileSetup(true);
         setUser(null);
       } else if (error) {
-        // Other error
-        console.log('Profile check error:', error);
-        setNeedsProfileSetup(true);
-        setUser(null);
+        // Other error - log it but don't block
+        console.error('AuthContext: Profile check error:', error);
+        if (error.message === 'Profile check timeout') {
+          console.log('AuthContext: Profile check timed out, assuming needs setup');
+          setNeedsProfileSetup(true);
+          setUser(null);
+        } else {
+          setNeedsProfileSetup(true);
+          setUser(null);
+        }
       } else if (profile) {
         // User has a complete profile
-        console.log('User has complete profile');
+        console.log('AuthContext: User has complete profile');
         const userData: User = {
           id: profile.id,
           email: profile.email,
@@ -144,12 +176,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         if (session) {
           await AsyncStorage.setItem('session', JSON.stringify(session));
         }
+      } else {
+        // No profile data returned
+        console.log('AuthContext: No profile data returned, needs setup');
+        setNeedsProfileSetup(true);
+        setUser(null);
       }
     } catch (error) {
-      console.error('Error handling authenticated user:', error);
+      console.error('AuthContext: Error handling authenticated user:', error);
       setNeedsProfileSetup(true);
       setUser(null);
     } finally {
+      console.log('AuthContext: Setting loading to false');
       setIsLoading(false);
     }
   };
@@ -159,30 +197,58 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const userData = await AsyncStorage.getItem('user');
       const sessionData = await AsyncStorage.getItem('session');
       
-      console.log('Loading from storage:', { userData: !!userData, sessionData: !!sessionData });
+      console.log('AuthContext: Loading from storage:', { userData: !!userData, sessionData: !!sessionData });
       
       if (userData && sessionData) {
         const user = JSON.parse(userData);
         const session = JSON.parse(sessionData);
         
-        // Set user data from storage
-        setUser(user);
+        console.log('AuthContext: Found stored user data, restoring session...');
         
-        // Try to restore Supabase session
-        const { error } = await supabase.auth.setSession(session);
-        if (error) {
-          console.error('Error restoring session:', error);
-          // Clear invalid session data
-          await AsyncStorage.removeItem('user');
-          await AsyncStorage.removeItem('session');
-          setUser(null);
+        // Set user data from storage immediately
+        setUser(user);
+        setNeedsProfileSetup(false);
+        
+        // Try to restore Supabase session with timeout
+        try {
+          const sessionPromise = supabase.auth.setSession(session);
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Session restore timeout')), 5000)
+          );
+
+          const { error } = await Promise.race([sessionPromise, timeoutPromise]) as any;
+          
+          if (error) {
+            console.error('AuthContext: Error restoring session:', error);
+            // Clear invalid session data but keep user logged in
+            await AsyncStorage.removeItem('session');
+            
+            if (error.message === 'Session restore timeout') {
+              console.log('AuthContext: Session restore timed out, but keeping user logged in from storage');
+            } else {
+              // Only clear user if it's a real auth error
+              await AsyncStorage.removeItem('user');
+              setUser(null);
+              setNeedsProfileSetup(false);
+            }
+          } else {
+            console.log('AuthContext: Session restored successfully from storage');
+          }
+        } catch (sessionError) {
+          console.error('AuthContext: Session restore failed:', sessionError);
+          // Keep user logged in even if session restore fails
+          console.log('AuthContext: Keeping user logged in despite session restore failure');
         }
+      } else {
+        console.log('AuthContext: No stored user data found');
       }
     } catch (error) {
-      console.error('Error loading user from storage:', error);
+      console.error('AuthContext: Error loading user from storage:', error);
       // Clear corrupted storage data
       await AsyncStorage.removeItem('user');
       await AsyncStorage.removeItem('session');
+      setUser(null);
+      setNeedsProfileSetup(false);
     }
   };
 
