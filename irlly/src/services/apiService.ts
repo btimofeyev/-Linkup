@@ -1,8 +1,8 @@
 import { supabase } from './supabaseClient';
 
 // API URLs for different environments
-//const API_BASE_URL = 'https://linkup-production-8095.up.railway.app/api';  // Production
- const API_BASE_URL = 'http://192.168.100.96:3000/api';  // Home PC (Development)
+const API_BASE_URL = 'https://linkup-production-8095.up.railway.app/api';  // Production
+//const API_BASE_URL = 'http://192.168.100.96:3000/api';  // Home PC (Development)
 // const API_BASE_URL = 'http://192.168.1.32:3000/api';    // Laptop local (Development)
 
 class ApiService {

@@ -37,7 +37,7 @@ export const AddContactScreen: React.FC<AddContactScreenProps> = ({
     try {
       const result = await apiService.searchUsers(searchTerm.trim());
 
-      if (result.success && result.data) {
+      if (result.success && result.data && 'users' in result.data) {
         setSearchResults(result.data.users || []);
       } else {
         Alert.alert('Error', result.error || 'Search failed');

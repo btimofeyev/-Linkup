@@ -249,10 +249,10 @@ export const FeedScreen: React.FC = () => {
         </Text>
       </View>
       
-      {item.rsvp_status ? (
+      {item.rsvpStatus ? (
         <View style={styles.rsvpStatus}>
           <Text style={styles.rsvpStatusText}>
-            You're {item.rsvp_status === 'attending' ? 'going' : 'not going'}
+            You're {item.rsvpStatus === 'attending' ? 'going' : 'not going'}
           </Text>
         </View>
       ) : (
