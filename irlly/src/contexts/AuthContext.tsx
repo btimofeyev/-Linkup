@@ -67,21 +67,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state change:', event);
+        console.log('AuthContext: Auth state change event:', event, 'Session exists:', !!session);
         
-        if (!mounted) return;
+        if (!mounted) {
+          console.log('AuthContext: Component unmounted, ignoring auth state change');
+          return;
+        }
 
         if (event === 'SIGNED_IN' && session) {
-          console.log('SIGNED_IN event - checking profile for user:', session.user.id);
+          console.log('AuthContext: SIGNED_IN event - checking profile for user:', session.user.id);
+          console.log('AuthContext: User email:', session.user.email);
           await handleAuthenticatedUser(session.user);
         } else if (event === 'SIGNED_OUT') {
-          console.log('SIGNED_OUT event');
+          console.log('AuthContext: SIGNED_OUT event');
           setUser(null);
           setNeedsProfileSetup(false);
           setSupabaseUser(null);
           setIsLoading(false);
           await AsyncStorage.removeItem('user');
           await AsyncStorage.removeItem('session');
+        } else {
+          console.log('AuthContext: Other auth event:', event);
         }
       }
     );
@@ -94,16 +100,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const handleAuthenticatedUser = async (supabaseUserData: any) => {
     try {
+      console.log('AuthContext: handleAuthenticatedUser called with user:', supabaseUserData.id, supabaseUserData.email);
       setSupabaseUser(supabaseUserData);
       
       // Check if user has a profile in our database
+      console.log('AuthContext: Checking for existing profile in database...');
       const { data: profile, error } = await supabase
         .from('users')
         .select('*')
         .eq('id', supabaseUserData.id)
         .single();
 
-      console.log('Profile check result:', { profile, error });
+      console.log('AuthContext: Profile check result:', { profile, error });
 
       if (error && error.code === 'PGRST116') {
         // User doesn't have a profile, needs setup
@@ -191,13 +199,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const verifyEmailOTP = async (email: string, code: string) => {
     try {
+      console.log('AuthContext: Starting email OTP verification');
       const response = await authService.verifyEmailOTP(email, code);
+      console.log('AuthContext: OTP verification response:', response);
+      
       if (!response.success || !response.data) {
         throw new Error(response.error || 'Failed to verify code');
       }
+      
+      console.log('AuthContext: OTP verification successful, user:', response.data.user);
+      console.log('AuthContext: Waiting for onAuthStateChange to handle user setup...');
       // User and session will be set automatically by onAuthStateChange
     } catch (error) {
-      console.error('Error during verification:', error);
+      console.error('AuthContext: Error during verification:', error);
       throw error;
     }
   };

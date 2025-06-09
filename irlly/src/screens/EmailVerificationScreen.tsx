@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -28,7 +28,15 @@ const EmailVerificationScreen: React.FC<EmailVerificationScreenProps> = ({ navig
   const [step, setStep] = useState<'email' | 'code'>('email');
   const [isLoading, setIsLoading] = useState(false);
   
-  const { sendEmailOTP, verifyEmailOTP } = useAuth();
+  const { sendEmailOTP, verifyEmailOTP, isAuthenticated, needsProfileSetup } = useAuth();
+
+  // Handle auth state changes to reset loading state
+  useEffect(() => {
+    if (isAuthenticated || needsProfileSetup) {
+      console.log('EmailVerificationScreen: Auth state changed - authenticated:', isAuthenticated, 'needsProfileSetup:', needsProfileSetup);
+      setIsLoading(false);
+    }
+  }, [isAuthenticated, needsProfileSetup]);
 
   const handleSendCode = async () => {
     if (!email.trim()) {
@@ -61,13 +69,16 @@ const EmailVerificationScreen: React.FC<EmailVerificationScreenProps> = ({ navig
 
     setIsLoading(true);
     try {
+      console.log('EmailVerificationScreen: Starting verification for email:', email);
       await verifyEmailOTP(email, code);
+      console.log('EmailVerificationScreen: Verification successful, waiting for auth state change...');
       // Navigation will be handled by AuthContext onAuthStateChange
     } catch (error: any) {
+      console.error('EmailVerificationScreen: Verification failed:', error);
       Alert.alert('Error', error.message || 'Invalid verification code');
-    } finally {
       setIsLoading(false);
     }
+    // Don't set loading to false here - let auth state change handle it
   };
 
   const handleResendCode = async () => {
