@@ -33,8 +33,10 @@ export const FeedScreen: React.FC = () => {
     try {
       setIsLoadingNotifications(true);
       const response = await apiService.getNotifications();
-      if (response.success && response.data) {
-        const notificationData = response.data.notifications.map((notif: any) => ({
+      console.log('FeedScreen: Notifications response:', response);
+      if (response.success && response.data && (response.data as any).notifications) {
+        const notificationsArray = (response.data as any).notifications;
+        const notificationData = Array.isArray(notificationsArray) ? notificationsArray.map((notif: any) => ({
           id: notif.id,
           userId: notif.user_id,
           fromUserId: notif.from_user_id,
@@ -50,8 +52,12 @@ export const FeedScreen: React.FC = () => {
             name: notif.from_user.name,
             avatarUrl: notif.from_user.avatar_url,
           } : undefined,
-        }));
+        })) : [];
+        console.log('FeedScreen: Processed notifications:', notificationData);
         setNotifications(notificationData);
+      } else {
+        console.log('FeedScreen: No notifications data in response');
+        setNotifications([]);
       }
     } catch (error) {
       console.error('Error loading notifications:', error);

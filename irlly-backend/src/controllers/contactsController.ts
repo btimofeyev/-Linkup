@@ -424,12 +424,21 @@ export const addContactByUsername = [
           .single();
 
         if (fromUser) {
-          await supabase.rpc('create_friend_request_notification', {
+          console.log('Backend: Creating notification for:', {
             target_user_id: targetUser.id,
             from_user_id: userId,
             from_username: fromUser.username,
             from_name: fromUser.name || fromUser.username
           });
+          
+          const notificationResult = await supabase.rpc('create_friend_request_notification', {
+            target_user_id: targetUser.id,
+            from_user_id: userId,
+            from_username: fromUser.username,
+            from_name: fromUser.name || fromUser.username
+          });
+          
+          console.log('Backend: Notification creation result:', notificationResult);
         }
       } catch (notificationError) {
         console.error('Error creating notification:', notificationError);
