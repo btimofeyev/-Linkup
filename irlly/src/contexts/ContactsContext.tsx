@@ -3,6 +3,7 @@ import * as Contacts from 'expo-contacts';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Contact } from '../types';
 import { apiService } from '../services/apiService';
+import { logger } from '../utils/logger';
 
 interface ContactsContextType {
   contacts: Contact[];

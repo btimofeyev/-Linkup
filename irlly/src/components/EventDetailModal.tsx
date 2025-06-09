@@ -12,6 +12,7 @@ import {
 import { FeedItem, ScheduledMeetup } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { apiService } from '../services/apiService';
+import { logger } from '../utils/logger';
 
 interface EventDetailModalProps {
   visible: boolean;

@@ -14,6 +14,7 @@ import {
   Platform,
 } from 'react-native';
 import { supabase } from '../services/supabaseClient';
+import { logger } from '../utils/logger';
 
 const BackgroundImage = require('../../assets/nybackground.png');
 const LogoImage = require('../../assets/link_logo.png');

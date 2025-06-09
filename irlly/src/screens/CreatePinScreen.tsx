@@ -16,6 +16,7 @@ import { useCircles } from '../contexts/CirclesContext';
 import { useAuth } from '../contexts/AuthContext';
 import { Circle } from '../types';
 import { apiService } from '../services/apiService';
+import { logger } from '../utils/logger';
 
 export const CreatePinScreen: React.FC = () => {
   const navigation = useNavigation();

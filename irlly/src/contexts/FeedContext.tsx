@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { FeedItem } from '../types';
 import { apiService } from '../services/apiService';
+import { logger } from '../utils/logger';
 
 interface FeedContextType {
   feedItems: FeedItem[];

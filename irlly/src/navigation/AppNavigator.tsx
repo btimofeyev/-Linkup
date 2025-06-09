@@ -7,6 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { useAuth } from '../contexts/AuthContext';
 import { useContacts } from '../contexts/ContactsContext';
+import { logger } from '../utils/logger';
 import EmailVerificationScreen from '../screens/EmailVerificationScreen';
 import { OnboardingProfileScreen } from '../screens/OnboardingProfileScreen';
 import { ContactsPermissionScreen } from '../screens/ContactsPermissionScreen';

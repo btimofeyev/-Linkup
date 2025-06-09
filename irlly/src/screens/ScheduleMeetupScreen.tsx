@@ -16,6 +16,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useCircles } from '../contexts/CirclesContext';
 import { useAuth } from '../contexts/AuthContext';
 import { apiService } from '../services/apiService';
+import { logger } from '../utils/logger';
 
 export const ScheduleMeetupScreen: React.FC = () => {
   const navigation = useNavigation();
