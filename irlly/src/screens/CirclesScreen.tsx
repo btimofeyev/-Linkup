@@ -48,7 +48,17 @@ export const CirclesScreen: React.FC = () => {
       const result = await apiService.getFriends();
       if (result.success && result.data) {
         console.log(`CirclesScreen: loaded ${result.data.friends?.length || 0} friends from API`);
-        setFriends(result.data.friends || []);
+        const friendsData = result.data.friends || [];
+        setFriends(friendsData.map((friend: any) => ({
+          id: friend.id, // This should be the contacts.id, not contact_user_id
+          userId: friend.user_id,
+          contactId: friend.contact_user_id,
+          name: friend.name,
+          username: friend.username,
+          phoneNumber: friend.phone_number,
+          isRegistered: friend.is_registered,
+          createdAt: new Date(friend.created_at),
+        })));
       }
     } catch (error) {
       console.error('Error loading friends:', error);
@@ -162,6 +172,11 @@ export const CirclesScreen: React.FC = () => {
         if (selectedCircle && result.data?.contact) {
           setTimeout(async () => {
             try {
+              console.log('CirclesScreen: Adding contact to circle:', {
+                contactId: result.data.contact.id,
+                contactData: result.data.contact,
+                circleId: selectedCircle.id
+              });
               await addContactsToCircle(selectedCircle.id, [result.data.contact.id]);
               setSelectedCircle({
                 ...selectedCircle,

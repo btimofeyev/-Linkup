@@ -288,11 +288,31 @@ export const addContactsToCircle = [
         return;
       }
 
+      // Verify that the contact IDs exist in the contacts table
+      const { data: existingContacts, error: contactCheckError } = await supabase
+        .from('contacts')
+        .select('id, name, username, contact_user_id')
+        .in('id', contactIds)
+        .eq('user_id', userId);
+
+      if (contactCheckError) {
+        console.error('Error checking contact existence:', contactCheckError);
+      } else {
+        console.log('Backend: Existing contacts found:', existingContacts?.length || 0, 'of', contactIds.length);
+        console.log('Backend: Contact details:', existingContacts);
+      }
+
       // Add members
       const members = contactIds.map((contactId: string) => ({
         circle_id: circleId,
         contact_id: contactId
       }));
+
+      console.log('Backend: Attempting to add circle members:', {
+        circleId,
+        contactIds,
+        members
+      });
 
       const { error: membersError } = await supabase
         .from('circle_members')

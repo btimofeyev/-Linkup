@@ -368,6 +368,14 @@ export const addContactByUsername = [
         // Don't fail the main operation if notification fails
       }
       
+      console.log('Backend: Successfully added contact by username:', {
+        contactId: newContact.id,
+        contactUserId: newContact.contact_user_id,
+        targetUserId: targetUser.id,
+        name: newContact.name,
+        username: newContact.username
+      });
+      
       res.json({
         success: true,
         data: { contact: newContact },

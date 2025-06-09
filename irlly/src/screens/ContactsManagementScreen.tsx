@@ -79,9 +79,7 @@ export const ContactsManagementScreen: React.FC = () => {
 
   const registeredContacts = contacts.filter(contact => contact.isRegistered);
   
-  console.log('ContactsManagement: Total contacts:', contacts.length);
-  console.log('ContactsManagement: Registered contacts:', registeredContacts.length);
-  console.log('ContactsManagement: All contacts:', contacts.map(c => ({ name: c.name, username: c.username, isRegistered: c.isRegistered })));
+  console.log('ContactsManagement: Total contacts:', contacts.length, 'Registered contacts:', registeredContacts.length);
 
   const renderContact = ({ item }: { item: Contact }) => (
     <View style={styles.contactItem}>
