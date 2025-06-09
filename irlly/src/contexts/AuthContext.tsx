@@ -255,9 +255,37 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         });
         
         if (error.code === '23505') {
-          throw new Error('Username is already taken. Please choose a different one.');
+          if (error.message.includes('users_pkey')) {
+            // User record already exists, try to update instead
+            console.log('AuthContext: User record exists, attempting to update instead...');
+            const { data: updateProfile, error: updateError } = await supabase
+              .from('users')
+              .update({
+                email: supabaseUser.email,
+                username: username.toLowerCase(),
+                name: name.trim(),
+                is_verified: true
+              })
+              .eq('id', supabaseUser.id)
+              .select()
+              .single();
+
+            if (updateError) {
+              console.error('AuthContext: Profile update error:', updateError);
+              if (updateError.message.includes('username')) {
+                throw new Error('Username is already taken. Please choose a different one.');
+              }
+              throw new Error(`Failed to update profile: ${updateError.message}`);
+            }
+            
+            profile = updateProfile;
+            console.log('AuthContext: Profile updated successfully:', profile);
+          } else {
+            throw new Error('Username is already taken. Please choose a different one.');
+          }
+        } else {
+          throw new Error(`Failed to create profile: ${error.message}`);
         }
-        throw new Error(`Failed to create profile: ${error.message}`);
       }
 
       // Update Supabase user metadata
