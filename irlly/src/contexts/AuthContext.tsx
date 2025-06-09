@@ -37,6 +37,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [needsProfileSetup, setNeedsProfileSetup] = useState(false);
   const [supabaseUser, setSupabaseUser] = useState<any>(null);
   const [isHandlingAuth, setIsHandlingAuth] = useState(false);
+  const [lastHandledUserId, setLastHandledUserId] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -63,7 +64,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         })();
 
         const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Auth initialization timeout')), 15000)
+          setTimeout(() => reject(new Error('Auth initialization timeout')), 8000)
         );
 
         await Promise.race([initPromise, timeoutPromise]);
@@ -101,6 +102,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           setNeedsProfileSetup(false);
           setSupabaseUser(null);
           setIsLoading(false);
+          setIsHandlingAuth(false);
+          setLastHandledUserId(null);
           await AsyncStorage.removeItem('user');
           await AsyncStorage.removeItem('session');
         } else {
@@ -116,15 +119,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   const handleAuthenticatedUser = async (supabaseUserData: any) => {
-    // Prevent duplicate calls
-    if (isHandlingAuth) {
-      console.log('AuthContext: Already handling auth, skipping duplicate call');
+    // Prevent duplicate calls for the same user
+    if (isHandlingAuth || lastHandledUserId === supabaseUserData.id) {
+      console.log('AuthContext: Already handling auth for this user, skipping duplicate call');
       return;
     }
 
     try {
       console.log('AuthContext: handleAuthenticatedUser called with user:', supabaseUserData.id, supabaseUserData.email);
       setIsHandlingAuth(true);
+      setLastHandledUserId(supabaseUserData.id);
       setSupabaseUser(supabaseUserData);
       
       // Check if user has a profile in our database with timeout
@@ -138,7 +142,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       // Add timeout to prevent hanging
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Profile check timeout')), 10000)
+        setTimeout(() => reject(new Error('Profile check timeout')), 5000)
       );
 
       const { data: profile, error } = await Promise.race([
@@ -222,7 +226,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         try {
           const sessionPromise = supabase.auth.setSession(session);
           const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Session restore timeout')), 5000)
+            setTimeout(() => reject(new Error('Session restore timeout')), 3000)
           );
 
           const { error } = await Promise.race([sessionPromise, timeoutPromise]) as any;

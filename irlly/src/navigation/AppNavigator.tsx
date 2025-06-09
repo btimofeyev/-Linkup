@@ -15,6 +15,7 @@ import { CreatePinScreen } from '../screens/CreatePinScreen';
 import { ScheduleMeetupScreen } from '../screens/ScheduleMeetupScreen';
 import { CirclesScreen } from '../screens/CirclesScreen';
 import { ContactsManagementScreen } from '../screens/ContactsManagementScreen';
+import { LoadingScreen } from '../components/LoadingScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -128,7 +129,7 @@ export const AppNavigator: React.FC = () => {
   console.log('AppNavigator state:', { isAuthenticated, isLoading, needsProfileSetup });
 
   if (isLoading) {
-    return <Text>Loading...</Text>;
+    return <LoadingScreen />;
   }
 
   return (
