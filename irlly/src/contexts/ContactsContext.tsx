@@ -69,8 +69,9 @@ export const ContactsProvider: React.FC<ContactsProviderProps> = ({ children }) 
   const loadContactsFromBackend = useCallback(async () => {
     try {
       const response = await apiService.getContacts();
-      if (response.success && response.data) {
-        const backendContacts: Contact[] = response.data.contacts.map((contact: any) => ({
+      if (response.success && response.data && (response.data as any).contacts) {
+        const contactsArray = (response.data as any).contacts;
+        const backendContacts: Contact[] = Array.isArray(contactsArray) ? contactsArray.map((contact: any) => ({
           id: contact.id,
           userId: contact.user_id,
           contactId: contact.contact_user_id || contact.id,
@@ -79,7 +80,7 @@ export const ContactsProvider: React.FC<ContactsProviderProps> = ({ children }) 
           username: contact.username, // Add username field
           isRegistered: contact.is_registered,
           createdAt: new Date(contact.created_at),
-        }));
+        })) : [];
         
         console.log(`Contacts loaded from backend: ${backendContacts.length}`);
         console.log('Backend registered contacts:', backendContacts.filter(c => c.isRegistered).length);
@@ -153,9 +154,10 @@ export const ContactsProvider: React.FC<ContactsProviderProps> = ({ children }) 
         }));
         
         const syncResponse = await apiService.syncContacts(contactsForBackend);
-        if (syncResponse.success && syncResponse.data) {
+        if (syncResponse.success && syncResponse.data && (syncResponse.data as any).contacts) {
           // Backend now returns ALL contacts (phone + username), so use them directly
-          const allBackendContacts = syncResponse.data.contacts || [];
+          const contactsArray = (syncResponse.data as any).contacts;
+          const allBackendContacts = Array.isArray(contactsArray) ? contactsArray : [];
           
           const allContacts: Contact[] = allBackendContacts.map((contact: any) => ({
             id: contact.id,
