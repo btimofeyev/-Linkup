@@ -150,7 +150,7 @@ export const ContactsProvider: React.FC<ContactsProviderProps> = ({ children }) 
       try {
         const contactsForBackend = processedContacts.map(contact => ({
           name: contact.name,
-          phoneNumber: contact.phoneNumber
+          phoneNumber: contact.phoneNumber || ''
         }));
         
         const syncResponse = await apiService.syncContacts(contactsForBackend);

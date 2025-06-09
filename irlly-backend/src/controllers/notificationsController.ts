@@ -5,6 +5,8 @@ import { AuthRequest } from '../middleware/auth';
 export const getNotifications = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const userId = req.user!.id;
+    
+    console.log('🔔 getNotifications called for user:', userId);
 
     const { data: notifications, error } = await supabase
       .from('notifications')
@@ -21,8 +23,20 @@ export const getNotifications = async (req: AuthRequest, res: Response): Promise
       .order('created_at', { ascending: false })
       .limit(50);
 
+    console.log('🔔 Database query result:', {
+      error,
+      notificationCount: notifications?.length || 0,
+      notifications: notifications?.map(n => ({
+        id: n.id,
+        type: n.type,
+        title: n.title,
+        isRead: n.is_read,
+        fromUser: n.from_user?.username
+      }))
+    });
+
     if (error) {
-      console.error('Error fetching notifications:', error);
+      console.error('🚨 Error fetching notifications:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to fetch notifications'
@@ -35,7 +49,7 @@ export const getNotifications = async (req: AuthRequest, res: Response): Promise
       data: { notifications }
     });
   } catch (error) {
-    console.error('Get notifications error:', error);
+    console.error('🚨 Get notifications error:', error);
     res.status(500).json({
       success: false,
       error: 'Internal server error'

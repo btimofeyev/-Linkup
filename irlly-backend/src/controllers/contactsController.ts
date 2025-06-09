@@ -422,26 +422,56 @@ export const addContactByUsername = [
           .select('username, name')
           .eq('id', userId)
           .single();
-
+      
         if (fromUser) {
-          console.log('Backend: Creating notification for:', {
+          console.log('🔔 Creating notification for:', {
             target_user_id: targetUser.id,
             from_user_id: userId,
             from_username: fromUser.username,
             from_name: fromUser.name || fromUser.username
           });
           
-          const notificationResult = await supabase.rpc('create_friend_request_notification', {
+          // Try the function first
+          const functionResult = await supabase.rpc('create_friend_request_notification', {
             target_user_id: targetUser.id,
             from_user_id: userId,
             from_username: fromUser.username,
             from_name: fromUser.name || fromUser.username
           });
           
-          console.log('Backend: Notification creation result:', notificationResult);
+          if (functionResult.error) {
+            console.log('🔔 Function failed, trying direct insert:', functionResult.error);
+            
+            // Fallback to direct database insert
+            const { data: notification, error: directError } = await supabase
+              .from('notifications')
+              .insert({
+                user_id: targetUser.id,
+                from_user_id: userId,
+                type: 'friend_request',
+                title: 'New Friend Request',
+                message: `${fromUser.name || fromUser.username} (@${fromUser.username}) added you as a contact`,
+                data: {
+                  from_user_id: userId,
+                  from_username: fromUser.username,
+                  from_name: fromUser.name || fromUser.username
+                },
+                is_read: false
+              })
+              .select()
+              .single();
+      
+            if (directError) {
+              console.error('🚨 Direct notification insert also failed:', directError);
+            } else {
+              console.log('✅ Notification created via direct insert:', notification?.id);
+            }
+          } else {
+            console.log('✅ Notification created via function successfully');
+          }
         }
       } catch (notificationError) {
-        console.error('Error creating notification:', notificationError);
+        console.error('🚨 Notification creation error:', notificationError);
         // Don't fail the main operation if notification fails
       }
       
