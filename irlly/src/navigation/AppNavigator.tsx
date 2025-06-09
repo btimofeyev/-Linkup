@@ -133,10 +133,10 @@ export const AppNavigator: React.FC = () => {
 
   return (
     <NavigationContainer>
-      {!isAuthenticated ? (
-        <AuthStack />
-      ) : needsProfileSetup ? (
+      {needsProfileSetup ? (
         <OnboardingProfileScreen />
+      ) : !isAuthenticated ? (
+        <AuthStack />
       ) : (
         <AuthenticatedStack />
       )}
