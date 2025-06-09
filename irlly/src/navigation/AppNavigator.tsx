@@ -110,8 +110,14 @@ const AuthenticatedStack = () => {
   return <MainTabs />;
 };
 
-const AuthStack = () => {
-  const { needsProfileSetup, completeProfileSetup } = useAuth();
+const AuthStack = () => (
+  <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Screen name="EmailVerification" component={EmailVerificationScreen} />
+  </Stack.Navigator>
+);
+
+export const AppNavigator: React.FC = () => {
+  const { isAuthenticated, isLoading, needsProfileSetup, completeProfileSetup } = useAuth();
   const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
@@ -122,28 +128,24 @@ const AuthStack = () => {
     getSession();
   }, [needsProfileSetup]);
 
-  if (needsProfileSetup) {
-    return (
-      <ProfileSetupScreen 
-        navigation={null}
-        user={currentUser}
-        onComplete={completeProfileSetup}
-      />
-    );
-  }
-
-  return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="EmailVerification" component={EmailVerificationScreen} />
-    </Stack.Navigator>
-  );
-};
-
-export const AppNavigator: React.FC = () => {
-  const { isAuthenticated, isLoading } = useAuth();
+  console.log('AppNavigator state:', { isAuthenticated, isLoading, needsProfileSetup });
 
   if (isLoading) {
     return <Text>Loading...</Text>;
+  }
+
+  // If user is authenticated but needs profile setup, show setup screen
+  if (isAuthenticated && needsProfileSetup) {
+    console.log('Showing profile setup screen');
+    return (
+      <NavigationContainer>
+        <ProfileSetupScreen 
+          navigation={null}
+          user={currentUser}
+          onComplete={completeProfileSetup}
+        />
+      </NavigationContainer>
+    );
   }
 
   return (

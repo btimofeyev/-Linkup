@@ -41,6 +41,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (event === 'SIGNED_IN' && session) {
+          console.log('SIGNED_IN event - checking profile for user:', session.user.id);
+          
           // Check if user has a profile in our database
           const { data: profile, error } = await supabase
             .from('users')
@@ -48,12 +50,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             .eq('id', session.user.id)
             .single();
 
+          console.log('Profile check result:', { profile, error });
+
           if (error && error.code === 'PGRST116') {
             // User doesn't have a profile, needs setup
+            console.log('User needs profile setup');
             setNeedsProfileSetup(true);
             setUser(null);
           } else if (profile) {
             // User has a complete profile
+            console.log('User has complete profile');
             const userData = {
               id: profile.id,
               email: profile.email,
