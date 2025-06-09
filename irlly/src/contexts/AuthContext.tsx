@@ -39,6 +39,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isHandlingAuth, setIsHandlingAuth] = useState(false);
   const [lastHandledUserId, setLastHandledUserId] = useState<string | null>(null);
   const [isRestoringFromStorage, setIsRestoringFromStorage] = useState(false);
+  const [hasLoadedFromStorage, setHasLoadedFromStorage] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -100,6 +101,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           return;
         }
 
+        if (hasLoadedFromStorage && user) {
+          console.log('AuthContext: User already loaded from storage, ignoring auth state change');
+          return;
+        }
+
         if (event === 'SIGNED_IN' && session) {
           console.log('AuthContext: SIGNED_IN event - checking profile for user:', session.user.id);
           console.log('AuthContext: User email:', session.user.email);
@@ -112,6 +118,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           setIsLoading(false);
           setIsHandlingAuth(false);
           setLastHandledUserId(null);
+          setHasLoadedFromStorage(false);
           await AsyncStorage.removeItem('user');
           await AsyncStorage.removeItem('session');
         } else {
@@ -229,6 +236,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         // Set user data from storage immediately
         setUser(user);
         setNeedsProfileSetup(false);
+        setHasLoadedFromStorage(true);
         console.log('AuthContext: User restored from storage successfully');
         
         // Silently try to restore session in background, but don't block on it
