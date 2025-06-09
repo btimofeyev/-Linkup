@@ -15,7 +15,7 @@
     "@react-navigation/native": "^7.1.10",
     "@react-navigation/stack": "^7.3.3",
     "@supabase/supabase-js": "^2.50.0",
-    "expo": "~53.0.10",
+    "expo": "53.0.11",
     "expo-contacts": "^14.2.5",
     "expo-linear-gradient": "^14.1.5",
     "expo-location": "^18.1.5",
@@ -24,7 +24,6 @@
     "react": "19.0.0",
     "react-native": "0.79.3",
     "react-native-maps": "1.20.1",
-    "react-native-phone-number-input": "^2.1.0",
     "react-native-safe-area-context": "5.4.0"
   },
   "devDependencies": {
