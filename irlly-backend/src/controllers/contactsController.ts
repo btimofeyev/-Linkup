@@ -420,32 +420,36 @@ export const sendFriendRequest = [
           .single();
       
         if (fromUser) {
-          const functionResult = await supabase.rpc('create_friend_request_notification', {
-            target_user_id: targetUser.id,
-            from_user_id: userId,
-            from_username: fromUser.username,
-            from_name: fromUser.name || fromUser.username
-          });
+          console.log('Creating notification with friend_request_id:', friendRequest.id);
           
-          if (functionResult.error) {
-            const { data: notification, error: directError } = await supabase
-              .from('notifications')
-              .insert({
-                user_id: targetUser.id,
+          // Create notification directly with friend_request_id
+          const { data: notification, error: notificationError } = await supabase
+            .from('notifications')
+            .insert({
+              user_id: targetUser.id,
+              from_user_id: userId,
+              type: 'friend_request',
+              title: 'New Friend Request',
+              message: `${fromUser.name || fromUser.username} (@${fromUser.username}) sent you a friend request`,
+              data: {
                 from_user_id: userId,
-                type: 'friend_request',
-                title: 'New Friend Request',
-                message: `${fromUser.name || fromUser.username} (@${fromUser.username}) sent you a friend request`,
-                data: {
-                  from_user_id: userId,
-                  from_username: fromUser.username,
-                  from_name: fromUser.name || fromUser.username,
-                  friend_request_id: friendRequest.id
-                },
-                is_read: false
-              })
-              .select()
-              .single();
+                from_username: fromUser.username,
+                from_name: fromUser.name || fromUser.username,
+                friend_request_id: friendRequest.id
+              },
+              is_read: false
+            })
+            .select()
+            .single();
+    
+          if (notificationError) {
+            console.error('🚨 Notification creation failed:', notificationError);
+          } else {
+            console.log('✅ Notification created successfully:', {
+              id: notification?.id,
+              friend_request_id: friendRequest.id,
+              data: notification?.data
+            });
           }
         }
       } catch (notificationError) {
