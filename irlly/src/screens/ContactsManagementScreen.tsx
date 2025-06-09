@@ -57,7 +57,9 @@ export const ContactsManagementScreen: React.FC = () => {
 
       if (result.success) {
         Alert.alert('Success', `Added @${username} to your contacts!`);
+        console.log('ContactsManagement: Successfully added contact, refreshing...');
         await refreshContacts();
+        console.log('ContactsManagement: Contacts after refresh:', contacts.length);
         setSearchResults(prev => prev.filter(user => user.username !== username));
         setSearchTerm('');
       } else {
@@ -76,6 +78,10 @@ export const ContactsManagementScreen: React.FC = () => {
   };
 
   const registeredContacts = contacts.filter(contact => contact.isRegistered);
+  
+  console.log('ContactsManagement: Total contacts:', contacts.length);
+  console.log('ContactsManagement: Registered contacts:', registeredContacts.length);
+  console.log('ContactsManagement: All contacts:', contacts.map(c => ({ name: c.name, username: c.username, isRegistered: c.isRegistered })));
 
   const renderContact = ({ item }: { item: Contact }) => (
     <View style={styles.contactItem}>
@@ -96,7 +102,8 @@ export const ContactsManagementScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
+      <View style={styles.wrapper}>
+        <View style={styles.header}>
         <Text style={styles.title}>My Contacts</Text>
         <TouchableOpacity
           style={styles.addButton}
@@ -131,6 +138,7 @@ export const ContactsManagementScreen: React.FC = () => {
           </View>
         }
       />
+      </View>
 
       <Modal
         visible={isAddModalVisible}
@@ -217,16 +225,21 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFF8F0',
   },
+  wrapper: {
+    flex: 1,
+    paddingTop: 24,
+  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 20,
-    paddingTop: 10,
+    padding: 16,
+    paddingTop: 24,
+    paddingBottom: 12,
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
+    fontSize: 32,
+    fontWeight: '700',
     color: '#2D3748',
   },
   addButton: {
@@ -244,16 +257,18 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
-    color: '#4A5568',
-    paddingHorizontal: 20,
-    marginBottom: 20,
+    color: '#64748B',
+    padding: 16,
+    paddingTop: 6,
+    lineHeight: 22,
+    fontWeight: '400',
   },
   list: {
     flex: 1,
   },
   listContent: {
-    paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingHorizontal: 16,
+    paddingTop: 4,
   },
   contactItem: {
     flexDirection: 'row',
