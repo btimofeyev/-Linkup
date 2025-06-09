@@ -8,7 +8,8 @@ export class AuthService {
         email: email,
         options: {
           shouldCreateUser: true,
-          shouldSendMagicLink: false  // 🔑 Send OTP code instead of magic link
+          // Remove shouldSendMagicLink as it's not a valid option
+          // The OTP vs magic link is controlled by the email template configuration
         }
       });
 
