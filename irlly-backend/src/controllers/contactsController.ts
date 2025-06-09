@@ -94,10 +94,30 @@ export const syncContacts = [
 
       console.log(`Backend: synced ${insertedContacts?.length || 0} contacts for user ${userId}`);
 
+      // Return ALL contacts (both newly synced phone contacts and preserved username contacts)
+      const { data: allContacts, error: allContactsError } = await supabase
+        .from('contacts')
+        .select('*')
+        .eq('user_id', userId)
+        .order('name');
+
+      if (allContactsError) {
+        console.error('Error fetching all contacts after sync:', allContactsError);
+        // Fallback to just the inserted contacts
+        res.json({
+          success: true,
+          data: { contacts: insertedContacts },
+          message: `Synced ${insertedContacts?.length || 0} contacts`
+        });
+        return;
+      }
+
+      console.log(`Backend: returning ${allContacts?.length || 0} total contacts (${insertedContacts?.length || 0} synced + preserved username contacts)`);
+
       res.json({
         success: true,
-        data: { contacts: insertedContacts },
-        message: `Synced ${insertedContacts?.length || 0} contacts`
+        data: { contacts: allContacts },
+        message: `Synced ${insertedContacts?.length || 0} contacts, total ${allContacts?.length || 0} contacts`
       });
     } catch (error) {
       console.error('Sync contacts error:', error);

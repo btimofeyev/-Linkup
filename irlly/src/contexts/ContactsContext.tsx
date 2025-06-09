@@ -154,23 +154,23 @@ export const ContactsProvider: React.FC<ContactsProviderProps> = ({ children }) 
         
         const syncResponse = await apiService.syncContacts(contactsForBackend);
         if (syncResponse.success && syncResponse.data) {
-          // Update local contacts with backend response (registered status, etc.)
-          const backendContacts = syncResponse.data.contacts || [];
+          // Backend now returns ALL contacts (phone + username), so use them directly
+          const allBackendContacts = syncResponse.data.contacts || [];
           
-          const updatedContacts = processedContacts.map(localContact => {
-            const backendContact = backendContacts.find(
-              (bc: any) => bc.phone_number === localContact.phoneNumber
-            );
-            return {
-              ...localContact,
-              isRegistered: !!backendContact?.is_registered,
-              contactId: backendContact?.id || localContact.contactId
-            };
-          });
+          const allContacts: Contact[] = allBackendContacts.map((contact: any) => ({
+            id: contact.id,
+            userId: contact.user_id,
+            contactId: contact.contact_user_id || contact.id,
+            name: contact.name,
+            phoneNumber: contact.phone_number,
+            username: contact.username,
+            isRegistered: contact.is_registered,
+            createdAt: new Date(contact.created_at),
+          }));
           
-          setContacts(updatedContacts);
-          await AsyncStorage.setItem('contacts', JSON.stringify(updatedContacts));
-          console.log(`Final synced contacts count: ${updatedContacts.length}`);
+          setContacts(allContacts);
+          await AsyncStorage.setItem('contacts', JSON.stringify(allContacts));
+          console.log(`Final synced contacts count: ${allContacts.length} (includes username-based contacts)`);
         } else {
           console.error('Backend sync failed:', syncResponse.error);
           // Fallback to local contacts if backend sync fails
@@ -194,7 +194,7 @@ export const ContactsProvider: React.FC<ContactsProviderProps> = ({ children }) 
 
   const refreshContacts = useCallback(async () => {
     if (hasPermission) {
-      await syncContacts();
+      await syncContacts(); // Now returns ALL contacts including username-based ones
     } else {
       await loadContactsFromBackend();
     }
