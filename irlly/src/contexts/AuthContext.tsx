@@ -38,6 +38,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [supabaseUser, setSupabaseUser] = useState<any>(null);
   const [isHandlingAuth, setIsHandlingAuth] = useState(false);
   const [lastHandledUserId, setLastHandledUserId] = useState<string | null>(null);
+  const [isRestoringFromStorage, setIsRestoringFromStorage] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -49,7 +50,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         // Add overall timeout to prevent the whole initialization from hanging
         const initPromise = (async () => {
           // First, try to load from storage
+          setIsRestoringFromStorage(true);
           await loadUserFromStorage();
+          setIsRestoringFromStorage(false);
           
           // Then check current session
           const { data: { session } } = await supabase.auth.getSession();
@@ -89,6 +92,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         
         if (!mounted) {
           console.log('AuthContext: Component unmounted, ignoring auth state change');
+          return;
+        }
+
+        if (isRestoringFromStorage) {
+          console.log('AuthContext: Ignoring auth state change during storage restoration');
           return;
         }
 
@@ -221,37 +229,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         // Set user data from storage immediately
         setUser(user);
         setNeedsProfileSetup(false);
+        console.log('AuthContext: User restored from storage successfully');
         
-        // Try to restore Supabase session with timeout
-        try {
-          const sessionPromise = supabase.auth.setSession(session);
-          const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Session restore timeout')), 3000)
-          );
-
-          const { error } = await Promise.race([sessionPromise, timeoutPromise]) as any;
-          
-          if (error) {
-            console.error('AuthContext: Error restoring session:', error);
-            // Clear invalid session data but keep user logged in
+        // Silently try to restore session in background, but don't block on it
+        setTimeout(async () => {
+          try {
+            await supabase.auth.setSession(session);
+            console.log('AuthContext: Background session restore completed');
+          } catch (error) {
+            console.log('AuthContext: Background session restore failed, but user remains logged in');
+            // Clean up invalid session data
             await AsyncStorage.removeItem('session');
-            
-            if (error instanceof Error && error.message === 'Session restore timeout') {
-              console.log('AuthContext: Session restore timed out, but keeping user logged in from storage');
-            } else {
-              // Only clear user if it's a real auth error
-              await AsyncStorage.removeItem('user');
-              setUser(null);
-              setNeedsProfileSetup(false);
-            }
-          } else {
-            console.log('AuthContext: Session restored successfully from storage');
           }
-        } catch (sessionError) {
-          console.error('AuthContext: Session restore failed:', sessionError);
-          // Keep user logged in even if session restore fails
-          console.log('AuthContext: Keeping user logged in despite session restore failure');
-        }
+        }, 100); // Small delay to avoid immediate auth state change
       } else {
         console.log('AuthContext: No stored user data found');
       }
