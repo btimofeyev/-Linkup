@@ -16,6 +16,7 @@ import { useCircles } from '../contexts/CirclesContext';
 import { useContacts } from '../contexts/ContactsContext';
 import { Circle, Contact, UserSearchResult } from '../types';
 import { apiService } from '../services/apiService';
+import { UserMenu } from '../components/UserMenu';
 
 export const CirclesScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -222,12 +223,15 @@ export const CirclesScreen: React.FC = () => {
             <Text style={styles.contactsButtonText}>👥 Contacts</Text>
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Circles</Text>
-          <TouchableOpacity
-            style={styles.addButton}
-            onPress={() => setIsCreateModalVisible(true)}
-          >
-            <Text style={styles.addButtonText}>+</Text>
-          </TouchableOpacity>
+          <View style={styles.headerRight}>
+            <TouchableOpacity
+              style={styles.addButton}
+              onPress={() => setIsCreateModalVisible(true)}
+            >
+              <Text style={styles.addButtonText}>+</Text>
+            </TouchableOpacity>
+            <UserMenu style={styles.userMenu} />
+          </View>
         </View>
 
       <Text style={styles.subtitle}>
@@ -539,6 +543,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
   addButton: {
     width: 42,
     height: 42,
@@ -556,6 +565,9 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 22,
     fontWeight: '700',
+  },
+  userMenu: {
+    marginLeft: 4,
   },
   subtitle: {
     fontSize: 16,

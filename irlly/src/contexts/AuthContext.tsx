@@ -12,6 +12,7 @@ interface AuthContextType {
   sendEmailOTP: (email: string) => Promise<void>;
   verifyEmailOTP: (email: string, code: string) => Promise<void>;
   completeProfileSetup: (username: string, name: string) => Promise<void>;
+  refreshUser: () => Promise<void>;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
 }
@@ -324,6 +325,33 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const refreshUser = async () => {
+    try {
+      if (!supabaseUser) return;
+      
+      const { data: profile, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', supabaseUser.id)
+        .single();
+
+      if (!error && profile) {
+        const userData: User = {
+          id: profile.id,
+          email: profile.email,
+          name: profile.name,
+          username: profile.username,
+          createdAt: new Date(profile.created_at)
+        };
+        
+        setUser(userData);
+        await AsyncStorage.setItem('user', JSON.stringify(userData));
+      }
+    } catch (error) {
+      console.error('Error refreshing user data:', error);
+    }
+  };
+
   const logout = async () => {
     try {
       await authService.signOut();
@@ -341,6 +369,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     sendEmailOTP,
     verifyEmailOTP,
     completeProfileSetup,
+    refreshUser,
     logout,
     isAuthenticated: !!user,
   };

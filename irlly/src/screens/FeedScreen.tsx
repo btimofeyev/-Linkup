@@ -15,6 +15,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useFeed } from '../contexts/FeedContext';
 import { apiService } from '../services/apiService';
 import { EventDetailModal } from '../components/EventDetailModal';
+import { UserMenu } from '../components/UserMenu';
 
 export const FeedScreen: React.FC = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -23,7 +24,7 @@ export const FeedScreen: React.FC = () => {
   const [isLoadingNotifications, setIsLoadingNotifications] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<FeedItem | null>(null);
   const [showEventDetail, setShowEventDetail] = useState(false);
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const { feedItems, loadFeed, refreshFeed } = useFeed();
 
   const loadNotifications = React.useCallback(async () => {
@@ -148,22 +149,6 @@ export const FeedScreen: React.FC = () => {
     }
   };
 
-  const handleLogout = () => {
-    Alert.alert(
-      'Sign Out',
-      'Are you sure you want to sign out?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Sign Out', 
-          style: 'destructive',
-          onPress: async () => {
-            await logout();
-          }
-        },
-      ]
-    );
-  };
 
   const handleEventPress = (item: FeedItem) => {
     setSelectedEvent(item);
@@ -249,12 +234,7 @@ export const FeedScreen: React.FC = () => {
       <View style={styles.content}>
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Linkup</Text>
-          <TouchableOpacity
-            style={styles.logoutButton}
-            onPress={handleLogout}
-          >
-            <Text style={styles.logoutButtonText}>Sign Out</Text>
-          </TouchableOpacity>
+          <UserMenu />
         </View>
 
         {/* Notifications Section */}
@@ -362,22 +342,6 @@ const styles = StyleSheet.create({
     fontWeight: '700', // Bold
     color: '#2D3748', // Dark charcoal
     fontFamily: 'System',
-  },
-  logoutButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 12,
-    backgroundColor: '#EF4444',
-    shadowColor: '#EF4444',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  logoutButtonText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '600',
   },
   list: {
     flex: 1,
