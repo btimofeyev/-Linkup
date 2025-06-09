@@ -1,7 +1,9 @@
 export interface User {
   id: string;
-  phone_number: string;
+  phone_number?: string; // Made optional
+  email?: string; // Added email field
   name?: string;
+  username?: string; // Made optional since it might be generated
   avatar_url?: string;
   is_verified: boolean;
   created_at: string;
@@ -13,7 +15,9 @@ export interface Contact {
   user_id: string;
   contact_user_id?: string;
   name: string;
-  phone_number: string;
+  phone_number?: string; // Made optional
+  email?: string; // Added email field
+  username?: string; // Added username field
   is_registered: boolean;
   created_at: string;
   updated_at: string;

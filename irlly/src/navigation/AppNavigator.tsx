@@ -4,13 +4,11 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Text } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { supabase } from '../services/supabaseClient';
 
 import { useAuth } from '../contexts/AuthContext';
 import { useContacts } from '../contexts/ContactsContext';
-import { OnboardingScreen } from '../screens/OnboardingScreen';
 import EmailVerificationScreen from '../screens/EmailVerificationScreen';
-import ProfileSetupScreen from '../screens/ProfileSetupScreen';
+import { OnboardingProfileScreen } from '../screens/OnboardingProfileScreen';
 import { ContactsPermissionScreen } from '../screens/ContactsPermissionScreen';
 import { FeedScreen } from '../screens/FeedScreen';
 import { CreatePinScreen } from '../screens/CreatePinScreen';
@@ -117,16 +115,7 @@ const AuthStack = () => (
 );
 
 export const AppNavigator: React.FC = () => {
-  const { isAuthenticated, isLoading, needsProfileSetup, completeProfileSetup } = useAuth();
-  const [currentUser, setCurrentUser] = useState(null);
-
-  useEffect(() => {
-    const getSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setCurrentUser(session?.user || null);
-    };
-    getSession();
-  }, [needsProfileSetup]);
+  const { isAuthenticated, isLoading, needsProfileSetup } = useAuth();
 
   console.log('AppNavigator state:', { isAuthenticated, isLoading, needsProfileSetup });
 
@@ -134,23 +123,15 @@ export const AppNavigator: React.FC = () => {
     return <Text>Loading...</Text>;
   }
 
-  // If user is authenticated but needs profile setup, show setup screen
-  if (isAuthenticated && needsProfileSetup) {
-    console.log('Showing profile setup screen');
-    return (
-      <NavigationContainer>
-        <ProfileSetupScreen 
-          navigation={null}
-          user={currentUser}
-          onComplete={completeProfileSetup}
-        />
-      </NavigationContainer>
-    );
-  }
-
   return (
     <NavigationContainer>
-      {isAuthenticated ? <AuthenticatedStack /> : <AuthStack />}
+      {!isAuthenticated ? (
+        <AuthStack />
+      ) : needsProfileSetup ? (
+        <OnboardingProfileScreen />
+      ) : (
+        <AuthenticatedStack />
+      )}
     </NavigationContainer>
   );
 };

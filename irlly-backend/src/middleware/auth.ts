@@ -43,29 +43,65 @@ export const authenticateToken = async (
 
     if (profileError && profileError.code === 'PGRST116') {
       // User doesn't exist in our table, create them
+      // Generate a default username from email if not provided
+      const defaultUsername = user.email?.split('@')[0] || `user_${user.id.slice(-8)}`;
+      const defaultName = user.user_metadata?.name || user.email?.split('@')[0] || defaultUsername;
+
       const { data: newUser, error: createError } = await supabase
         .from('users')
         .insert({
           id: user.id,
           email: user.email!,
-          name: user.user_metadata?.name || user.email?.split('@')[0] || '',
-          username: user.user_metadata?.username || user.email?.split('@')[0] || '',
-          phone_number: user.phone || null,
-          avatar_url: user.user_metadata?.avatar_url
+          name: defaultName,
+          username: user.user_metadata?.username || defaultUsername,
+          phone_number: user.phone || null, // This can now be null
+          avatar_url: user.user_metadata?.avatar_url || null,
+          is_verified: true // Email is already verified through Supabase auth
         })
         .select()
         .single();
 
       if (createError) {
         console.error('Error creating user profile:', createError);
-        res.status(500).json({ 
-          success: false, 
-          error: 'Failed to create user profile' 
-        });
-        return;
+        
+        // If it's a username conflict, try with a unique suffix
+        if (createError.code === '23505' && createError.message.includes('username')) {
+          const uniqueUsername = `${defaultUsername}_${Date.now()}`;
+          
+          const { data: retryUser, error: retryError } = await supabase
+            .from('users')
+            .insert({
+              id: user.id,
+              email: user.email!,
+              name: defaultName,
+              username: uniqueUsername,
+              phone_number: user.phone || null,
+              avatar_url: user.user_metadata?.avatar_url || null,
+              is_verified: true
+            })
+            .select()
+            .single();
+
+          if (retryError) {
+            console.error('Error creating user profile (retry):', retryError);
+            res.status(500).json({ 
+              success: false, 
+              error: 'Failed to create user profile' 
+            });
+            return;
+          }
+          
+          userProfile = retryUser;
+        } else {
+          res.status(500).json({ 
+            success: false, 
+            error: 'Failed to create user profile' 
+          });
+          return;
+        }
+      } else {
+        userProfile = newUser;
       }
-      
-      userProfile = newUser;
     } else if (profileError) {
       console.error('Error fetching user profile:', profileError);
       res.status(401).json({ 
@@ -85,10 +121,3 @@ export const authenticateToken = async (
     });
   }
 };
-
-// No longer needed - Supabase handles token generation
-// export const generateAccessToken = (userId: string): string => {
-//   return jwt.sign({ userId }, process.env.JWT_SECRET!, { 
-//     expiresIn: '7d' 
-//   });
-// };
