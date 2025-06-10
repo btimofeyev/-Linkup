@@ -3,10 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "cd irlly-backend && npm start",
-    "build": "cd irlly-backend && npm run build",
-    "dev": "cd irlly-backend && npm run dev",
-    "mobile:start": "cd irlly && npm start",
+    "start": "cd irlly && npm start",
     "android": "cd irlly && npm run android",
     "ios": "cd irlly && npm run ios"
   },
@@ -14,5 +11,8 @@
     "irlly",
     "irlly-backend",
     "linkup-landing"
-  ]
+  ],
+  "devDependencies": {
+    "patch-package": "^8.0.0"
+  }
 }

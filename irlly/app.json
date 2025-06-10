@@ -7,7 +7,7 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "splash": {
       "image": "./assets/link_logo.png",
       "resizeMode": "contain",
@@ -26,7 +26,8 @@
       "infoPlist": {
         "NSContactsUsageDescription": "This app needs access to your contacts to help you find friends who are also using the app and create friend circles.",
         "NSLocationWhenInUseUsageDescription": "This app needs access to your location to create pins and meetups at your current location.",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "This app needs access to your location to create pins and meetups at your current location."
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "This app needs access to your location to create pins and meetups at your current location.",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -77,7 +78,6 @@
     },
     "owner": "btimofeyev",
     "runtimeVersion": "1.0.0",
-
     "updates": {
       "url": "https://u.expo.dev/31f0ed9f-a73c-4faf-94ee-e7b2e08bad7d"
     }
