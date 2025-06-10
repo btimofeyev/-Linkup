@@ -9,7 +9,7 @@
     "userInterfaceStyle": "light",
     "newArchEnabled": false,
     "splash": {
-      "image": "./assets/linkuplogo.png",
+      "image": "./assets/link_logo.png",
       "resizeMode": "contain",
       "backgroundColor": "#FFF8F0"
     },
@@ -18,10 +18,10 @@
       "buildNumber": "1",
       "supportsTablet": true,
       "splash": {
-        "image": "./assets/linkuplogo.png",
+        "image": "./assets/link_logo.png",
         "resizeMode": "contain",
         "backgroundColor": "#FFF8F0",
-        "tabletImage": "./assets/linkuplogo.png"
+        "tabletImage": "./assets/link_logo.png"
       },
       "infoPlist": {
         "NSContactsUsageDescription": "This app needs access to your contacts to help you find friends who are also using the app and create friend circles.",
@@ -37,7 +37,7 @@
         "backgroundColor": "#ffffff"
       },
       "splash": {
-        "image": "./assets/linkuplogo.png",
+        "image": "./assets/link_logo.png",
         "resizeMode": "contain",
         "backgroundColor": "#FFF8F0"
       },
