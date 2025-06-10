@@ -1,6 +1,7 @@
 {
   "cli": {
-    "version": ">= 12.7.0"
+    "version": ">= 12.7.0",
+    "appVersionSource": "local"
   },
   "build": {
     "development": {
@@ -20,12 +21,12 @@
       "autoIncrement": true,
       "env": {
         "NODE_ENV": "production"
-      },
-      "ios": {
-        "bundleIdentifier": "com.linkup.app"
-      },
+      }
+    },
+    "production-android": {
+      "extends": "production",
       "android": {
-        "buildType": "aab"
+        "buildType": "app-bundle"
       }
     }
   },

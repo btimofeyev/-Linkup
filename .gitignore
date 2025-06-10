@@ -2,6 +2,11 @@
 node_modules/
 */node_modules/
 
+
+
+# Google Play credentials
+google-service-account.json
+synthetic-song-*.json
 # Environment variables
 .env
 */.env

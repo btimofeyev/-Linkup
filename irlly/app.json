@@ -2,6 +2,7 @@
   "expo": {
     "name": "Linkup",
     "slug": "linkup",
+    "main": "./index.ts",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -13,7 +14,8 @@
       "backgroundColor": "#FFF8F0"
     },
     "ios": {
-      "bundleIdentifier": "com.linkup.app",
+      "bundleIdentifier": "com.linkupsocial.app",
+      "buildNumber": "1",
       "supportsTablet": true,
       "splash": {
         "image": "./assets/linkuplogo.png",
@@ -28,7 +30,8 @@
       }
     },
     "android": {
-      "package": "com.linkup.app",
+      "package": "com.linkupsocial.app",
+      "versionCode": 6,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -45,7 +48,17 @@
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",
         "RECEIVE_BOOT_COMPLETED",
-        "VIBRATE"
+        "VIBRATE",
+        "android.permission.READ_CONTACTS",
+        "android.permission.WRITE_CONTACTS",
+        "READ_CONTACTS",
+        "WRITE_CONTACTS",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE",
+        "android.permission.READ_CONTACTS",
+        "android.permission.WRITE_CONTACTS"
       ]
     },
     "web": {
@@ -61,8 +74,15 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+        "projectId": "31f0ed9f-a73c-4faf-94ee-e7b2e08bad7d"
       }
+    },
+    "owner": "btimofeyev",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/31f0ed9f-a73c-4faf-94ee-e7b2e08bad7d"
     }
   }
 }

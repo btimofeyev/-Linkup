@@ -1,0 +1,12 @@
+{
+    "expo": {
+        "extra": {
+            "eas": {
+                "projectId": "044445a2-1ad9-4caf-9e9c-47913d2e8867"
+            }
+        },
+        "android": {
+            "package": "com.btimofeyev.linkupmonorepo"
+        }
+    }
+}

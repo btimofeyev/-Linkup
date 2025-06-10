@@ -10,5 +10,11 @@
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=8.0.0"
+  },
+  "devDependencies": {
+    "@expo/cli": "^0.24.14"
+  },
+  "dependencies": {
+    "expo": "^53.0.11"
   }
 }
