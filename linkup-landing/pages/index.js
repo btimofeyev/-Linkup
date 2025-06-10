@@ -5,9 +5,13 @@ export default function Home() {
   return (
     <div className="container">
       <Head>
-        <title>Linkup - Real connections, real moments</title>
-        <meta name="description" content="Connect with friends in real life. Drop pins, plan meetups, and make real connections happen." />
+        <title>Linkup - Your Social Life, Reimagined</title>
+        <meta name="description" content="Stop scrolling and start living. Linkup helps you connect with friends in real life through spontaneous hangouts and planned meetups." />
         <link rel="icon" href="/favicon.ico" />
+        {/* Importing the 'Inter' font from Google Fonts */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
       </Head>
 
       <main className="main">
@@ -15,40 +19,43 @@ export default function Home() {
           <Image 
             src="/images/linkuplogo.png" 
             alt="Linkup Logo" 
-            width={200} 
-            height={200} 
+            width={150} 
+            height={150} 
             className="logo"
           />
-          <h1 className="title">Linkup</h1>
-          <p className="tagline">Real connections, real moments</p>
+          <h1 className="title">
+            Stop scrolling. <br />
+            Start living.
+          </h1>
+          <p className="tagline">Your social life, reimagined.</p>
           <p className="description">
-            Drop pins for spontaneous hangouts or schedule meetups with your circles. 
-            Connect with friends in real life, not just online.
+            Tired of endless group chats that go nowhere? Linkup helps you take your friendships offline. 
+            Drop a pin for a spontaneous hangout or schedule the perfect meetup with your crew.
           </p>
           
           <div className="download-buttons">
             <a href="#" className="app-button ios-button">
-              📱 Download for iOS
+              Download for iOS
             </a>
             <a href="#" className="app-button android-button">
-              🤖 Download for Android
+              Get it on Android
             </a>
           </div>
         </div>
 
-        <div className="features">
-          <div className="feature">
-            <h3>📍 Drop a Pin</h3>
-            <p>Share your location instantly and invite friends to join you spontaneously</p>
-          </div>
-          <div className="feature">
-            <h3>📅 Schedule Meetups</h3>
-            <p>Plan ahead with friends and create memorable experiences together</p>
-          </div>
-          <div className="feature">
-            <h3>👥 Friend Circles</h3>
-            <p>Organize your social groups and share with the right people</p>
-          </div>
+        <div className="features-container">
+            <div className="feature">
+                <h3>📍 Drop a Pin</h3>
+                <p>Spur of the moment? Share your location and see who’s free to join.</p>
+            </div>
+            <div className="feature">
+                <h3>🗓️ Schedule Meetups</h3>
+                <p>Plan the perfect get-together and create lasting memories with your friends.</p>
+            </div>
+            <div className="feature">
+                <h3>🎯 Friend Circles</h3>
+                <p>Keep it personal. Share your plans with just the right group of people.</p>
+            </div>
         </div>
       </main>
 
@@ -68,81 +75,93 @@ export default function Home() {
           padding: 0 2rem;
           display: flex;
           flex-direction: column;
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-          background: #FFF8F0;
+          /* Using Inter font with a fallback */
+          font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          /* Modern background with a subtle gradient */
+          background: #f7f7f7;
+          background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
         }
 
         .main {
           flex: 1;
-          padding: 4rem 0;
-          max-width: 1200px;
+          padding: 5rem 0;
+          max-width: 1100px;
           margin: 0 auto;
           width: 100%;
         }
 
         .hero {
           text-align: center;
-          margin-bottom: 4rem;
+          margin-bottom: 6rem;
         }
 
         .logo {
-          margin-bottom: 2rem;
+          margin-bottom: 1.5rem;
+          transition: transform 0.3s ease-in-out;
+        }
+        .logo:hover {
+            transform: rotate(-10deg) scale(1.05);
         }
 
         .title {
           margin: 0 0 1rem 0;
-          font-size: 4rem;
-          font-weight: 700;
-          color: #333;
+          font-size: 4.5rem;
+          font-weight: 800;
+          color: #1a202c; /* Darker, more modern text color */
+          line-height: 1.1;
         }
 
         .tagline {
-          font-size: 1.5rem;
-          color: #666;
+          font-size: 1.75rem;
+          font-weight: 600;
+          color: #4a5568;
           margin-bottom: 2rem;
         }
 
         .description {
           font-size: 1.2rem;
-          color: #555;
-          max-width: 600px;
+          color: #718096; /* Softer color for description */
+          max-width: 650px;
           margin: 0 auto 3rem auto;
-          line-height: 1.6;
+          line-height: 1.7;
         }
 
         .download-buttons {
           display: flex;
-          gap: 1rem;
+          gap: 1.5rem;
           justify-content: center;
           flex-wrap: wrap;
         }
 
         .app-button {
           display: inline-block;
-          padding: 1rem 2rem;
-          background: #007AFF;
-          color: white;
+          padding: 1rem 2.5rem;
           text-decoration: none;
-          border-radius: 12px;
-          font-weight: 600;
+          border-radius: 50px; /* Fully rounded buttons */
+          font-weight: 700;
           font-size: 1.1rem;
-          transition: transform 0.2s, box-shadow 0.2s;
+          transition: all 0.2s ease-in-out;
+          border: none;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
         .app-button:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 8px 25px rgba(0, 122, 255, 0.3);
+          transform: translateY(-3px);
+          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .ios-button {
+          background-image: linear-gradient(45deg, #6a11cb 0%, #2575fc 100%);
+          color: white;
         }
 
         .android-button {
-          background: #34A853;
+          background: #fff;
+          color: #333;
+          border: 2px solid #eee;
         }
 
-        .android-button:hover {
-          box-shadow: 0 8px 25px rgba(52, 168, 83, 0.3);
-        }
-
-        .features {
+        .features-container {
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
           gap: 2rem;
@@ -151,62 +170,75 @@ export default function Home() {
 
         .feature {
           text-align: center;
-          padding: 2rem;
-          background: white;
-          border-radius: 16px;
-          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+          padding: 2.5rem;
+          /* Modern "Glassmorphism" effect */
+          background: rgba(255, 255, 255, 0.5);
+          backdrop-filter: blur(10px);
+          border-radius: 24px;
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+          transition: transform 0.3s ease;
+        }
+        
+        .feature:hover {
+            transform: translateY(-10px);
         }
 
         .feature h3 {
-          font-size: 1.5rem;
+          font-size: 1.75rem;
+          font-weight: 700;
           margin-bottom: 1rem;
-          color: #333;
+          color: #2d3748;
         }
 
         .feature p {
-          color: #666;
+          color: #4a5568;
           line-height: 1.6;
+          font-size: 1rem;
         }
 
         .footer {
-          border-top: 1px solid #eee;
-          padding: 2rem 0;
+          padding: 3rem 0;
           text-align: center;
           margin-top: 4rem;
+          border-top: 1px solid #e2e8f0;
         }
 
         .footer-links {
           display: flex;
           justify-content: center;
           gap: 2rem;
-          margin-bottom: 1rem;
+          margin-bottom: 1.5rem;
           flex-wrap: wrap;
         }
 
         .footer-links a {
-          color: #007AFF;
+          color: #718096;
           text-decoration: none;
+          transition: color 0.2s;
         }
 
         .footer-links a:hover {
+          color: #2575fc;
           text-decoration: underline;
         }
 
         .footer p {
-          color: #666;
+          color: #a0aec0;
           font-size: 0.9rem;
         }
 
         @media (max-width: 768px) {
           .title {
-            font-size: 3rem;
+            font-size: 3.5rem;
           }
-          
+          .tagline {
+            font-size: 1.5rem;
+          }
           .download-buttons {
             flex-direction: column;
             align-items: center;
           }
-          
           .footer-links {
             flex-direction: column;
             gap: 1rem;
