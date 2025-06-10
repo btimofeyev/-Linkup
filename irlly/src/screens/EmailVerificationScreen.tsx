@@ -137,7 +137,7 @@ const EmailVerificationScreen: React.FC<EmailVerificationScreenProps> = ({ navig
                 ]}
               >
                 <Image
-                  source={require('../../assets/linkuplogo.png')}
+                  source={require('../../assets/link_logo.png')}
                   style={styles.logo}
                   resizeMode="contain"
                 />
