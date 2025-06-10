@@ -9,8 +9,8 @@ import {
   Alert,
   ScrollView,
   Platform,
+  Modal,
 } from 'react-native';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import * as Location from 'expo-location';
 import { useNavigation } from '@react-navigation/native';
 import { useCircles } from '../contexts/CirclesContext';
@@ -27,7 +27,6 @@ export const ScheduleMeetupScreen: React.FC = () => {
   const [description, setDescription] = useState('');
   const [date, setDate] = useState(new Date(Date.now() + 60 * 60 * 1000)); // 1 hour from now
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [showTimePicker, setShowTimePicker] = useState(false);
   const [location, setLocation] = useState<string>('');
   const [selectedCircles, setSelectedCircles] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -40,23 +39,6 @@ export const ScheduleMeetupScreen: React.FC = () => {
         ? prev.filter(id => id !== circleId)
         : [...prev, circleId]
     );
-  };
-
-  const handleDateChange = (event: any, selectedDate?: Date) => {
-    setShowDatePicker(false);
-    if (selectedDate) {
-      setDate(selectedDate);
-    }
-  };
-
-  const handleTimeChange = (event: any, selectedTime?: Date) => {
-    setShowTimePicker(false);
-    if (selectedTime) {
-      const newDate = new Date(date);
-      newDate.setHours(selectedTime.getHours());
-      newDate.setMinutes(selectedTime.getMinutes());
-      setDate(newDate);
-    }
   };
 
   const getCurrentLocation = async () => {
@@ -138,22 +120,102 @@ export const ScheduleMeetupScreen: React.FC = () => {
     }
   };
 
-  const formatDate = (date: Date) => {
+  const formatDateTime = (date: Date) => {
     return date.toLocaleDateString('en-US', {
       weekday: 'short',
       month: 'short',
       day: 'numeric',
       year: 'numeric',
-    });
-  };
-
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('en-US', {
       hour: 'numeric',
       minute: '2-digit',
       hour12: true,
     });
   };
+
+  // Quick preset options for scheduling
+  const getPresetDates = () => {
+    const now = new Date();
+    const presets = [
+      { label: 'In 1 hour', date: new Date(now.getTime() + 60 * 60 * 1000) },
+      { label: 'In 2 hours', date: new Date(now.getTime() + 2 * 60 * 60 * 1000) },
+      { label: 'Tonight at 7 PM', date: (() => {
+        const tonight = new Date();
+        tonight.setHours(19, 0, 0, 0);
+        if (tonight <= now) tonight.setDate(tonight.getDate() + 1);
+        return tonight;
+      })() },
+      { label: 'Tomorrow at 12 PM', date: (() => {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        tomorrow.setHours(12, 0, 0, 0);
+        return tomorrow;
+      })() },
+      { label: 'Tomorrow at 6 PM', date: (() => {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        tomorrow.setHours(18, 0, 0, 0);
+        return tomorrow;
+      })() },
+      { label: 'This weekend', date: (() => {
+        const weekend = new Date();
+        const daysUntilSaturday = (6 - weekend.getDay()) % 7;
+        weekend.setDate(weekend.getDate() + (daysUntilSaturday === 0 ? 7 : daysUntilSaturday));
+        weekend.setHours(14, 0, 0, 0);
+        return weekend;
+      })() },
+    ];
+    return presets.filter(preset => preset.date > now);
+  };
+
+  const CustomDatePicker = () => (
+    <Modal
+      visible={showDatePicker}
+      animationType="slide"
+      presentationStyle="pageSheet"
+      onRequestClose={() => setShowDatePicker(false)}
+    >
+      <SafeAreaView style={styles.pickerModal}>
+        <View style={styles.pickerHeader}>
+          <TouchableOpacity onPress={() => setShowDatePicker(false)}>
+            <Text style={styles.pickerCancel}>Cancel</Text>
+          </TouchableOpacity>
+          <Text style={styles.pickerTitle}>Select Date & Time</Text>
+          <TouchableOpacity onPress={() => setShowDatePicker(false)}>
+            <Text style={styles.pickerDone}>Done</Text>
+          </TouchableOpacity>
+        </View>
+        
+        <ScrollView style={styles.pickerContent}>
+          <Text style={styles.presetLabel}>Quick Options</Text>
+          {getPresetDates().map((preset, index) => (
+            <TouchableOpacity
+              key={index}
+              style={styles.presetOption}
+              onPress={() => {
+                setDate(preset.date);
+                setShowDatePicker(false);
+              }}
+            >
+              <Text style={styles.presetText}>{preset.label}</Text>
+              <Text style={styles.presetDate}>{formatDateTime(preset.date)}</Text>
+            </TouchableOpacity>
+          ))}
+          
+          <Text style={styles.customLabel}>Custom Date & Time</Text>
+          <Text style={styles.customNote}>
+            Current selection: {formatDateTime(date)}
+          </Text>
+          
+          {/* Simple custom time inputs */}
+          <View style={styles.customInputs}>
+            <Text style={styles.inputNote}>
+              For custom times, you can edit the date above or contact support for advanced scheduling options.
+            </Text>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    </Modal>
+  );
 
   return (
     <SafeAreaView style={styles.container}>
@@ -208,20 +270,13 @@ export const ScheduleMeetupScreen: React.FC = () => {
 
         <View style={styles.section}>
           <Text style={styles.label}>When</Text>
-          <View style={styles.dateTimeContainer}>
-            <TouchableOpacity
-              style={styles.dateTimeButton}
-              onPress={() => setShowDatePicker(true)}
-            >
-              <Text style={styles.dateTimeText}>{formatDate(date)}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.dateTimeButton}
-              onPress={() => setShowTimePicker(true)}
-            >
-              <Text style={styles.dateTimeText}>{formatTime(date)}</Text>
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity
+            style={styles.dateTimeButton}
+            onPress={() => setShowDatePicker(true)}
+          >
+            <Text style={styles.dateTimeText}>{formatDateTime(date)}</Text>
+            <Text style={styles.dateTimeIcon}>📅</Text>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.section}>
@@ -278,24 +333,7 @@ export const ScheduleMeetupScreen: React.FC = () => {
         </ScrollView>
       </View>
 
-      {showDatePicker && (
-        <DateTimePicker
-          value={date}
-          mode="date"
-          display="default"
-          minimumDate={new Date()}
-          onChange={handleDateChange}
-        />
-      )}
-
-      {showTimePicker && (
-        <DateTimePicker
-          value={date}
-          mode="time"
-          display="default"
-          onChange={handleTimeChange}
-        />
-      )}
+      <CustomDatePicker />
     </SafeAreaView>
   );
 };
@@ -307,7 +345,7 @@ const styles = StyleSheet.create({
   },
   wrapper: {
     flex: 1,
-    paddingTop: 24, // More space below SafeAreaView
+    paddingTop: 24,
   },
   content: {
     flex: 1,
@@ -360,12 +398,10 @@ const styles = StyleSheet.create({
     height: 120,
     textAlignVertical: 'top',
   },
-  dateTimeContainer: {
-    flexDirection: 'row',
-    gap: 12,
-  },
   dateTimeButton: {
-    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     padding: 18,
     borderRadius: 20,
     backgroundColor: '#FFFFFF',
@@ -375,13 +411,15 @@ const styles = StyleSheet.create({
     shadowRadius: 20,
     elevation: 6,
     minHeight: 60,
-    justifyContent: 'center',
   },
   dateTimeText: {
     fontSize: 16,
     color: '#2D3748',
-    textAlign: 'center',
     fontWeight: '600',
+    flex: 1,
+  },
+  dateTimeIcon: {
+    fontSize: 20,
   },
   locationButton: {
     marginTop: 10,
@@ -504,4 +542,96 @@ const styles = StyleSheet.create({
   emojiText: {
     fontSize: 26,
   },
+  // Custom date picker styles
+  pickerModal: {
+    flex: 1,
+    backgroundColor: '#FFF8F0',
+  },
+  pickerHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F0',
+  },
+  pickerCancel: {
+    fontSize: 16,
+    color: '#64748B',
+    fontWeight: '500',
+  },
+  pickerTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#2D3748',
+  },
+  pickerDone: {
+    fontSize: 16,
+    color: '#ED8936',
+    fontWeight: '600',
+  },
+  pickerContent: {
+    flex: 1,
+    padding: 20,
+  },
+  presetLabel: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#2D3748',
+    marginBottom: 16,
+  },
+  presetOption: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    marginBottom: 12,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  presetText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#2D3748',
+    flex: 1,
+  },
+  presetDate: {
+    fontSize: 14,
+    color: '#64748B',
+    textAlign: 'right',
+  },
+  customLabel: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#2D3748',
+    marginTop: 24,
+    marginBottom: 16,
+  },
+  customNote: {
+    fontSize: 14,
+    color: '#64748B',
+    marginBottom: 16,
+    padding: 16,
+    backgroundColor: '#F1F5F9',
+    borderRadius: 12,
+  },
+  customInputs: {
+    padding: 16,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    marginBottom: 20,
+  },
+  inputNote: {
+    fontSize: 14,
+    color: '#64748B',
+    textAlign: 'center',
+    fontStyle: 'italic',
+  },
+
 });
