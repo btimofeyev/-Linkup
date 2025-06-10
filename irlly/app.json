@@ -63,6 +63,9 @@
         {
           "ios": {
             "useFrameworks": "static"
+          },
+          "android": {
+            "nodeModulesPath": "../node_modules"
           }
         }
       ]
@@ -73,9 +76,8 @@
       }
     },
     "owner": "btimofeyev",
-    "runtimeVersion": {
-      "policy": "appVersion"
-    },
+    "runtimeVersion": "1.0.0",
+
     "updates": {
       "url": "https://u.expo.dev/31f0ed9f-a73c-4faf-94ee-e7b2e08bad7d"
     }

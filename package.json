@@ -3,18 +3,13 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "cd irlly-backend && npm install && npm run build",
-    "start": "cd irlly-backend && npm start",
-    "dev": "cd irlly-backend && npm run dev"
+    "start": "cd irlly && npm start",
+    "android": "cd irlly && npm run android",
+    "ios": "cd irlly && npm run ios"
   },
-  "engines": {
-    "node": ">=18.0.0",
-    "npm": ">=8.0.0"
-  },
-  "devDependencies": {
-    "@expo/cli": "^0.24.14"
-  },
-  "dependencies": {
-    "expo": "^53.0.11"
-  }
+  "workspaces": [
+    "irlly",
+    "irlly-backend",
+    "linkup-landing"
+  ]
 }
