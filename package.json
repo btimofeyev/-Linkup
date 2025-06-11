@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "cd irlly && npm start",
+    "start": "cd irlly-backend && npm start",
     "android": "cd irlly && npm run android",
     "ios": "cd irlly && npm run ios"
   },
