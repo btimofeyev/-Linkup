@@ -6,8 +6,7 @@
   "scripts": {
     "build": "tsc",
     "postbuild": "ls -la dist/",
-    "prestart": "ls -la dist/ || echo 'dist directory not found'",
-    "start": "node dist/index.js",
+    "start": "ts-node src/index.ts",
     "dev": "nodemon src/index.ts",
     "railway:build": "npm install && npm run build",
     "railway:start": "npm run start",
@@ -31,6 +30,9 @@
     "express-validator": "^7.2.1",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3",
+    "@types/node": "^22.15.30",
     "twilio": "^5.7.0"
   },
   "devDependencies": {
@@ -38,9 +40,6 @@
     "@types/cors": "^2.8.18",
     "@types/express": "^5.0.2",
     "@types/jsonwebtoken": "^9.0.9",
-    "@types/node": "^22.15.30",
-    "nodemon": "^3.1.10",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.8.3"
+    "nodemon": "^3.1.10"
   }
 }
