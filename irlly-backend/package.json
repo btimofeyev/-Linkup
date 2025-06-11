@@ -5,6 +5,8 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
+    "postbuild": "ls -la dist/",
+    "prestart": "ls -la dist/ || echo 'dist directory not found'",
     "start": "node dist/index.js",
     "dev": "nodemon src/index.ts",
     "railway:build": "npm install && npm run build",
