@@ -63,7 +63,8 @@
         "expo-build-properties",
         {
           "ios": {
-            "useFrameworks": "static"
+            "useFrameworks": "static",
+            "useLegacyPods": true
           },
           "android": {
             "nodeModulesPath": "../node_modules"
