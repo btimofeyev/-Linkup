@@ -7,7 +7,6 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": false,
     "splash": {
       "image": "./assets/link_logo.png",
       "resizeMode": "contain",
@@ -15,14 +14,7 @@
     },
     "ios": {
       "bundleIdentifier": "com.linkupsocial.app",
-      "buildNumber": "1",
       "supportsTablet": true,
-      "splash": {
-        "image": "./assets/link_logo.png",
-        "resizeMode": "contain",
-        "backgroundColor": "#FFF8F0",
-        "tabletImage": "./assets/link_logo.png"
-      },
       "infoPlist": {
         "NSContactsUsageDescription": "This app needs access to your contacts to help you find friends who are also using the app and create friend circles.",
         "NSLocationWhenInUseUsageDescription": "This app needs access to your location to create pins and meetups at your current location.",
@@ -32,15 +24,9 @@
     },
     "android": {
       "package": "com.linkupsocial.app",
-      "versionCode": 9,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      },
-      "splash": {
-        "image": "./assets/link_logo.png",
-        "resizeMode": "contain",
-        "backgroundColor": "#FFF8F0"
       },
       "permissions": [
         "android.permission.READ_CONTACTS",
@@ -49,26 +35,11 @@
         "android.permission.ACCESS_COARSE_LOCATION"
       ]
     },
-    "web": {
-      "favicon": "./assets/favicon.png"
-    },
     "plugins": [
       [
         "expo-contacts",
         {
           "contactsPermission": "Allow $(PRODUCT_NAME) to access your contacts to help you find friends and create circles."
-        }
-      ],
-      [
-        "expo-build-properties",
-        {
-          "ios": {
-            "useFrameworks": "static",
-            "useLegacyPods": true
-          },
-          "android": {
-            "nodeModulesPath": "../node_modules"
-          }
         }
       ]
     ],
@@ -76,11 +47,6 @@
       "eas": {
         "projectId": "31f0ed9f-a73c-4faf-94ee-e7b2e08bad7d"
       }
-    },
-    "owner": "btimofeyev",
-    "runtimeVersion": "1.0.0",
-    "updates": {
-      "url": "https://u.expo.dev/31f0ed9f-a73c-4faf-94ee-e7b2e08bad7d"
     }
   }
 }
