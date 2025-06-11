@@ -10,7 +10,12 @@
     "preview": {
       "distribution": "internal"
     },
-    "production": {}
+    "production": {
+      "ios": {
+        "resourceClass": "m-medium",
+        "autoIncrement": "buildNumber"
+      }
+    }
   },
   "submit": {
     "production": {}
