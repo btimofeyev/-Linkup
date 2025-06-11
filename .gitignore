@@ -3,6 +3,7 @@ node_modules/
 */node_modules/
 
 
+/ios
 
 # Google Play credentials
 google-service-account.json
