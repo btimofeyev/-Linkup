@@ -10,17 +10,17 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
         {/* Importing the 'Inter' font from Google Fonts */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="true" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
       </Head>
 
       <main className="main">
         <div className="hero">
-          <Image 
-            src="/images/linkuplogo.png" 
-            alt="Linkup Logo" 
-            width={150} 
-            height={150} 
+          <Image
+            src="/images/linkuplogo.png"
+            alt="Linkup Logo"
+            width={150}
+            height={150}
             className="logo"
           />
           <h1 className="title">
@@ -29,10 +29,10 @@ export default function Home() {
           </h1>
           <p className="tagline">Your social life, reimagined.</p>
           <p className="description">
-            Tired of endless group chats that go nowhere? Linkup helps you take your friendships offline. 
+            Tired of endless group chats that go nowhere? Linkup helps you take your friendships offline.
             Drop a pin for a spontaneous hangout or schedule the perfect meetup with your crew.
           </p>
-          
+
           <div className="download-buttons">
             <a href="#" className="app-button ios-button">
               Download for iOS
@@ -45,15 +45,18 @@ export default function Home() {
 
         <div className="features-container">
             <div className="feature">
-                <h3>📍 Drop a Pin</h3>
+                <div className="feature-icon">📍</div>
+                <h3>Drop a Pin</h3>
                 <p>Spur of the moment? Share your location and see who’s free to join.</p>
             </div>
             <div className="feature">
-                <h3>🗓️ Schedule Meetups</h3>
+                <div className="feature-icon">🗓️</div>
+                <h3>Schedule Meetups</h3>
                 <p>Plan the perfect get-together and create lasting memories with your friends.</p>
             </div>
             <div className="feature">
-                <h3>🎯 Friend Circles</h3>
+                <div className="feature-icon">🎯</div>
+                <h3>Friend Circles</h3>
                 <p>Keep it personal. Share your plans with just the right group of people.</p>
             </div>
         </div>
@@ -75,11 +78,8 @@ export default function Home() {
           padding: 0 2rem;
           display: flex;
           flex-direction: column;
-          /* Using Inter font with a fallback */
           font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-          /* Modern background with a subtle gradient */
-          background: #f7f7f7;
-          background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+          background: linear-gradient(135deg, #1a202c 0%, #11151c 100%);
         }
 
         .main {
@@ -97,30 +97,43 @@ export default function Home() {
 
         .logo {
           margin-bottom: 1.5rem;
-          transition: transform 0.3s ease-in-out;
+          transition: transform 0.3s ease;
         }
+
+        /* Keyframes for the bounce animation */
+        @keyframes bounce {
+          0%, 100% {
+            transform: translateY(0);
+          }
+          50% {
+            transform: translateY(-20px);
+          }
+        }
+
+        /* Correctly applies the animation on hover */
         .logo:hover {
-            transform: rotate(-10deg) scale(1.05);
+          animation: bounce 0.6s ease-out;
+          cursor: pointer;
         }
 
         .title {
           margin: 0 0 1rem 0;
           font-size: 4.5rem;
           font-weight: 800;
-          color: #1a202c; /* Darker, more modern text color */
+          color: #f7fafc;
           line-height: 1.1;
         }
 
         .tagline {
           font-size: 1.75rem;
           font-weight: 600;
-          color: #4a5568;
+          color: #a0aec0;
           margin-bottom: 2rem;
         }
 
         .description {
           font-size: 1.2rem;
-          color: #718096; /* Softer color for description */
+          color: #cbd5e0;
           max-width: 650px;
           margin: 0 auto 3rem auto;
           line-height: 1.7;
@@ -137,17 +150,17 @@ export default function Home() {
           display: inline-block;
           padding: 1rem 2.5rem;
           text-decoration: none;
-          border-radius: 50px; /* Fully rounded buttons */
+          border-radius: 50px;
           font-weight: 700;
           font-size: 1.1rem;
           transition: all 0.2s ease-in-out;
-          border: none;
-          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+          border: 2px solid transparent;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
 
         .app-button:hover {
           transform: translateY(-3px);
-          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
         }
 
         .ios-button {
@@ -156,9 +169,14 @@ export default function Home() {
         }
 
         .android-button {
-          background: #fff;
-          color: #333;
-          border: 2px solid #eee;
+          background: transparent;
+          color: white;
+          border: 2px solid #4a5568;
+        }
+        
+        .android-button:hover {
+            background: #2d3748;
+            border-color: #2d3748;
         }
 
         .features-container {
@@ -169,30 +187,39 @@ export default function Home() {
         }
 
         .feature {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
           text-align: center;
           padding: 2.5rem;
-          /* Modern "Glassmorphism" effect */
-          background: rgba(255, 255, 255, 0.5);
-          backdrop-filter: blur(10px);
+          background: rgba(255, 255, 255, 0.05);
+          backdrop-filter: blur(20px);
           border-radius: 24px;
-          border: 1px solid rgba(255, 255, 255, 0.2);
-          box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
           transition: transform 0.3s ease;
         }
         
         .feature:hover {
-            transform: translateY(-10px);
+            transform: translateY(-15px) scale(1.03);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            color: #e2e8f0;
         }
 
         .feature h3 {
           font-size: 1.75rem;
           font-weight: 700;
-          margin-bottom: 1rem;
-          color: #2d3748;
+          margin-bottom: 0.5rem;
+          color: #e2e8f0;
         }
 
         .feature p {
-          color: #4a5568;
+          color: #a0aec0;
           line-height: 1.6;
           font-size: 1rem;
         }
@@ -201,7 +228,7 @@ export default function Home() {
           padding: 3rem 0;
           text-align: center;
           margin-top: 4rem;
-          border-top: 1px solid #e2e8f0;
+          border-top: 1px solid #2d3748;
         }
 
         .footer-links {
@@ -213,18 +240,18 @@ export default function Home() {
         }
 
         .footer-links a {
-          color: #718096;
+          color: #a0aec0;
           text-decoration: none;
           transition: color 0.2s;
         }
 
         .footer-links a:hover {
-          color: #2575fc;
+          color: #f7fafc;
           text-decoration: underline;
         }
 
         .footer p {
-          color: #a0aec0;
+          color: #718096;
           font-size: 0.9rem;
         }
 
