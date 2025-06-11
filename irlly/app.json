@@ -2,8 +2,7 @@
   "expo": {
     "name": "Linkup",
     "slug": "linkup",
-    "main": "./index.ts",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -15,7 +14,7 @@
     },
     "ios": {
       "bundleIdentifier": "com.linkupsocial.app",
-      "buildNumber": "2",
+      "buildNumber": "3",
       "supportsTablet": true,
       "infoPlist": {
         "NSContactsUsageDescription": "This app needs access to your contacts to help you find friends who are also using the app and create friend circles.",
