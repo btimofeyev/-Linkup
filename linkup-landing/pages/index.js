@@ -1,17 +1,27 @@
-import Head from 'next/head'
-import Image from 'next/image'
+import Head from "next/head";
+import Image from "next/image";
 
 export default function Home() {
   return (
     <div className="container">
       <Head>
         <title>Linkup - Your Social Life, Reimagined</title>
-        <meta name="description" content="Stop scrolling and start living. Linkup helps you connect with friends in real life through spontaneous hangouts and planned meetups." />
+        <meta
+          name="description"
+          content="Stop scrolling and start living. Linkup helps you connect with friends in real life through spontaneous hangouts and planned meetups."
+        />
         <link rel="icon" href="/favicon.ico" />
         {/* Importing the 'Inter' font from Google Fonts */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="true" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin="true"
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap"
+          rel="stylesheet"
+        />
       </Head>
 
       <main className="main">
@@ -29,8 +39,9 @@ export default function Home() {
           </h1>
           <p className="tagline">Your social life, reimagined.</p>
           <p className="description">
-            Tired of endless group chats that go nowhere? Linkup helps you take your friendships offline.
-            Drop a pin for a spontaneous hangout or schedule the perfect meetup with your crew.
+            Tired of endless group chats that go nowhere? Linkup helps you take
+            your friendships offline. Drop a pin for a spontaneous hangout or
+            schedule the perfect meetup with your crew.
           </p>
 
           <div className="download-buttons">
@@ -44,21 +55,30 @@ export default function Home() {
         </div>
 
         <div className="features-container">
-            <div className="feature">
-                <div className="feature-icon">📍</div>
-                <h3>Drop a Pin</h3>
-                <p>Spur of the moment? Share your location and see who’s free to join.</p>
-            </div>
-            <div className="feature">
-                <div className="feature-icon">🗓️</div>
-                <h3>Schedule Meetups</h3>
-                <p>Plan the perfect get-together and create lasting memories with your friends.</p>
-            </div>
-            <div className="feature">
-                <div className="feature-icon">🎯</div>
-                <h3>Friend Circles</h3>
-                <p>Keep it personal. Share your plans with just the right group of people.</p>
-            </div>
+          <div className="feature">
+            <div className="feature-icon">📍</div>
+            <h3>Drop a Pin</h3>
+            <p>
+              Spur of the moment? Share your location and see who’s free to
+              join.
+            </p>
+          </div>
+          <div className="feature">
+            <div className="feature-icon">🗓️</div>
+            <h3>Schedule Meetups</h3>
+            <p>
+              Plan the perfect get-together and create lasting memories with
+              your friends.
+            </p>
+          </div>
+          <div className="feature">
+            <div className="feature-icon">🎯</div>
+            <h3>Friend Circles</h3>
+            <p>
+              Keep it personal. Share your plans with just the right group of
+              people.
+            </p>
+          </div>
         </div>
       </main>
 
@@ -67,7 +87,11 @@ export default function Home() {
           <a href="/privacy">Privacy Policy</a>
           <a href="/terms">Terms of Service</a>
           <a href="/delete-account">Delete Account</a>
-          <a href="mailto:support@linkupapp.com">Contact</a>
+          <a
+            href="mailto:support@joinlinkup.app"
+          >
+            Contact
+          </a>
         </div>
         <p>&copy; 2025 Linkup. All rights reserved.</p>
       </footer>
@@ -78,7 +102,8 @@ export default function Home() {
           padding: 0 2rem;
           display: flex;
           flex-direction: column;
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+            Roboto, sans-serif;
           background: linear-gradient(135deg, #1a202c 0%, #11151c 100%);
         }
 
@@ -102,7 +127,8 @@ export default function Home() {
 
         /* Keyframes for the bounce animation */
         @keyframes bounce {
-          0%, 100% {
+          0%,
+          100% {
             transform: translateY(0);
           }
           50% {
@@ -173,10 +199,10 @@ export default function Home() {
           color: white;
           border: 2px solid #4a5568;
         }
-        
+
         .android-button:hover {
-            background: #2d3748;
-            border-color: #2d3748;
+          background: #2d3748;
+          border-color: #2d3748;
         }
 
         .features-container {
@@ -199,16 +225,16 @@ export default function Home() {
           box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
           transition: transform 0.3s ease;
         }
-        
+
         .feature:hover {
-            transform: translateY(-15px) scale(1.03);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+          transform: translateY(-15px) scale(1.03);
+          box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
         }
 
         .feature-icon {
-            font-size: 2.5rem;
-            margin-bottom: 1.5rem;
-            color: #e2e8f0;
+          font-size: 2.5rem;
+          margin-bottom: 1.5rem;
+          color: #e2e8f0;
         }
 
         .feature h3 {
@@ -273,5 +299,5 @@ export default function Home() {
         }
       `}</style>
     </div>
-  )
+  );
 }

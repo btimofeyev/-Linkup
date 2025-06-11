@@ -144,7 +144,8 @@ export default function Terms() {
             <h2>14. Contact Information</h2>
             <p>If you have questions about these Terms:</p>
             <ul>
-              <li>Email: legal@linkupapp.com</li>
+              <li>Email: support@joinlinkup.app
+              </li>
               <li>In-app support: Settings → Help & Support</li>
             </ul>
           </section>
