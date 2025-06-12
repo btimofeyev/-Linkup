@@ -31,14 +31,13 @@ export const FeedProvider: React.FC<FeedProviderProps> = ({ children, isAuthenti
 
   useEffect(() => {
     if (isAuthenticated) {
-      // Only load from backend - remove AsyncStorage dependency
+      // Load immediately when authenticated
       loadFeedFromBackend();
     } else {
       // Clear feed when user logs out
       setFeedItems([]);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated]); // Simple dependency - only on isAuthenticated boolean
+  }, [isAuthenticated, loadFeedFromBackend]);
 
   const loadFeedFromBackend = useCallback(async () => {
     if (isLoading) return; // Prevent multiple simultaneous calls

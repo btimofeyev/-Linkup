@@ -37,13 +37,13 @@ export const CirclesProvider: React.FC<CirclesProviderProps> = ({ children }) =>
 
   useEffect(() => {
     if (isAuthenticated) {
-      // Only load from backend - remove AsyncStorage dependency
+      // Load immediately when authenticated
       loadCirclesFromBackend();
     } else {
       // Clear circles when user logs out
       setCircles([]);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, loadCirclesFromBackend]);
 
   const loadCirclesFromBackend = useCallback(async () => {
     try {

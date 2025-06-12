@@ -11,7 +11,7 @@ import {
   TextInput,
   ScrollView,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useCircles } from '../contexts/CirclesContext';
 import { useContacts } from '../contexts/ContactsContext';
 import { Circle, Contact, UserSearchResult, ApiResponse, SearchUsersResponse, GetFriendsResponse } from '../types';
@@ -37,13 +37,27 @@ export const CirclesScreen: React.FC = () => {
   const [showNonAppContacts, setShowNonAppContacts] = useState(false);
 
   useEffect(() => {
-    logger.log(`CirclesScreen: received ${contacts.length} contacts from ContactsContext`);
-    if (contacts.length === 0) {
-      // Try to refresh contacts if none are loaded
-      refreshContacts();
-    }
+    logger.log(`CirclesScreen: CirclesScreen mounted, loading data...`);
+    // Always refresh contacts and load friends on mount to ensure fresh data
+    refreshContacts();
     loadFriends();
+  }, [refreshContacts]); // Load on mount
+
+  useEffect(() => {
+    // Load friends when contacts change
+    if (contacts.length > 0) {
+      loadFriends();
+    }
   }, [contacts]);
+
+  // Also refresh data when screen comes into focus
+  useFocusEffect(
+    React.useCallback(() => {
+      logger.log(`CirclesScreen: Screen focused, refreshing data...`);
+      refreshContacts();
+      loadFriends();
+    }, [refreshContacts])
+  );
 
   const loadFriends = async () => {
     try {

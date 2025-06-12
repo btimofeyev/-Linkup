@@ -98,20 +98,35 @@ export const ProfileEditScreen: React.FC<ProfileEditScreenProps> = ({ onClose })
       <KeyboardAvoidingView
         style={styles.keyboardAvoidingView}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
       >
         <View style={styles.header}>
-          <TouchableOpacity onPress={onClose}>
+          <TouchableOpacity 
+            onPress={onClose}
+            style={styles.headerButton}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
             <Text style={styles.cancelText}>Cancel</Text>
           </TouchableOpacity>
           <Text style={styles.title}>Edit Profile</Text>
-          <TouchableOpacity onPress={handleSave} disabled={isLoading || !!usernameError}>
+          <TouchableOpacity 
+            onPress={handleSave} 
+            disabled={isLoading || !!usernameError}
+            style={styles.headerButton}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
             <Text style={[styles.saveText, (isLoading || !!usernameError) && styles.saveTextDisabled]}>
               {isLoading ? 'Saving...' : 'Save'}
             </Text>
           </TouchableOpacity>
         </View>
 
-        <ScrollView style={styles.content} keyboardShouldPersistTaps="handled">
+        <ScrollView 
+          style={styles.content} 
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          contentInsetAdjustmentBehavior="automatic"
+        >
           <View style={styles.section}>
             <Text style={styles.label}>Email</Text>
             <View style={styles.emailContainer}>
@@ -174,6 +189,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
     borderBottomColor: '#E2E8F0',
+    minHeight: 60,
+  },
+  headerButton: {
+    padding: 8,
+    minWidth: 60,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   cancelText: {
     fontSize: 16,

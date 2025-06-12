@@ -108,9 +108,6 @@ const AuthenticatedStack = () => {
         onPermissionGranted={() => {
           handleContactsScreenCompleted();
         }}
-        onSkip={() => {
-          handleContactsScreenCompleted();
-        }}
       />
     );
   }

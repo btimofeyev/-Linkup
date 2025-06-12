@@ -62,13 +62,16 @@ export const syncContacts = [
         const isRegistered = registeredMap.has(contact.phoneNumber);
         const contactUserId = registeredMap.get(contact.phoneNumber);
 
-        contactsToInsert.push({
-          user_id: userId,
-          contact_user_id: contactUserId || null,
-          name: contact.name,
-          phone_number: contact.phoneNumber,
-          is_registered: isRegistered
-        });
+        // Only store contacts who are registered users of the app
+        if (isRegistered && contactUserId) {
+          contactsToInsert.push({
+            user_id: userId,
+            contact_user_id: contactUserId,
+            name: contact.name,
+            phone_number: contact.phoneNumber,
+            is_registered: true
+          });
+        }
       }
 
       // Delete only phone-based contacts, preserve username-based contacts
@@ -92,9 +95,9 @@ export const syncContacts = [
         return;
       }
 
-      console.log(`Backend: synced ${insertedContacts?.length || 0} contacts for user ${userId}`);
+      console.log(`Backend: synced ${insertedContacts?.length || 0} registered contacts for user ${userId}`);
 
-      // Return ALL contacts (both newly synced phone contacts and preserved username contacts)
+      // Return ALL contacts (both newly synced registered contacts and preserved username contacts)
       const { data: allContacts, error: allContactsError } = await supabase
         .from('contacts')
         .select('*')
@@ -107,17 +110,17 @@ export const syncContacts = [
         res.json({
           success: true,
           data: { contacts: insertedContacts },
-          message: `Synced ${insertedContacts?.length || 0} contacts`
+          message: `Synced ${insertedContacts?.length || 0} registered contacts`
         });
         return;
       }
 
-      console.log(`Backend: returning ${allContacts?.length || 0} total contacts (${insertedContacts?.length || 0} synced + preserved username contacts)`);
+      console.log(`Backend: returning ${allContacts?.length || 0} total registered contacts (${insertedContacts?.length || 0} synced + preserved username contacts)`);
 
       res.json({
         success: true,
         data: { contacts: allContacts },
-        message: `Synced ${insertedContacts?.length || 0} contacts, total ${allContacts?.length || 0} contacts`
+        message: `Synced ${insertedContacts?.length || 0} registered contacts, total ${allContacts?.length || 0} registered contacts`
       });
     } catch (error) {
       console.error('Sync contacts error:', error);

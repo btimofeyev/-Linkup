@@ -10,12 +10,10 @@ import { useContacts } from '../contexts/ContactsContext';
 
 interface ContactsPermissionScreenProps {
   onPermissionGranted: () => void;
-  onSkip: () => void;
 }
 
 export const ContactsPermissionScreen: React.FC<ContactsPermissionScreenProps> = ({
   onPermissionGranted,
-  onSkip,
 }) => {
   const { requestPermission } = useContacts();
 
@@ -52,15 +50,11 @@ export const ContactsPermissionScreen: React.FC<ContactsPermissionScreenProps> =
         </View>
 
         <TouchableOpacity style={styles.allowButton} onPress={handleRequestPermission}>
-          <Text style={styles.allowButtonText}>Allow Access</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.skipButton} onPress={onSkip}>
-          <Text style={styles.skipButtonText}>Skip for Now</Text>
+          <Text style={styles.allowButtonText}>Continue</Text>
         </TouchableOpacity>
 
         <Text style={styles.disclaimer}>
-          We never store your contacts on our servers or share them with anyone.
+          We only store contacts who are registered Linkup users to help you find friends. Your contacts are never shared with anyone.
         </Text>
       </View>
     </SafeAreaView>
@@ -132,16 +126,6 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 18,
     fontWeight: '700',
-  },
-  skipButton: {
-    padding: 16,
-    alignItems: 'center',
-    width: '100%',
-    marginBottom: 24,
-  },
-  skipButtonText: {
-    color: '#4A5568',
-    fontSize: 16,
   },
   disclaimer: {
     fontSize: 12,

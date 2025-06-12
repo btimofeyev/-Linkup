@@ -67,13 +67,22 @@ export const FeedScreen: React.FC = () => {
     }
   }, []); // Empty dependencies to prevent re-creation
 
+  // Load data immediately when component mounts
+  useEffect(() => {
+    if (user) {
+      loadFeed();
+      loadNotifications();
+    }
+  }, [user?.id, loadFeed, loadNotifications]);
+
+  // Also load data when screen comes into focus
   useFocusEffect(
     React.useCallback(() => {
       if (user) {
         loadFeed();
         loadNotifications();
       }
-    }, [user?.id]) // Only depend on user.id, not the functions
+    }, [user?.id, loadFeed, loadNotifications])
   );
 
   const handleRefresh = async () => {
