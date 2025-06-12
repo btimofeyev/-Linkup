@@ -10,6 +10,7 @@ import {
   ScrollView,
   Platform,
   Modal,
+  Linking,
 } from 'react-native';
 import * as Location from 'expo-location';
 import { useNavigation } from '@react-navigation/native';
@@ -43,10 +44,25 @@ export const ScheduleMeetupScreen: React.FC = () => {
 
   const getCurrentLocation = async () => {
     try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
+      // First check if we already have permission
+      let { status } = await Location.getForegroundPermissionsAsync();
+      
       if (status !== 'granted') {
-        Alert.alert('Permission denied', 'Location permission is required');
-        return;
+        // Request permission with user-friendly messaging
+        const { status: requestStatus } = await Location.requestForegroundPermissionsAsync();
+        status = requestStatus;
+        
+        if (status !== 'granted') {
+          Alert.alert(
+            'Location Access Needed',
+            'To use your current location for the meetup, please enable location access in your device settings.',
+            [
+              { text: 'Cancel', style: 'cancel' },
+              { text: 'Open Settings', onPress: () => Linking.openSettings() }
+            ]
+          );
+          return;
+        }
       }
 
       const currentLocation = await Location.getCurrentPositionAsync({});

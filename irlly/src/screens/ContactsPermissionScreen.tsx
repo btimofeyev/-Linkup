@@ -10,10 +10,12 @@ import { useContacts } from '../contexts/ContactsContext';
 
 interface ContactsPermissionScreenProps {
   onPermissionGranted: () => void;
+  onSkip: () => void;
 }
 
 export const ContactsPermissionScreen: React.FC<ContactsPermissionScreenProps> = ({
   onPermissionGranted,
+  onSkip,
 }) => {
   const { requestPermission } = useContacts();
 
@@ -51,6 +53,10 @@ export const ContactsPermissionScreen: React.FC<ContactsPermissionScreenProps> =
 
         <TouchableOpacity style={styles.allowButton} onPress={handleRequestPermission}>
           <Text style={styles.allowButtonText}>Continue</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.skipButton} onPress={onSkip}>
+          <Text style={styles.skipButtonText}>Not Now</Text>
         </TouchableOpacity>
 
         <Text style={styles.disclaimer}>
@@ -126,6 +132,17 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 18,
     fontWeight: '700',
+  },
+  skipButton: {
+    padding: 16,
+    alignItems: 'center',
+    width: '100%',
+    marginBottom: 24,
+  },
+  skipButtonText: {
+    color: '#64748B',
+    fontSize: 16,
+    fontWeight: '500',
   },
   disclaimer: {
     fontSize: 12,

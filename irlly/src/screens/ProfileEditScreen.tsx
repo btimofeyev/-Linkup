@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,9 +10,13 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  Switch,
+  Linking,
 } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
+import { useContacts } from '../contexts/ContactsContext';
 import { supabase } from '../services/supabaseClient';
+import * as Location from 'expo-location';
 
 interface ProfileEditScreenProps {
   onClose: () => void;
@@ -20,10 +24,79 @@ interface ProfileEditScreenProps {
 
 export const ProfileEditScreen: React.FC<ProfileEditScreenProps> = ({ onClose }) => {
   const { user, refreshUser } = useAuth();
+  const { hasPermission: hasContactsPermission, requestPermission: requestContactsPermission } = useContacts();
   const [name, setName] = useState(user?.name || '');
   const [username, setUsername] = useState(user?.username || '');
   const [isLoading, setIsLoading] = useState(false);
   const [usernameError, setUsernameError] = useState('');
+  const [hasLocationPermission, setHasLocationPermission] = useState(false);
+
+  useEffect(() => {
+    checkLocationPermission();
+  }, []);
+
+  const checkLocationPermission = async () => {
+    try {
+      const { status } = await Location.getForegroundPermissionsAsync();
+      setHasLocationPermission(status === 'granted');
+    } catch (error) {
+      console.error('Error checking location permission:', error);
+    }
+  };
+
+  const handleContactsPermissionToggle = async () => {
+    if (hasContactsPermission) {
+      // If already granted, direct to settings
+      Alert.alert(
+        'Contacts Permission',
+        'To disable contacts access, please go to Settings > Privacy & Security > Contacts > Linkup and turn off access.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Open Settings', onPress: () => Linking.openSettings() }
+        ]
+      );
+    } else {
+      // Request permission
+      const granted = await requestContactsPermission();
+      if (!granted) {
+        Alert.alert(
+          'Permission Needed',
+          'Contacts access helps you find friends who are already using Linkup. You can enable this later in Settings.',
+          [{ text: 'OK' }]
+        );
+      }
+    }
+  };
+
+  const handleLocationPermissionToggle = async () => {
+    if (hasLocationPermission) {
+      // If already granted, direct to settings
+      Alert.alert(
+        'Location Permission',
+        'To disable location access, please go to Settings > Privacy & Security > Location Services > Linkup and turn off access.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Open Settings', onPress: () => Linking.openSettings() }
+        ]
+      );
+    } else {
+      // Request permission
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        const granted = status === 'granted';
+        setHasLocationPermission(granted);
+        if (!granted) {
+          Alert.alert(
+            'Permission Needed',
+            'Location access is needed to create pins and share your location with friends. You can enable this later in Settings.',
+            [{ text: 'OK' }]
+          );
+        }
+      } catch (error) {
+        console.error('Error requesting location permission:', error);
+      }
+    }
+  };
 
   const validateUsername = (text: string) => {
     if (text.length < 3) {
@@ -167,6 +240,47 @@ export const ProfileEditScreen: React.FC<ProfileEditScreenProps> = ({ onClose })
             </Text>
           </View>
 
+          {/* Permissions Section */}
+          <View style={styles.permissionsSection}>
+            <Text style={styles.sectionHeader}>Privacy & Permissions</Text>
+            
+            <View style={styles.permissionItem}>
+              <View style={styles.permissionInfo}>
+                <Text style={styles.permissionTitle}>Contacts Access</Text>
+                <Text style={styles.permissionDescription}>
+                  Find friends who are already using Linkup
+                </Text>
+              </View>
+              <Switch
+                value={hasContactsPermission}
+                onValueChange={handleContactsPermissionToggle}
+                trackColor={{ false: '#E2E8F0', true: '#FDB366' }}
+                thumbColor={hasContactsPermission ? '#FFFFFF' : '#94A3B8'}
+                ios_backgroundColor="#E2E8F0"
+              />
+            </View>
+
+            <View style={styles.permissionItem}>
+              <View style={styles.permissionInfo}>
+                <Text style={styles.permissionTitle}>Location Access</Text>
+                <Text style={styles.permissionDescription}>
+                  Share your location when creating pins
+                </Text>
+              </View>
+              <Switch
+                value={hasLocationPermission}
+                onValueChange={handleLocationPermissionToggle}
+                trackColor={{ false: '#E2E8F0', true: '#FDB366' }}
+                thumbColor={hasLocationPermission ? '#FFFFFF' : '#94A3B8'}
+                ios_backgroundColor="#E2E8F0"
+              />
+            </View>
+
+            <Text style={styles.permissionNote}>
+              You can change these permissions anytime in your device Settings
+            </Text>
+          </View>
+
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -269,6 +383,52 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#E53E3E',
     marginTop: 6,
+  },
+  permissionsSection: {
+    marginTop: 32,
+    marginBottom: 24,
+  },
+  sectionHeader: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#2D3748',
+    marginBottom: 16,
+  },
+  permissionItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  permissionInfo: {
+    flex: 1,
+    marginRight: 16,
+  },
+  permissionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#2D3748',
+    marginBottom: 4,
+  },
+  permissionDescription: {
+    fontSize: 14,
+    color: '#64748B',
+    lineHeight: 20,
+  },
+  permissionNote: {
+    fontSize: 12,
+    color: '#94A3B8',
+    textAlign: 'center',
+    marginTop: 8,
+    fontStyle: 'italic',
   },
   dangerZone: {
     marginTop: 40,
